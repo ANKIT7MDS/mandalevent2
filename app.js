@@ -8,30 +8,60 @@ const mandals = ["भेंसोदा", "भानपुरा", "गरोठ
 document.addEventListener('DOMContentLoaded', () => {
     // मंडल लिस्ट को ड्रॉपडाउन में जोड़ें
     const mandalSelect = document.getElementById('mandal');
+    const coordMandalSelect = document.getElementById('coordMandal');
+    const reportMandalSelect = document.getElementById('reportMandal');
     mandals.forEach(mandal => {
-        const option = document.createElement('option');
-        option.value = mandal;
-        option.textContent = mandal;
-        mandalSelect.appendChild(option);
+        const option1 = document.createElement('option');
+        const option2 = document.createElement('option');
+        const option3 = document.createElement('option');
+        option1.value = option2.value = option3.value = mandal;
+        option1.textContent = option2.textContent = option3.textContent = mandal;
+        mandalSelect.appendChild(option1);
+        coordMandalSelect.appendChild(option2);
+        reportMandalSelect.appendChild(option3);
     });
 
-    // इवेंट्स को संयोजक और रिपोर्ट फॉर्म में जोड़ें
+    // कार्यक्रम के नाम और इवेंट्स लोड करें
+    loadEventNames();
     loadEventsToDropdowns();
-
-    // डीप लिंकिंग
-    const urlParams = new URLSearchParams(window.location.search);
-    const view = urlParams.get('view') || 'event';
-    showTab(view);
-
-    // डैशबोर्ड लोड करें
     loadEvents();
 });
+
+// कार्यक्रम के नाम लोड करें
+async function loadEventNames() {
+    const eventNameSelect = document.getElementById('eventName');
+    const eventSelect = document.getElementById('eventSelect');
+    const reportEventSelect = document.getElementById('reportEventSelect');
+    const eventNameList = document.getElementById('eventNameList');
+    eventNameSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+    eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+    reportEventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+    eventNameList.innerHTML = '';
+
+    const querySnapshot = await getDocs(collection(db, "eventNames"));
+    querySnapshot.forEach((doc) => {
+        const eventName = doc.data().name;
+        const option1 = document.createElement('option');
+        const option2 = document.createElement('option');
+        const option3 = document.createElement('option');
+        option1.value = option2.value = option3.value = doc.id;
+        option1.textContent = option2.textContent = option3.textContent = eventName;
+        eventNameSelect.appendChild(option1);
+        eventSelect.appendChild(option2);
+        reportEventSelect.appendChild(option3);
+
+        // डैशबोर्ड में नाम लिस्ट
+        const div = document.createElement('div');
+        div.innerHTML = `${eventName} <button onclick="editEventName('${doc.id}', '${eventName}')">एडिट</button>`;
+        eventNameList.appendChild(div);
+    });
+}
 
 // इवेंट फॉर्म सबमिशन
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const eventData = {
-        name: document.getElementById('eventName').value,
+        eventNameId: document.getElementById('eventName').value,
         mandal: document.getElementById('mandal').value,
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
@@ -41,7 +71,7 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         await addDoc(collection(db, "events"), eventData);
         alert("इवेंट जोड़ा गया!");
         document.getElementById('eventForm').reset();
-        sendTelegramAlert(`नया इवेंट जोड़ा गया: ${eventData.name}`);
+        sendTelegramAlert(`नया इवेंट जोड़ा गया: ${eventData.eventNameId}`);
         loadEventsToDropdowns();
         loadEvents();
     } catch (error) {
@@ -55,8 +85,13 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
     e.preventDefault();
     const coordinatorData = {
         eventId: document.getElementById('eventSelect').value,
+        mandal: document.getElementById('coordMandal').value,
         name: document.getElementById('coordName').value,
-        mobile: document.getElementById('coordMobile').value
+        mobile: document.getElementById('coordMobile').value,
+        coCoordName1: document.getElementById('coCoordName1').value || '',
+        coCoordMobile1: document.getElementById('coCoordMobile1').value || '',
+        coCoordName2: document.getElementById('coCoordName2').value || '',
+        coCoordMobile2: document.getElementById('coCoordMobile2').value || ''
     };
     try {
         await addDoc(collection(db, `events/${coordinatorData.eventId}/coordinators`), coordinatorData);
@@ -87,9 +122,10 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
         }
         const reportData = {
             eventId: eventId,
-            date: document.getElementById('reportDate').value,
-            guests: document.getElementById('guests').value,
+            mandal: document.getElementById('reportMandal').value,
+            location: document.getElementById('reportLocation').value,
             attendance: document.getElementById('attendance').value,
+            guests: document.getElementById('guests').value,
             details: document.getElementById('details').value,
             photos: photoUrls
         };
@@ -104,21 +140,34 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
     }
 });
 
+// कार्यक्रम का नाम जोड़ें
+document.getElementById('eventNameForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newEventName = document.getElementById('newEventName').value;
+    try {
+        await addDoc(collection(db, "eventNames"), { name: newEventName });
+        alert("कार्यक्रम का नाम जोड़ा गया!");
+        document.getElementById('eventNameForm').reset();
+        loadEventNames();
+    } catch (error) {
+        console.error("Error adding event name: ", error);
+        alert("त्रुटि: कार्यक्रम का नाम जोड़ने में समस्या।");
+    }
+});
+
 // इवेंट्स को ड्रॉपडाउन में लोड करें
 async function loadEventsToDropdowns() {
     const eventSelect = document.getElementById('eventSelect');
     const reportEventSelect = document.getElementById('reportEventSelect');
-    eventSelect.innerHTML = '<option value="">इवेंट चुनें</option>';
-    reportEventSelect.innerHTML = '<option value="">इवेंट चुनें</option>';
+    eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+    reportEventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
     const querySnapshot = await getDocs(collection(db, "events"));
     querySnapshot.forEach((doc) => {
         const event = doc.data();
         const option1 = document.createElement('option');
         const option2 = document.createElement('option');
-        option1.value = doc.id;
-        option1.textContent = event.name;
-        option2.value = doc.id;
-        option2.textContent = event.name;
+        option1.value = option2.value = doc.id;
+        option1.textContent = option2.textContent = event.eventNameId;
         eventSelect.appendChild(option1);
         reportEventSelect.appendChild(option2);
     });
@@ -144,12 +193,14 @@ async function loadEvents() {
     }
 
     // इवेंट्स और उनकी स्थिति दिखाएँ
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach(async (doc) => {
         const event = doc.data();
         const eventId = doc.id;
+        const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
+        const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
         const div = document.createElement('div');
         div.innerHTML = `
-            ${event.name} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) 
+            ${eventName} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) 
             - ${reportedMandals.has(eventId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}
             <button onclick="editEvent('${eventId}')">एडिट</button>
             <button onclick="deleteEvent('${eventId}')">डिलीट</button>
@@ -188,127 +239,23 @@ async function loadEvents() {
     }
 }
 
+// कार्यक्रम का नाम एडिट करें
+async function editEventName(eventNameId, currentName) {
+    const newName = prompt("नया कार्यक्रम का नाम:", currentName);
+    if (newName) {
+        try {
+            await updateDoc(doc(db, "eventNames", eventNameId), { name: newName });
+            alert("कार्यक्रम का नाम अपडेट किया गया!");
+            loadEventNames();
+        } catch (error) {
+            console.error("Error updating event name: ", error);
+            alert("त्रुटि: कार्यक्रम का नाम अपडेट करने में समस्या।");
+        }
+    }
+}
+window.editEventName = editEventName;
+
 // इवेंट एडिट करें
 async function editEvent(eventId) {
     const eventDoc = doc(db, "events", eventId);
-    const event = (await getDocs(collection(db, "events"))).docs.find(d => d.id === eventId).data();
-    const newName = prompt("नया इवेंट नाम:", event.name);
-    const newMandal = prompt("नया मंडल:", event.mandal);
-    const newDate = prompt("नई तारीख (YYYY-MM-DD):", event.date);
-    const newTime = prompt("नया समय (HH:MM):", event.time);
-    const newLocation = prompt("नया स्थान:", event.location);
-    if (newName && newMandal && newDate && newTime && newLocation) {
-        try {
-            await updateDoc(eventDoc, {
-                name: newName,
-                mandal: newMandal,
-                date: newDate,
-                time: newTime,
-                location: newLocation
-            });
-            alert("इवेंट अपडेट किया गया!");
-            loadEvents();
-        } catch (error) {
-            console.error("Error updating event: ", error);
-            alert("त्रुटि: इवेंट अपडेट करने में समस्या।");
-        }
-    }
-}
-window.editEvent = editEvent;
-
-// इवेंट डिलीट करें
-async function deleteEvent(eventId) {
-    if (confirm("क्या आप इस इवेंट को डिलीट करना चाहते हैं?")) {
-        try {
-            await deleteDoc(doc(db, "events", eventId));
-            alert("इवेंट डिलीट किया गया!");
-            loadEvents();
-        } catch (error) {
-            console.error("Error deleting event: ", error);
-            alert("त्रुटि: इवेंट डिलीट करने में समस्या।");
-        }
-    }
-}
-window.deleteEvent = deleteEvent;
-
-// टैब स्विचिंग
-function showTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    const tabElement = document.getElementById(tabId);
-    if (tabElement) {
-        tabElement.classList.add('active');
-    } else {
-        console.error(`Tab ${tabId} not found`);
-    }
-}
-window.showTab = showTab;
-
-// Telegram अलर्ट
-async function sendTelegramAlert(message) {
-    const botToken = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
-    const chatId = "733804072";
-    try {
-        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message
-            })
-        });
-    } catch (error) {
-        console.error("Error sending Telegram alert: ", error);
-    }
-}
-
-// CSV एक्सपोर्ट
-async function exportToCSV() {
-    let csv = "Event Name,Mandal,Date,Time,Location,Report Status\n";
-    const querySnapshot = await getDocs(collection(db, "events"));
-    const reportedMandals = new Set();
-    for (const eventDoc of querySnapshot.docs) {
-        const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
-        if (!reportsSnapshot.empty) reportedMandals.add(eventDoc.id);
-    }
-    querySnapshot.forEach((doc) => {
-        const event = doc.data();
-        csv += `${event.name},${event.mandal},${event.date},${event.time},${event.location},${reportedMandals.has(doc.id) ? 'Reported' : 'Not Reported'}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'events.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
-window.exportToCSV = exportToCSV;
-
-// PDF एक्सपोर्ट
-async function exportToPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(16);
-    doc.text("BJP मंडल इवेंट रिपोर्ट", 10, 10);
-    doc.setFontSize(12);
-    let y = 20;
-    const querySnapshot = await getDocs(collection(db, "events"));
-    const reportedMandals = new Set();
-    for (const eventDoc of querySnapshot.docs) {
-        const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
-        if (!reportsSnapshot.empty) reportedMandals.add(eventDoc.id);
-    }
-    querySnapshot.forEach((doc) => {
-        const event = doc.data();
-        doc.text(`${event.name} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) - ${reportedMandals.has(doc.id) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}`, 10, y);
-        y += 10;
-        if (y > 270) {
-            doc.addPage();
-            y = 10;
-        }
-    });
-    doc.save("events.pdf");
-}
-window.exportToPDF = exportToPDF;
+    const event = (await getDocs(collection(db, "events"))).docs
