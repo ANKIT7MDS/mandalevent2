@@ -29,12 +29,27 @@ document.addEventListener('DOMContentLoaded', () => {
     window.history.replaceState(null, null, `?view=${view}`);
 });
 
-// केवल चुने गए टैब को दिखाए और बाकी को छिपाए
+// केवल चुने गए टैब को दिखाए और बाकी को छिपाए, अन्य टैब पर क्लिक डिसेबल
 function showTab(tabId) {
     try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentView = urlParams.get('view') || 'event';
+
         // सभी टैब कंटेंट छिपाएँ
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+            // केवल वर्तमान टैब के बटन को एक्टिव रखें, बाकी डिसेबल करें
+            if (button.getAttribute('onclick') !== `showTab('${currentView}')`) {
+                button.disabled = true; // बाकी बटन डिसेबल
+                button.style.cursor = 'not-allowed'; // कर्सर बदलें
+                button.style.opacity = '0.5'; // डिसेबल लुक
+            } else {
+                button.disabled = false; // वर्तमान बटन एक्टिव
+                button.style.cursor = 'pointer';
+                button.style.opacity = '1';
+            }
+        });
 
         // केवल विशिष्ट टैब को दिखाएँ
         const tabElement = document.getElementById(tabId);
