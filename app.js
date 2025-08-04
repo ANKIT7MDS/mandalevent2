@@ -87,10 +87,10 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     }
     const eventData = {
         eventNameId: eventNameId,
-        mandal: document.getElementById('mandal').value,
-        date: document.getElementById('eventDate').value,
-        time: document.getElementById('eventTime').value,
-        location: document.getElementById('location').value
+        mandal: document.getElementById('mandal').value || 'Unknown',
+        date: document.getElementById('eventDate').value || new Date().toISOString().split('T')[0],
+        time: document.getElementById('eventTime').value || '00:00',
+        location: document.getElementById('location').value || 'Unknown'
     };
     try {
         const docRef = await addDoc(collection(db, "events"), eventData);
@@ -114,9 +114,9 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
     }
     const coordinatorData = {
         eventNameId: eventNameId,
-        mandal: document.getElementById('coordMandal').value,
-        name: document.getElementById('coordName').value,
-        mobile: document.getElementById('coordMobile').value,
+        mandal: document.getElementById('coordMandal').value || 'Unknown',
+        name: document.getElementById('coordName').value || 'Unknown',
+        mobile: document.getElementById('coordMobile').value || 'N/A',
         coCoordName1: document.getElementById('coCoordName1').value || '',
         coCoordMobile1: document.getElementById('coCoordMobile1').value || '',
         coCoordName2: document.getElementById('coCoordName2').value || '',
@@ -157,11 +157,11 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
         }
         const reportData = {
             eventNameId: eventNameId,
-            mandal: document.getElementById('reportMandal').value,
-            location: document.getElementById('reportLocation').value,
-            attendance: document.getElementById('attendance').value,
-            guests: document.getElementById('guests').value,
-            details: document.getElementById('details').value,
+            mandal: document.getElementById('reportMandal').value || 'Unknown',
+            location: document.getElementById('reportLocation').value || 'Unknown',
+            attendance: document.getElementById('attendance').value || 0,
+            guests: document.getElementById('guests').value || 'N/A',
+            details: document.getElementById('details').value || '',
             photos: photoUrls
         };
         const docRef = await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
@@ -226,16 +226,20 @@ async function loadEvents() {
         for (const docSnap of querySnapshot.docs) {
             const event = docSnap.data();
             const eventId = docSnap.id;
-            console.log("Event Name ID:", event.eventNameId); // डिबग लॉग
+            console.log("Processing event:", event); // डिबग लॉग
+            if (!event.eventNameId) {
+                console.warn("Event missing eventNameId:", eventId);
+                continue; // स्किप करें अगर eventNameId नहीं है
+            }
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${eventName}</td>
-                <td>${event.mandal}</td>
-                <td>${event.date}</td>
-                <td>${event.time}</td>
-                <td>${event.location}</td>
+                <td>${event.mandal || '-'}</td>
+                <td>${event.date || '-'}</td>
+                <td>${event.time || '-'}</td>
+                <td>${event.location || '-'}</td>
                 <td>${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}</td>
                 <td>
                     <button onclick="editEvent('${eventId}')">एडिट</button>
@@ -246,14 +250,18 @@ async function loadEvents() {
         }
 
         for (const coord of allCoordinators) {
+            if (!coord.eventNameId) {
+                console.warn("Coordinator missing eventNameId:", coord);
+                continue;
+            }
             const eventNameDoc = await getDoc(doc(db, "eventNames", coord.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${eventName}</td>
-                <td>${coord.mandal}</td>
-                <td>${coord.name}</td>
-                <td>${coord.mobile}</td>
+                <td>${coord.mandal || '-'}</td>
+                <td>${coord.name || '-'}</td>
+                <td>${coord.mobile || '-'}</td>
                 <td>${coord.coCoordName1 || '-'}</td>
                 <td>${coord.coCoordMobile1 || '-'}</td>
                 <td>${coord.coCoordName2 || '-'}</td>
@@ -263,24 +271,28 @@ async function loadEvents() {
         }
 
         for (const report of allReports) {
+            if (!report.eventNameId) {
+                console.warn("Report missing eventNameId:", report);
+                continue;
+            }
             const eventNameDoc = await getDoc(doc(db, "eventNames", report.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const photosHtml = report.photos.length ? report.photos.map(url => `<img src="${url}" alt="Report Photo">`).join(' ') : '-';
+            const photosHtml = report.photos?.length ? report.photos.map(url => `<img src="${url}" alt="Report Photo">`).join(' ') : '-';
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${eventName}</td>
-                <td>${report.mandal}</td>
-                <td>${report.location}</td>
-                <td>${report.attendance}</td>
-                <td>${report.guests}</td>
-                <td>${report.details}</td>
+                <td>${report.mandal || '-'}</td>
+                <td>${report.location || '-'}</td>
+                <td>${report.attendance || '-'}</td>
+                <td>${report.guests || '-'}</td>
+                <td>${report.details || '-'}</td>
                 <td>${photosHtml}</td>
             `;
             reportList.appendChild(row);
         }
 
         allReports.forEach((report) => {
-            report.photos.forEach((photoUrl) => {
+            report.photos?.forEach((photoUrl) => {
                 const slide = document.createElement('div');
                 slide.className = 'swiper-slide';
                 slide.innerHTML = `<img src="${photoUrl}" alt="Event Photo">`;
@@ -402,7 +414,7 @@ async function exportToCSV() {
             const event = doc.data();
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            csv += `${eventName},${event.mandal},${event.date},${event.time},${event.location},${reportedMandals.has(event.eventNameId) ? 'Reported' : 'Not Reported'}\n`;
+            csv += `${eventName},${event.mandal || '-'},${event.date || '-'},${event.time || '-'},${event.location || '-'},${reportedMandals.has(event.eventNameId) ? 'Reported' : 'Not Reported'}\n`;
         }
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -437,7 +449,7 @@ async function exportToPDF() {
             const event = doc.data();
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            doc.text(`${eventName} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) - ${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}`, 10, y);
+            doc.text(`${eventName} - ${event.mandal || '-'} (${event.date || '-'}, ${event.time || '-'}, ${event.location || '-'}) - ${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}`, 10, y);
             y += 10;
             if (y > 270) {
                 doc.addPage();
