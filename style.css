@@ -122,8 +122,6 @@ td img {
     height: auto;
     border-radius: 4px;
 }
-
-/* मोबाइल रिस्पॉन्सिव */
 @media (max-width: 600px) {
     h1 {
         font-size: 1.4rem;
