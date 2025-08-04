@@ -4,17 +4,47 @@
     <meta charset="UTF-8">
     <title>कार्यक्रम जोड़ें</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #ffedd2; font-family: 'Segoe UI', Arial, sans-serif; }
+        .container { max-width: 450px; margin: 40px auto; background: #ffd89b; border-radius: 16px; box-shadow: 0 2px 16px #ff980044; padding: 36px 22px 28px 22px; }
+        h1 { color: #e65100; text-align: center; margin-bottom: 18px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 18px; }
+        label { margin-bottom: 6px; font-weight: 500; color: #b85c00; }
+        input, select, textarea { padding: 11px 10px; border-radius: 6px; border: 1.5px solid #ffc27b; background: #fffdf6; font-size: 1.1rem; outline: none; transition: border 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #ff9800; background: #fff7e0; }
+        button, input[type="submit"] { width: 100%; background: #ff9800; color: #fff; border: none; border-radius: 7px; padding: 11px 18px; font-size: 1.13rem; font-weight: bold; cursor: pointer; margin-top: 12px; margin-bottom: 5px; transition: background 0.2s;}
+        button:hover, input[type="submit"]:hover { background: #e65100; }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>कार्यक्रम जोड़ें</h1>
-        <form id="eventForm">
-            <select id="eventName" required><option value="">कार्यक्रम का नाम चुनें</option></select>
-            <select id="mandal"><option value="">मंडल चुनें</option></select>
-            <input type="date" id="eventDate" required>
-            <input type="time" id="eventTime" required>
-            <input type="text" id="location" placeholder="स्थान" required>
-            <button type="submit">जोड़ें</button>
+        <form id="eventForm" autocomplete="off">
+            <div class="form-group">
+                <label for="eventName">कार्यक्रम का नाम</label>
+                <select id="eventName" required>
+                    <option value="">कार्यक्रम का नाम चुनें</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="mandal">मंडल</label>
+                <select id="mandal" required>
+                    <option value="">-- मंडल चुनें --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="eventDate">तारीख</label>
+                <input type="date" id="eventDate" required placeholder="तारीख चुनें">
+            </div>
+            <div class="form-group">
+                <label for="eventTime">समय</label>
+                <input type="time" id="eventTime" required placeholder="समय चुनें">
+            </div>
+            <div class="form-group">
+                <label for="location">स्थान</label>
+                <input type="text" id="location" required placeholder="स्थान">
+            </div>
+            <button type="submit">कार्यक्रम जोड़ें</button>
         </form>
     </div>
     <script type="module">
@@ -35,7 +65,6 @@
 
         const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
 
-        // मंडल populate
         document.addEventListener('DOMContentLoaded', async () => {
             const mandalSelect = document.getElementById('mandal');
             mandals.forEach(mandal => {
@@ -47,7 +76,6 @@
             await loadEventNames();
         });
 
-        // प्रोग्राम नाम populate
         async function loadEventNames() {
             const eventNameSelect = document.getElementById('eventName');
             eventNameSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
@@ -61,7 +89,6 @@
             });
         }
 
-        // फॉर्म सबमिट
         document.getElementById('eventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const eventData = {
