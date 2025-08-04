@@ -6,7 +6,7 @@
     <title>BJP मंडल इवेंट मैनेजमेंट</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico"> <!-- वैकल्पिक -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -30,7 +30,20 @@
                 <button type="submit">जोड़ें</button>
             </form>
             <h3>कार्यक्रम सूची</h3>
-            <table><thead><tr><th>कार्यक्रम का नाम</th><th>मंडल</th><th>तारीख</th><th>समय</th><th>स्थान</th><th>रिपोर्ट स्थिति</th><th>कार्रवाई</th></tr></thead><tbody id="eventList"></tbody></table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>तारीख</th>
+                        <th>समय</th>
+                        <th>स्थान</th>
+                        <th>रिपोर्ट स्थिति</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="eventList"></tbody>
+            </table>
         </div>
 
         <div id="coordinator" class="tab-content">
@@ -47,7 +60,22 @@
                 <button type="submit">जोड़ें</button>
             </form>
             <h3>संयोजक सूची</h3>
-            <table><thead><tr><th>कार्यक्रम का नाम</th><th>मंडल</th><th>संयोजक का नाम</th><th>मोबाइल</th><th>सह-संयोजक 1</th><th>मोबाइल 1</th><th>सह-संयोजक 2</th><th>मोबाइल 2</th><th>कार्रवाई</th></tr></thead><tbody id="coordinatorList"></tbody></table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>संयोजक का नाम</th>
+                        <th>मोबाइल</th>
+                        <th>सह-संयोजक 1</th>
+                        <th>मोबाइल 1</th>
+                        <th>सह-संयोजक 2</th>
+                        <th>मोबाइल 2</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="coordinatorList"></tbody>
+            </table>
         </div>
 
         <div id="report" class="tab-content">
@@ -63,8 +91,26 @@
                 <button type="submit">सबमिट करें</button>
             </form>
             <h3>रिपोर्ट सूची</h3>
-            <table><thead><tr><th>कार्यक्रम का नाम</th><th>मंडल</th><th>स्थान</th><th>उपस्थिति</th><th>विशिष्ट अतिथि</th><th>विवरण</th><th>फोटो</th><th>कार्रवाई</th></tr></thead><tbody id="reportList"></tbody></table>
-            <div class="swiper"><div class="swiper-wrapper" id="swiperWrapper"></div><div class="swiper-button-next"></div><div class="swiper-button-prev"></div></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>स्थान</th>
+                        <th>उपस्थिति</th>
+                        <th>विशिष्ट अतिथि</th>
+                        <th>विवरण</th>
+                        <th>फोटो</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="reportList"></tbody>
+            </table>
+            <div class="swiper">
+                <div class="swiper-wrapper" id="swiperWrapper"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
         </div>
 
         <div>
@@ -86,12 +132,13 @@
         import { getStorage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+            authDomain: "mandaleventall.firebaseapp.com",
+            projectId: "mandaleventall",
+            storageBucket: "mandaleventall.firebasestorage.app",
+            messagingSenderId: "900190130114",
+            appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+            measurementId: "G-2BBZZNRS88"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -101,7 +148,7 @@
         window.db = db;
         window.storage = storage;
 
-        import { loadEventNames, loadEvents, showTab, editEventName, editEvent, deleteEvent, deleteCoordinator, deleteReport, sendTelegramAlert, exportToCSV, exportToPDF } from './public/app.js';
+        import { loadEventNames, loadEvents, showTab, editEventName, editEvent, deleteEvent, deleteCoordinator, deleteReport, sendTelegramAlert, exportToCSV, exportToPDF } from './app.js';
 
         window.loadEventNames = loadEventNames;
         window.loadEvents = loadEvents;
