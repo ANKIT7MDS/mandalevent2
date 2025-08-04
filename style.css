@@ -7,11 +7,18 @@ body {
 h1 {
     color: #ff6200;
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
 }
-h2, h3 {
+h2 {
+    color: #333;
+    font-size: 1.4rem;
+    text-align: center;
+    margin-bottom: 15px;
+}
+h3 {
     color: #333;
     font-size: 1.2rem;
+    margin-top: 20px;
 }
 .tabs {
     background-color: #ff6200;
@@ -20,16 +27,19 @@ h2, h3 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    border-radius: 8px;
 }
-.tabs button {
+.tab-button {
     background: none;
     border: none;
     color: white;
-    padding: 10px 15px;
+    padding: 12px 20px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    margin: 5px;
 }
-.tabs button:hover {
+.tab-button:hover {
     background-color: #e55a00;
 }
 .tab-content {
@@ -42,14 +52,18 @@ h2, h3 {
 form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
     max-width: 100%;
     width: 90%;
     margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 input, select, textarea, button {
-    padding: 10px;
-    font-size: 1rem;
+    padding: 12px;
+    font-size: 1.1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
     width: 100%;
@@ -57,35 +71,46 @@ input, select, textarea, button {
 }
 textarea {
     resize: vertical;
+    min-height: 100px;
 }
 button {
     background-color: #ff6200;
     color: white;
     border: none;
     cursor: pointer;
+    font-size: 1.1rem;
+    padding: 12px;
 }
 button:hover {
     background-color: #e55a00;
 }
-#eventList div, #eventNameList div {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin: 5px 0;
-    background-color: white;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-#eventList button, #eventNameList button {
-    padding: 5px 10px;
-    font-size: 0.9rem;
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    font-size: 1rem;
+}
+th {
+    background-color: #ff6200;
+    color: white;
+}
+td img {
+    max-width: 100px;
+    height: auto;
+    border-radius: 4px;
 }
 .export-buttons {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin: 10px 0;
+    margin: 20px 0;
 }
 .swiper {
     width: 100%;
@@ -101,14 +126,34 @@ button:hover {
 /* मोबाइल रिस्पॉन्सिव */
 @media (max-width: 600px) {
     h1 {
+        font-size: 1.4rem;
+    }
+    h2 {
         font-size: 1.2rem;
     }
-    .tabs button {
-        padding: 8px 10px;
-        flex: 1;
+    .tabs {
+        flex-direction: column;
+    }
+    .tab-button {
+        padding: 10px;
+        font-size: 1rem;
     }
     form {
         width: 100%;
+        padding: 15px;
+    }
+    input, select, textarea, button {
+        font-size: 1rem;
+        padding: 10px;
+    }
+    table {
+        font-size: 0.9rem;
+    }
+    th, td {
+        padding: 8px;
+    }
+    td img {
+        max-width: 80px;
     }
     .export-buttons {
         flex-direction: column;
