@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>डैशबोर्ड</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-bottom: 2rem;}
+        th, td { border: 1px solid #aaa; padding: 6px 8px; }
+        th { background: #eee; }
+        img { max-width: 60px; max-height: 60px; margin: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>डैशबोर्ड</h1>
+
+        <!-- कार्यक्रम सूची -->
+        <h2>कार्यक्रम सूची</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>कार्यक्रम जोड़े नाम</th>
+                    <th>मंडल</th>
+                    <th>तारीख</th>
+                    <th>समय</th>
+                    <th>स्थान</th>
+                </tr>
+            </thead>
+            <tbody id="eventList"></tbody>
+        </table>
+
+        <!-- संयोजक सूची -->
+        <h2>संयोजक सूची</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>कार्यक्रम नाम</th>
+                    <th>मंडल</th>
+                    <th>संयोजक</th>
+                    <th>मोबाइल</th>
+                    <th>सह-संयोजक 1</th>
+                    <th>मोबाइल 1</th>
+                    <th>सह-संयोजक 2</th>
+                    <th>मोबाइल 2</th>
+                </tr>
+            </thead>
+            <tbody id="coordinatorList"></tbody>
+        </table>
+
+        <!-- रिपोर्ट सूची -->
+        <h2>रिपोर्ट सूची</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>कार्यक्रम नाम</th>
+                    <th>मंडल</th>
+                    <th>स्थान</th>
+                    <th>उपस्थिति</th>
+                    <th>विशिष्ट अतिथि</th>
+                    <th>विवरण</th>
+                    <th>फोटो</th>
+                </tr>
+            </thead>
+            <tbody id="reportList"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+            authDomain: "mandaleventall.firebaseapp.com",
+            projectId: "mandaleventall",
+            storageBucket: "mandaleventall.firebasestorage.app",
+            messagingSenderId: "900190130114",
+            appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+            measurementId: "G-2BBZZNRS88"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // लोड इवेंट्स
+        async function loadEvents() {
+            const eventList = document.getElementById('eventList');
+            eventList.innerHTML = '';
+            const events = await getDocs(collection(db, "events"));
+            for (const docSnap of events.docs) {
+                const event = docSnap.data();
+                let eventName = 'Unknown';
+                if (event.eventNameId) {
+                    const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
+                    if (eventNameDoc.exists()) eventName = eventNameDoc.data().name || 'Unknown';
+                }
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${eventName}</td>
+                    <td>${event.mandal || '-'}</td>
+                    <td>${event.date || '-'}</td>
+                    <td>${event.time || '-'}</td>
+                    <td>${event.location || '-'}</td>
+                `;
+                eventList.appendChild(row);
+            }
+        }
+
+        // लोड संयोजक
+        async function loadCoordinators() {
+            const coordinatorList = document.getElementById('coordinatorList');
+            coordinatorList.innerHTML = '';
+            const eventNames = await getDocs(collection(db, "eventNames"));
+            for (const eventNameDoc of eventNames.docs) {
+                const eventName = eventNameDoc.data().name || 'Unknown';
+                const coordinators = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/coordinators`));
+                for (const coordDoc of coordinators.docs) {
+                    const coord = coordDoc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${eventName}</td>
+                        <td>${coord.mandal || '-'}</td>
+                        <td>${coord.name || '-'}</td>
+                        <td>${coord.mobile || '-'}</td>
+                        <td>${coord.coCoordName1 || '-'}</td>
+                        <td>${coord.coCoordMobile1 || '-'}</td>
+                        <td>${coord.coCoordName2 || '-'}</td>
+                        <td>${coord.coCoordMobile2 || '-'}</td>
+                    `;
+                    coordinatorList.appendChild(row);
+                }
+            }
+        }
+
+        // लोड रिपोर्ट्स
+        async function loadReports() {
+            const reportList = document.getElementById('reportList');
+            reportList.innerHTML = '';
+            const eventNames = await getDocs(collection(db, "eventNames"));
+            for (const eventNameDoc of eventNames.docs) {
+                const eventName = eventNameDoc.data().name || 'Unknown';
+                const reports = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
+                for (const reportDoc of reports.docs) {
+                    const report = reportDoc.data();
+                    const photosHtml = report.photos?.length
+                        ? report.photos.map(url => `<img src="${url}" alt="फोटो">`).join(' ')
+                        : '-';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${eventName}</td>
+                        <td>${report.mandal || '-'}</td>
+                        <td>${report.location || '-'}</td>
+                        <td>${report.attendance || '-'}</td>
+                        <td>${report.guests || '-'}</td>
+                        <td>${report.details || '-'}</td>
+                        <td>${photosHtml}</td>
+                    `;
+                    reportList.appendChild(row);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadEvents();
+            await loadCoordinators();
+            await loadReports();
+        });
+    </script>
+</body>
+</html>
