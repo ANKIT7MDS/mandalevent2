@@ -1,5 +1,5 @@
 import { db, storage } from './firebase.js';
-import { collection, addDoc, getDocs, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
@@ -96,7 +96,7 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
         await addDoc(collection(db, `events/${eventId}/reports`), reportData);
         alert("रिपोर्ट सबमिट की गई!");
         document.getElementById('reportForm').reset();
-        sendTelegramAlert(`नई रिपोर्ट सबमिट की गई: ${reportData.eventId}`);
+        sendTelegramAlert(`नई रिपोर्ट सबमिट की गई: ${eventId}`);
         loadEvents();
     } catch (error) {
         console.error("Error adding report: ", error);
@@ -128,19 +128,56 @@ async function loadEventsToDropdowns() {
 async function loadEvents() {
     const eventList = document.getElementById('eventList');
     eventList.innerHTML = '';
+    const swiperWrapper = document.querySelector('.swiper-wrapper');
+    swiperWrapper.innerHTML = '';
     const querySnapshot = await getDocs(collection(db, "events"));
     const reportedMandals = new Set();
-    const reportsSnapshot = await getDocs(collection(db, "reports"));
-    reportsSnapshot.forEach((doc) => {
-        const report = doc.data();
-        reportedMandals.add(report.eventId);
-    });
+    const allReports = [];
+
+    // सभी रिपोर्ट्स लोड करें
+    for (const eventDoc of querySnapshot.docs) {
+        const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
+        reportsSnapshot.forEach((reportDoc) => {
+            reportedMandals.add(eventDoc.id);
+            allReports.push({ eventId: eventDoc.id, ...reportDoc.data() });
+        });
+    }
+
+    // इवेंट्स और उनकी स्थिति दिखाएँ
     querySnapshot.forEach((doc) => {
         const event = doc.data();
+        const eventId = doc.id;
         const div = document.createElement('div');
-        div.textContent = `${event.name} - ${event.mandal} (${event.date}) - ${reportedMandals.has(doc.id) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}`;
+        div.innerHTML = `
+            ${event.name} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) 
+            - ${reportedMandals.has(eventId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}
+            <button onclick="editEvent('${eventId}')">एडिट</button>
+            <button onclick="deleteEvent('${eventId}')">डिलीट</button>
+        `;
         eventList.appendChild(div);
     });
+
+    // फ़ोटो स्लाइडशो
+    allReports.forEach((report) => {
+        report.photos.forEach((photoUrl) => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            slide.innerHTML = `<img src="${photoUrl}" alt="Event Photo">`;
+            swiperWrapper.appendChild(slide);
+        });
+    });
+
+    // Swiper स्लाइडशो इनिशियलाइज़ करें
+    new Swiper('.swiper', {
+        loop: true,
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        slidesPerView: 1,
+        spaceBetween: 10,
+    });
+
     // गैर-रिपोर्टिंग मंडलों को अलर्ट भेजें
     const nonReported = mandals.filter(mandal => !Array.from(reportedMandals).some(id => {
         const event = querySnapshot.docs.find(doc => doc.id === id);
@@ -150,6 +187,49 @@ async function loadEvents() {
         sendTelegramAlert(`रिपोर्ट बाकी मंडल: ${nonReported.join(', ')}`);
     }
 }
+
+// इवेंट एडिट करें
+async function editEvent(eventId) {
+    const eventDoc = doc(db, "events", eventId);
+    const event = (await getDocs(collection(db, "events"))).docs.find(d => d.id === eventId).data();
+    const newName = prompt("नया इवेंट नाम:", event.name);
+    const newMandal = prompt("नया मंडल:", event.mandal);
+    const newDate = prompt("नई तारीख (YYYY-MM-DD):", event.date);
+    const newTime = prompt("नया समय (HH:MM):", event.time);
+    const newLocation = prompt("नया स्थान:", event.location);
+    if (newName && newMandal && newDate && newTime && newLocation) {
+        try {
+            await updateDoc(eventDoc, {
+                name: newName,
+                mandal: newMandal,
+                date: newDate,
+                time: newTime,
+                location: newLocation
+            });
+            alert("इवेंट अपडेट किया गया!");
+            loadEvents();
+        } catch (error) {
+            console.error("Error updating event: ", error);
+            alert("त्रुटि: इवेंट अपडेट करने में समस्या।");
+        }
+    }
+}
+window.editEvent = editEvent;
+
+// इवेंट डिलीट करें
+async function deleteEvent(eventId) {
+    if (confirm("क्या आप इस इवेंट को डिलीट करना चाहते हैं?")) {
+        try {
+            await deleteDoc(doc(db, "events", eventId));
+            alert("इवेंट डिलीट किया गया!");
+            loadEvents();
+        } catch (error) {
+            console.error("Error deleting event: ", error);
+            alert("त्रुटि: इवेंट डिलीट करने में समस्या।");
+        }
+    }
+}
+window.deleteEvent = deleteEvent;
 
 // टैब स्विचिंग
 function showTab(tabId) {
@@ -184,11 +264,16 @@ async function sendTelegramAlert(message) {
 
 // CSV एक्सपोर्ट
 async function exportToCSV() {
-    let csv = "Event Name,Mandal,Date,Time,Location\n";
+    let csv = "Event Name,Mandal,Date,Time,Location,Report Status\n";
     const querySnapshot = await getDocs(collection(db, "events"));
+    const reportedMandals = new Set();
+    for (const eventDoc of querySnapshot.docs) {
+        const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
+        if (!reportsSnapshot.empty) reportedMandals.add(eventDoc.id);
+    }
     querySnapshot.forEach((doc) => {
         const event = doc.data();
-        csv += `${event.name},${event.mandal},${event.date},${event.time},${event.location}\n`;
+        csv += `${event.name},${event.mandal},${event.date},${event.time},${event.location},${reportedMandals.has(doc.id) ? 'Reported' : 'Not Reported'}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -199,3 +284,31 @@ async function exportToCSV() {
     window.URL.revokeObjectURL(url);
 }
 window.exportToCSV = exportToCSV;
+
+// PDF एक्सपोर्ट
+async function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(16);
+    doc.text("BJP मंडल इवेंट रिपोर्ट", 10, 10);
+    doc.setFontSize(12);
+    let y = 20;
+    const querySnapshot = await getDocs(collection(db, "events"));
+    const reportedMandals = new Set();
+    for (const eventDoc of querySnapshot.docs) {
+        const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
+        if (!reportsSnapshot.empty) reportedMandals.add(eventDoc.id);
+    }
+    querySnapshot.forEach((doc) => {
+        const event = doc.data();
+        doc.text(`${event.name} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) - ${reportedMandals.has(doc.id) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}`, 10, y);
+        y += 10;
+        if (y > 270) {
+            doc.addPage();
+            y = 10;
+        }
+    });
+    doc.save("events.pdf");
+}
+window.exportToPDF = exportToPDF;
