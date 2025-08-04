@@ -5,137 +5,191 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BJP मंडल इवेंट मैनेजमेंट</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <h1>BJP मंडल इवेंट मैनेजमेंट</h1>
-    <div class="tabs">
-        <button onclick="showTab('event')" class="tab-button">कार्यक्रम दिनांक</button>
-        <button onclick="showTab('coordinator')" class="tab-button">संयोजक</button>
-        <button onclick="showTab('report')" class="tab-button">रिपोर्ट</button>
-        <button onclick="showTab('dashboard')" class="tab-button">डैशबोर्ड</button>
-    </div>
-    <div id="event" class="tab-content active">
-        <h2>आप के मंडल में होने वाले कार्यक्रम/बैठक की दिनांक आदि दर्ज करें</h2>
-        <form id="eventForm">
-            <select id="eventName" required>
-                <option value="">कार्यक्रम का नाम चुनें</option>
-            </select>
-            <select id="mandal" required>
-                <option value="">मंडल चुनें</option>
-            </select>
-            <input type="date" id="eventDate" required>
-            <input type="time" id="eventTime" required>
-            <input type="text" id="location" placeholder="स्थान" required>
-            <button type="submit">कार्यक्रम जोड़ें</button>
-        </form>
-    </div>
-    <div id="coordinator" class="tab-content">
-        <h2>आप के मंडल आयोजित उक्त कार्यक्रम के संयोजक प्रभारी के नाम दर्ज करें</h2>
-        <form id="coordinatorForm">
-            <select id="eventSelect" required>
-                <option value="">कार्यक्रम का नाम चुनें</option>
-            </select>
-            <select id="coordMandal" required>
-                <option value="">मंडल चुनें</option>
-            </select>
-            <input type="text" id="coordName" placeholder="संयोजक का नाम" required>
-            <input type="tel" id="coordMobile" placeholder="संयोजक मोबाइल नंबर" required>
-            <input type="text" id="coCoordName1" placeholder="सह-संयोजक 1 का नाम">
-            <input type="tel" id="coCoordMobile1" placeholder="सह-संयोजक 1 मोबाइल नंबर">
-            <input type="text" id="coCoordName2" placeholder="सह-संयोजक 2 का नाम">
-            <input type="tel" id="coCoordMobile2" placeholder="सह-संयोजक 2 मोबाइल नंबर">
-            <button type="submit">संयोजक जोड़ें</button>
-        </form>
-    </div>
-    <div id="report" class="tab-content">
-        <h2>आप के मंडल में संपन्न हुए कार्यक्रम की रिपोर्ट उक्त फॉर्म में भरकर भेजें</h2>
-        <form id="reportForm">
-            <select id="reportEventSelect" required>
-                <option value="">कार्यक्रम का नाम चुनें</option>
-            </select>
-            <select id="reportMandal" required>
-                <option value="">मंडल चुनें</option>
-            </select>
-            <input type="text" id="reportLocation" placeholder="कार्यक्रम स्थान" required>
-            <input type="number" id="attendance" placeholder="कुल उपस्थिति" required>
-            <input type="text" id="guests" placeholder="प्रमुख अतिथि/वक्ता/जनप्रतिनिधि" required>
-            <textarea id="details" placeholder="अन्य विवरण" required></textarea>
-            <input type="file" id="photos" multiple accept="image/*" max="10">
-            <button type="submit">रिपोर्ट सबमिट करें</button>
-        </form>
-    </div>
-    <div id="dashboard" class="tab-content">
-        <h2>डैशबोर्ड</h2>
-        <h3>कार्यक्रम का नाम जोड़ें/अपडेट करें</h3>
-        <form id="eventNameForm">
-            <input type="text" id="newEventName" placeholder="नया कार्यक्रम का नाम" required>
-            <button type="submit">नाम जोड़ें</button>
-        </form>
-        <div id="eventNameList"></div>
-        <h3>कार्यक्रम दिनांक</h3>
-        <table id="eventTable">
-            <thead>
-                <tr>
-                    <th>कार्यक्रम का नाम</th>
-                    <th>मंडल</th>
-                    <th>तारीख</th>
-                    <th>समय</th>
-                    <th>स्थान</th>
-                    <th>रिपोर्ट स्थिति</th>
-                    <th>कार्रवाई</th>
-                </tr>
-            </thead>
-            <tbody id="eventList"></tbody>
-        </table>
-        <h3>संयोजक</h3>
-        <table id="coordinatorTable">
-            <thead>
-                <tr>
-                    <th>कार्यक्रम का नाम</th>
-                    <th>मंडल</th>
-                    <th>संयोजक</th>
-                    <th>मोबाइल</th>
-                    <th>सह-संयोजक 1</th>
-                    <th>मोबाइल 1</th>
-                    <th>सह-संयोजक 2</th>
-                    <th>मोबाइल 2</th>
-                </tr>
-            </thead>
-            <tbody id="coordinatorList"></tbody>
-        </table>
-        <h3>रिपोर्ट</h3>
-        <table id="reportTable">
-            <thead>
-                <tr>
-                    <th>कार्यक्रम का नाम</th>
-                    <th>मंडल</th>
-                    <th>स्थान</th>
-                    <th>उपस्थिति</th>
-                    <th>अतिथि</th>
-                    <th>विवरण</th>
-                    <th>फ़ोटो</th>
-                </tr>
-            </thead>
-            <tbody id="reportList"></tbody>
-        </table>
-        <div class="export-buttons">
-            <button onclick="exportToCSV()">CSV में एक्सपोर्ट</button>
-            <button onclick="exportToPDF()">PDF में एक्सपोर्ट</button>
-            <button onclick="window.print()">प्रिंट</button>
+    <div class="container">
+        <h1>BJP मंडल इवेंट मैनेजमेंट</h1>
+        
+        <!-- टैब्स -->
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('event')">कार्यक्रम दिनांक</button>
+            <button class="tab-button" onclick="showTab('coordinator')">संयोजक</button>
+            <button class="tab-button" onclick="showTab('report')">रिपोर्ट</button>
         </div>
-        <div id="photoSlideshow" class="swiper">
-            <div class="swiper-wrapper"></div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+
+        <!-- इवेंट टैब -->
+        <div id="event" class="tab-content active">
+            <h2>कार्यक्रम जोड़ें</h2>
+            <form id="eventForm">
+                <select id="eventName" required>
+                    <option value="">कार्यक्रम का नाम चुनें</option>
+                </select>
+                <select id="mandal">
+                    <option value="">मंडल चुनें</option>
+                </select>
+                <input type="date" id="eventDate" required>
+                <input type="time" id="eventTime" required>
+                <input type="text" id="location" placeholder="स्थान" required>
+                <button type="submit">जोड़ें</button>
+            </form>
+            <h3>कार्यक्रम सूची</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>तारीख</th>
+                        <th>समय</th>
+                        <th>स्थान</th>
+                        <th>रिपोर्ट स्थिति</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="eventList"></tbody>
+            </table>
         </div>
+
+        <!-- संयोजक टैब -->
+        <div id="coordinator" class="tab-content">
+            <h2>संयोजक जोड़ें</h2>
+            <form id="coordinatorForm">
+                <select id="eventSelect" required>
+                    <option value="">कार्यक्रम का नाम चुनें</option>
+                </select>
+                <select id="coordMandal">
+                    <option value="">मंडल चुनें</option>
+                </select>
+                <input type="text" id="coordName" placeholder="संयोजक का नाम" required>
+                <input type="text" id="coordMobile" placeholder="मोबाइल नंबर" required>
+                <input type="text" id="coCoordName1" placeholder="सह-संयोजक 1 का नाम">
+                <input type="text" id="coCoordMobile1" placeholder="सह-संयोजक 1 का मोबाइल">
+                <input type="text" id="coCoordName2" placeholder="सह-संयोजक 2 का नाम">
+                <input type="text" id="coCoordMobile2" placeholder="सह-संयोजक 2 का मोबाइल">
+                <button type="submit">जोड़ें</button>
+            </form>
+            <h3>संयोजक सूची</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>संयोजक का नाम</th>
+                        <th>मोबाइल</th>
+                        <th>सह-संयोजक 1</th>
+                        <th>मोबाइल 1</th>
+                        <th>सह-संयोजक 2</th>
+                        <th>मोबाइल 2</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="coordinatorList"></tbody>
+            </table>
+        </div>
+
+        <!-- रिपोर्ट टैब -->
+        <div id="report" class="tab-content">
+            <h2>रिपोर्ट सबमिट करें</h2>
+            <form id="reportForm">
+                <select id="reportEventSelect" required>
+                    <option value="">कार्यक्रम का नाम चुनें</option>
+                </select>
+                <select id="reportMandal">
+                    <option value="">मंडल चुनें</option>
+                </select>
+                <input type="text" id="reportLocation" placeholder="स्थान" required>
+                <input type="number" id="attendance" placeholder="उपस्थिति" required>
+                <input type="text" id="guests" placeholder="विशिष्ट अतिथि">
+                <textarea id="details" placeholder="विवरण"></textarea>
+                <input type="file" id="photos" multiple accept="image/*">
+                <button type="submit">सबमिट करें</button>
+            </form>
+            <h3>रिपोर्ट सूची</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>स्थान</th>
+                        <th>उपस्थिति</th>
+                        <th>विशिष्ट अतिथि</th>
+                        <th>विवरण</th>
+                        <th>फोटो</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="reportList"></tbody>
+            </table>
+            <div class="swiper">
+                <div class="swiper-wrapper" id="swiperWrapper"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+
+        <!-- नया इवेंट नाम जोड़ें -->
+        <div>
+            <h2>नया कार्यक्रम का नाम जोड़ें</h2>
+            <form id="eventNameForm">
+                <input type="text" id="newEventName" placeholder="नया कार्यक्रम का नाम" required>
+                <button type="submit">जोड़ें</button>
+            </form>
+            <div id="eventNameList"></div>
+        </div>
+
+        <!-- एक्सपोर्ट बटन -->
+        <button onclick="exportToCSV()">CSV में एक्सपोर्ट करें</button>
+        <button onclick="exportToPDF()">PDF में एक्सपोर्ट करें</button>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
+
+    <!-- Firebase और app.js को मॉड्यूल के रूप में लोड करें -->
+    <script type="module">
+        // Firebase SDK इम्पोर्ट
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, getStorage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'; // getStorage के लिए
+        import { initializeDOM, loadEventNames, loadEvents, showTab, editEventName, editEvent, deleteEvent, deleteCoordinator, deleteReport, sendTelegramAlert, exportToCSV, exportToPDF } from './app.js';
+
+        // Firebase कॉन्फिगरेशन (आपके .env से लें और यहाँ डालें)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Firebase ऐप इनिशियलाइज़
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // ग्लोबल वेरिएबल्स सेट करें
+        window.db = db;
+        window.storage = storage;
+        window.loadEventNames = loadEventNames;
+        window.loadEvents = loadEvents;
+        window.showTab = showTab;
+        window.editEventName = editEventName;
+        window.editEvent = editEvent;
+        window.deleteEvent = deleteEvent;
+        window.deleteCoordinator = deleteCoordinator;
+        window.deleteReport = deleteReport;
+        window.sendTelegramAlert = sendTelegramAlert;
+        window.exportToCSV = exportToCSV;
+        window.exportToPDF = exportToPDF;
+
+        // पेज लोड होने पर इवेंट्स लोड करें
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDOM();
+            loadEventNames();
+            loadEvents();
+            const urlParams = new URLSearchParams(window.location.search);
+            const view = urlParams.get('view') || 'dashboard';
+            showTab(view);
+        });
+    </script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="app.js"></script>
 </body>
 </html>
