@@ -17,10 +17,23 @@
             <button class="tab-button active" onclick="showTab('event')">कार्यक्रम दिनांक</button>
             <button class="tab-button" onclick="showTab('coordinator')">संयोजक</button>
             <button class="tab-button" onclick="showTab('report')">रिपोर्ट</button>
+            <button class="tab-button" onclick="showTab('dashboard')">डैशबोर्ड</button>
         </div>
 
-        
+        <!-- इवेंट फॉर्म -->
+        <div id="event" class="tab-content active">
+            <h2>कार्यक्रम जोड़ें</h2>
+            <form id="eventForm">
+                <select id="eventName" required><option value="">कार्यक्रम का नाम चुनें</option></select>
+                <select id="mandal"><option value="">मंडल चुनें</option></select>
+                <input type="date" id="eventDate" required>
+                <input type="time" id="eventTime" required>
+                <input type="text" id="location" placeholder="स्थान" required>
+                <button type="submit">जोड़ें</button>
+            </form>
+        </div>
 
+        <!-- संयोजक फॉर्म -->
         <div id="coordinator" class="tab-content">
             <h2>संयोजक जोड़ें</h2>
             <form id="coordinatorForm">
@@ -36,6 +49,7 @@
             </form>
         </div>
 
+        <!-- रिपोर्ट फॉर्म -->
         <div id="report" class="tab-content">
             <h2>रिपोर्ट सबमिट करें</h2>
             <form id="reportForm">
@@ -50,7 +64,72 @@
             </form>
         </div>
 
-        
+        <!-- डैशबोर्ड टैब -->
+        <div id="dashboard" class="tab-content">
+            <h2>डैशबोर्ड</h2>
+
+            <!-- इवेंट लिस्ट -->
+            <h3>कार्यक्रम सूची</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>तारीख</th>
+                        <th>समय</th>
+                        <th>स्थान</th>
+                        <th>रिपोर्ट स्थिति</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="eventList"></tbody>
+            </table>
+
+            <!-- संयोजक लिस्ट -->
+            <h3>संयोजक सूची</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>संयोजक का नाम</th>
+                        <th>मोबाइल</th>
+                        <th>सह-संयोजक 1</th>
+                        <th>मोबाइल 1</th>
+                        <th>सह-संयोजक 2</th>
+                        <th>मोबाइल 2</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="coordinatorList"></tbody>
+            </table>
+
+            <!-- रिपोर्ट लिस्ट -->
+            <h3>रिपोर्ट सूची</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>कार्यक्रम का नाम</th>
+                        <th>मंडल</th>
+                        <th>स्थान</th>
+                        <th>उपस्थिति</th>
+                        <th>विशिष्ट अतिथि</th>
+                        <th>विवरण</th>
+                        <th>फोटो</th>
+                        <th>कार्रवाई</th>
+                    </tr>
+                </thead>
+                <tbody id="reportList"></tbody>
+            </table>
+
+            <!-- फोटो गैलरी -->
+            <div class="swiper">
+                <div class="swiper-wrapper" id="swiperWrapper"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
