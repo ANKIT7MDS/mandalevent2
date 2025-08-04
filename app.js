@@ -148,12 +148,15 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
         return;
     }
     const photoUrls = [];
+    console.log("Uploading files for eventNameId:", eventNameId);
     try {
         for (let file of files) {
             const storageRef = ref(storage, `reports/${eventNameId}/${file.name}`);
+            console.log("Uploading file:", file.name);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
             photoUrls.push(url);
+            console.log("File uploaded, URL:", url);
         }
         const reportData = {
             eventNameId: eventNameId,
@@ -215,21 +218,21 @@ async function loadEvents() {
         const allReports = [];
         for (const eventNameDoc of eventNamesSnapshot.docs) {
             const coordinatorsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/coordinators`));
-            coordinatorsSnapshot.forEach((coordDoc) => allCoordinators.push({ eventNameId: eventNameDoc.id, ...coordDoc.data() }));
+            coordinatorsSnapshot.forEach((coordDoc) => allCoordinators.push({ eventNameId: eventNameDoc.id, ...coordDoc.data(), id: coordDoc.id }));
             const reportsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
             reportsSnapshot.forEach((reportDoc) => {
                 reportedMandals.add(eventNameDoc.id);
-                allReports.push({ eventNameId: eventNameDoc.id, ...reportDoc.data() });
+                allReports.push({ eventNameId: eventNameDoc.id, ...reportDoc.data(), id: reportDoc.id });
             });
         }
 
         for (const docSnap of querySnapshot.docs) {
             const event = docSnap.data();
             const eventId = docSnap.id;
-            console.log("Processing event:", event); // डिबग लॉग
+            console.log("Processing event:", event);
             if (!event.eventNameId) {
                 console.warn("Event missing eventNameId:", eventId);
-                continue; // स्किप करें अगर eventNameId नहीं है
+                continue;
             }
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
@@ -266,6 +269,9 @@ async function loadEvents() {
                 <td>${coord.coCoordMobile1 || '-'}</td>
                 <td>${coord.coCoordName2 || '-'}</td>
                 <td>${coord.coCoordMobile2 || '-'}</td>
+                <td>
+                    <button onclick="deleteCoordinator('${coord.eventNameId}', '${coord.id}')">डिलीट</button>
+                </td>
             `;
             coordinatorList.appendChild(row);
         }
@@ -287,6 +293,9 @@ async function loadEvents() {
                 <td>${report.guests || '-'}</td>
                 <td>${report.details || '-'}</td>
                 <td>${photosHtml}</td>
+                <td>
+                    <button onclick="deleteReport('${report.eventNameId}', '${report.id}')">डिलीट</button>
+                </td>
             `;
             reportList.appendChild(row);
         }
@@ -380,6 +389,34 @@ async function deleteEvent(eventId) {
     }
 }
 window.deleteEvent = deleteEvent;
+
+async function deleteCoordinator(eventNameId, coordinatorId) {
+    if (confirm("क्या आप इस संयोजक को डिलीट करना चाहते हैं?")) {
+        try {
+            await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordinatorId));
+            alert("संयोजक डिलीट किया गया!");
+            loadEvents();
+        } catch (error) {
+            console.error("Error deleting coordinator: ", error);
+            alert("त्रुटि: संयोजक डिलीट करने में समस्या: " + error.message);
+        }
+    }
+}
+window.deleteCoordinator = deleteCoordinator;
+
+async function deleteReport(eventNameId, reportId) {
+    if (confirm("क्या आप इस रिपोर्ट को डिलीट करना चाहते हैं?")) {
+        try {
+            await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
+            alert("रिपोर्ट डिलीट की गई!");
+            loadEvents();
+        } catch (error) {
+            console.error("Error deleting report: ", error);
+            alert("त्रुटि: रिपोर्ट डिलीट करने में समस्या: " + error.message);
+        }
+    }
+}
+window.deleteReport = deleteReport;
 
 async function sendTelegramAlert(message) {
     // const botToken = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
