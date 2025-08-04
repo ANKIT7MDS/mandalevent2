@@ -25,8 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const view = urlParams.get('view') || 'event';
+    const eventId = urlParams.get('eventId');
     showTab(view);
-    window.history.replaceState(null, null, `?view=${view}`);
+    if (eventId) {
+        loadSingleEvent(eventId); // विशिष्ट कार्यक्रम लोड करें
+    }
+    window.history.replaceState(null, null, `?view=${view}${eventId ? '&eventId=' + eventId : ''}`);
 });
 
 function showTab(tabId) {
@@ -247,6 +251,7 @@ async function loadEvents() {
                 <td>
                     <button onclick="editEvent('${eventId}')">एडिट</button>
                     <button onclick="deleteEvent('${eventId}')">डिलीट</button>
+                    <a href="https://mandalevent2.netlify.app/?view=event&eventId=${eventId}" target="_blank">लिंक</a>
                 </td>
             `;
             eventList.appendChild(row);
@@ -331,6 +336,40 @@ async function loadEvents() {
     } catch (error) {
         console.error("Error loading events: ", error);
         alert("त्रुटि: डेटा लोड करने में समस्या: " + error.message);
+    }
+}
+
+async function loadSingleEvent(eventId) {
+    try {
+        const eventDoc = await getDoc(doc(db, "events", eventId));
+        if (eventDoc.exists()) {
+            const event = eventDoc.data();
+            const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
+            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
+            const eventList = document.getElementById('eventList');
+            eventList.innerHTML = ''; // पुराना डेटा क्लियर करें
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${eventName}</td>
+                <td>${event.mandal || '-'}</td>
+                <td>${event.date || '-'}</td>
+                <td>${event.time || '-'}</td>
+                <td>${event.location || '-'}</td>
+                <td>-</td>
+                <td>
+                    <button onclick="editEvent('${eventId}')">एडिट</button>
+                    <button onclick="deleteEvent('${eventId}')">डिलीट</button>
+                </td>
+            `;
+            eventList.appendChild(row);
+        } else {
+            console.warn("Event not found with ID:", eventId);
+            alert("कोई कार्यक्रम नहीं मिला।");
+            loadEvents(); // डिफॉल्ट सभी इवेंट्स लोड करें
+        }
+    } catch (error) {
+        console.error("Error loading single event: ", error);
+        alert("त्रुटि: कार्यक्रम लोड करने में समस्या: " + error.message);
     }
 }
 
