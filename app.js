@@ -62,6 +62,9 @@ async function loadEventNames() {
 
     try {
         const querySnapshot = await getDocs(collection(db, "eventNames"));
+        if (querySnapshot.empty) {
+            console.warn("No event names found in eventNames collection");
+        }
         querySnapshot.forEach((doc) => {
             const eventName = doc.data().name;
             const option1 = document.createElement('option');
@@ -87,8 +90,13 @@ async function loadEventNames() {
 // इवेंट फॉर्म सबमिशन
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const eventNameId = document.getElementById('eventName').value;
+    if (!eventNameId) {
+        alert("कृपया कार्यक्रम का नाम चुनें!");
+        return;
+    }
     const eventData = {
-        eventNameId: document.getElementById('eventName').value,
+        eventNameId: eventNameId,
         mandal: document.getElementById('mandal').value,
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
@@ -98,19 +106,24 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         await addDoc(collection(db, "events"), eventData);
         alert("इवेंट जोड़ा गया!");
         document.getElementById('eventForm').reset();
-        sendTelegramAlert(`नया इवेंट जोड़ा गया: ${eventData.eventNameId}`);
+        sendTelegramAlert(`नया इवेंट जोड़ा गया: ${eventNameId}`);
         loadEvents();
     } catch (error) {
         console.error("Error adding event: ", error);
-        alert("त्रुटि: इवेंट जोड़ने में समस्या।");
+        alert("त्रुटि: इवेंट जोड़ने में समस्या: " + error.message);
     }
 });
 
 // संयोजक फॉर्म सबमिशन
 document.getElementById('coordinatorForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const eventNameId = document.getElementById('eventSelect').value;
+    if (!eventNameId) {
+        alert("कृपया कार्यक्रम का नाम चुनें!");
+        return;
+    }
     const coordinatorData = {
-        eventNameId: document.getElementById('eventSelect').value,
+        eventNameId: eventNameId,
         mandal: document.getElementById('coordMandal').value,
         name: document.getElementById('coordName').value,
         mobile: document.getElementById('coordMobile').value,
@@ -120,12 +133,13 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
         coCoordMobile2: document.getElementById('coCoordMobile2').value || ''
     };
     try {
-        await addDoc(collection(db, `eventNames/${coordinatorData.eventNameId}/coordinators`), coordinatorData);
+        await addDoc(collection(db, `eventNames/${eventNameId}/coordinators`), coordinatorData);
         alert("संयोजक जोड़ा गया!");
         document.getElementById('coordinatorForm').reset();
+        sendTelegramAlert(`नया संयोजक जोड़ा गया: ${eventNameId}`);
     } catch (error) {
         console.error("Error adding coordinator: ", error);
-        alert("त्रुटि: संयोजक जोड़ने में समस्या।");
+        alert("त्रुटि: संयोजक जोड़ने में समस्या: " + error.message);
     }
 });
 
@@ -133,6 +147,10 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
 document.getElementById('reportForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const eventNameId = document.getElementById('reportEventSelect').value;
+    if (!eventNameId) {
+        alert("कृपया कार्यक्रम का नाम चुनें!");
+        return;
+    }
     const files = document.getElementById('photos').files;
     if (files.length > 10) {
         alert("अधिकतम 10 फ़ोटो अपलोड करें!");
@@ -162,7 +180,7 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
         loadEvents();
     } catch (error) {
         console.error("Error adding report: ", error);
-        alert("त्रुटि: रिपोर्ट सबमिट करने में समस्या।");
+        alert("त्रुटि: रिपोर्ट सबमिट करने में समस्या: " + error.message);
     }
 });
 
@@ -170,6 +188,10 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
 document.getElementById('eventNameForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const newEventName = document.getElementById('newEventName').value;
+    if (!newEventName) {
+        alert("कृपया कार्यक्रम का नाम दर्ज करें!");
+        return;
+    }
     try {
         await addDoc(collection(db, "eventNames"), { name: newEventName });
         alert("कार्यक्रम का नाम जोड़ा गया!");
@@ -177,7 +199,7 @@ document.getElementById('eventNameForm').addEventListener('submit', async (e) =>
         loadEventNames();
     } catch (error) {
         console.error("Error adding event name: ", error);
-        alert("त्रुटि: कार्यक्रम का नाम जोड़ने में समस्या।");
+        alert("त्रुटि: कार्यक्रम का नाम जोड़ने में समस्या: " + error.message);
     }
 });
 
@@ -262,7 +284,7 @@ async function editEventName(eventNameId, currentName) {
             loadEventNames();
         } catch (error) {
             console.error("Error updating event name: ", error);
-            alert("त्रुटि: कार्यक्रम का नाम अपडेट करने में समस्या।");
+            alert("त्रुटि: कार्यक्रम का नाम अपडेट करने में समस्या: " + error.message);
         }
     }
 }
@@ -290,7 +312,7 @@ async function editEvent(eventId) {
             loadEvents();
         } catch (error) {
             console.error("Error updating event: ", error);
-            alert("त्रुटि: इवेंट अपडेट करने में समस्या।");
+            alert("त्रुटि: इवेंट अपडेट करने में समस्या: " + error.message);
         }
     }
 }
@@ -305,7 +327,7 @@ async function deleteEvent(eventId) {
             loadEvents();
         } catch (error) {
             console.error("Error deleting event: ", error);
-            alert("त्रुटि: इवेंट डिलीट करने में समस्या।");
+            alert("त्रुटि: इवेंट डिलीट करने में समस्या: " + error.message);
         }
     }
 }
