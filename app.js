@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // कार्यक्रम के नाम और इवेंट्स लोड करें
     loadEventNames();
-    loadEventsToDropdowns();
     loadEvents();
 
     // डीप लिंकिंग
@@ -35,11 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // टैब स्विचिंग
 function showTab(tabId) {
     try {
-        // सभी टैब्स को छुपाएँ
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
         });
-        // चयनित टैब को दिखाएँ
         const tabElement = document.getElementById(tabId);
         if (tabElement) {
             tabElement.classList.add('active');
@@ -50,7 +47,7 @@ function showTab(tabId) {
         console.error("Error in showTab: ", error);
     }
 }
-window.showTab = showTab; // ग्लोबल स्कोप में उपलब्ध
+window.showTab = showTab;
 
 // कार्यक्रम के नाम लोड करें
 async function loadEventNames() {
@@ -83,6 +80,7 @@ async function loadEventNames() {
         });
     } catch (error) {
         console.error("Error loading event names: ", error);
+        alert("त्रुटि: कार्यक्रम के नाम लोड करने में समस्या।");
     }
 }
 
@@ -101,7 +99,6 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         alert("इवेंट जोड़ा गया!");
         document.getElementById('eventForm').reset();
         sendTelegramAlert(`नया इवेंट जोड़ा गया: ${eventData.eventNameId}`);
-        loadEventsToDropdowns();
         loadEvents();
     } catch (error) {
         console.error("Error adding event: ", error);
@@ -113,7 +110,7 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
 document.getElementById('coordinatorForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const coordinatorData = {
-        eventId: document.getElementById('eventSelect').value,
+        eventNameId: document.getElementById('eventSelect').value,
         mandal: document.getElementById('coordMandal').value,
         name: document.getElementById('coordName').value,
         mobile: document.getElementById('coordMobile').value,
@@ -123,7 +120,7 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
         coCoordMobile2: document.getElementById('coCoordMobile2').value || ''
     };
     try {
-        await addDoc(collection(db, `events/${coordinatorData.eventId}/coordinators`), coordinatorData);
+        await addDoc(collection(db, `eventNames/${coordinatorData.eventNameId}/coordinators`), coordinatorData);
         alert("संयोजक जोड़ा गया!");
         document.getElementById('coordinatorForm').reset();
     } catch (error) {
@@ -135,7 +132,7 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
 // रिपोर्ट फॉर्म सबमिशन
 document.getElementById('reportForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const eventId = document.getElementById('reportEventSelect').value;
+    const eventNameId = document.getElementById('reportEventSelect').value;
     const files = document.getElementById('photos').files;
     if (files.length > 10) {
         alert("अधिकतम 10 फ़ोटो अपलोड करें!");
@@ -144,13 +141,13 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
     const photoUrls = [];
     try {
         for (let file of files) {
-            const storageRef = ref(storage, `reports/${eventId}/${file.name}`);
+            const storageRef = ref(storage, `reports/${eventNameId}/${file.name}`);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
             photoUrls.push(url);
         }
         const reportData = {
-            eventId: eventId,
+            eventNameId: eventNameId,
             mandal: document.getElementById('reportMandal').value,
             location: document.getElementById('reportLocation').value,
             attendance: document.getElementById('attendance').value,
@@ -158,10 +155,10 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
             details: document.getElementById('details').value,
             photos: photoUrls
         };
-        await addDoc(collection(db, `events/${eventId}/reports`), reportData);
+        await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
         alert("रिपोर्ट सबमिट की गई!");
         document.getElementById('reportForm').reset();
-        sendTelegramAlert(`नई रिपोर्ट सबमिट की गई: ${eventId}`);
+        sendTelegramAlert(`नई रिपोर्ट सबमिट की गई: ${eventNameId}`);
         loadEvents();
     } catch (error) {
         console.error("Error adding report: ", error);
@@ -184,30 +181,6 @@ document.getElementById('eventNameForm').addEventListener('submit', async (e) =>
     }
 });
 
-// इवेंट्स को ड्रॉपडाउन में लोड करें
-async function loadEventsToDropdowns() {
-    const eventSelect = document.getElementById('eventSelect');
-    const reportEventSelect = document.getElementById('reportEventSelect');
-    eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-    reportEventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-    try {
-        const querySnapshot = await getDocs(collection(db, "events"));
-        querySnapshot.forEach(async (doc) => {
-            const event = doc.data();
-            const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
-            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const option1 = document.createElement('option');
-            const option2 = document.createElement('option');
-            option1.value = option2.value = doc.id;
-            option1.textContent = option2.textContent = eventName;
-            eventSelect.appendChild(option1);
-            reportEventSelect.appendChild(option2);
-        });
-    } catch (error) {
-        console.error("Error loading events to dropdowns: ", error);
-    }
-}
-
 // डैशबोर्ड में इवेंट्स लोड करें
 async function loadEvents() {
     const eventList = document.getElementById('eventList');
@@ -220,11 +193,12 @@ async function loadEvents() {
         const allReports = [];
 
         // सभी रिपोर्ट्स लोड करें
-        for (const eventDoc of querySnapshot.docs) {
-            const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
+        const eventNamesSnapshot = await getDocs(collection(db, "eventNames"));
+        for (const eventNameDoc of eventNamesSnapshot.docs) {
+            const reportsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
             reportsSnapshot.forEach((reportDoc) => {
-                reportedMandals.add(eventDoc.id);
-                allReports.push({ eventId: eventDoc.id, ...reportDoc.data() });
+                reportedMandals.add(eventNameDoc.id);
+                allReports.push({ eventNameId: eventNameDoc.id, ...reportDoc.data() });
             });
         }
 
@@ -237,7 +211,7 @@ async function loadEvents() {
             const div = document.createElement('div');
             div.innerHTML = `
                 ${eventName} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) 
-                - ${reportedMandals.has(eventId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}
+                - ${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}
                 <button onclick="editEvent('${eventId}')">एडिट</button>
                 <button onclick="deleteEvent('${eventId}')">डिलीट</button>
             `;
@@ -267,7 +241,7 @@ async function loadEvents() {
 
         // गैर-रिपोर्टिंग मंडलों को अलर्ट भेजें
         const nonReported = mandals.filter(mandal => !Array.from(reportedMandals).some(id => {
-            const event = querySnapshot.docs.find(doc => doc.id === id);
+            const event = querySnapshot.docs.find(doc => doc.data().eventNameId === id);
             return event && event.data().mandal === mandal;
         }));
         if (nonReported.length > 0) {
@@ -362,15 +336,16 @@ async function exportToCSV() {
     try {
         const querySnapshot = await getDocs(collection(db, "events"));
         const reportedMandals = new Set();
-        for (const eventDoc of querySnapshot.docs) {
-            const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
-            if (!reportsSnapshot.empty) reportedMandals.add(eventDoc.id);
+        const eventNamesSnapshot = await getDocs(collection(db, "eventNames"));
+        for (const eventNameDoc of eventNamesSnapshot.docs) {
+            const reportsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
+            if (!reportsSnapshot.empty) reportedMandals.add(eventNameDoc.id);
         }
         for (const doc of querySnapshot.docs) {
             const event = doc.data();
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            csv += `${eventName},${event.mandal},${event.date},${event.time},${event.location},${reportedMandals.has(doc.id) ? 'Reported' : 'Not Reported'}\n`;
+            csv += `${eventName},${event.mandal},${event.date},${event.time},${event.location},${reportedMandals.has(event.eventNameId) ? 'Reported' : 'Not Reported'}\n`;
         }
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -397,15 +372,16 @@ async function exportToPDF() {
     try {
         const querySnapshot = await getDocs(collection(db, "events"));
         const reportedMandals = new Set();
-        for (const eventDoc of querySnapshot.docs) {
-            const reportsSnapshot = await getDocs(collection(db, `events/${eventDoc.id}/reports`));
-            if (!reportsSnapshot.empty) reportedMandals.add(eventDoc.id);
+        const eventNamesSnapshot = await getDocs(collection(db, "eventNames"));
+        for (const eventNameDoc of eventNamesSnapshot.docs) {
+            const reportsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
+            if (!reportsSnapshot.empty) reportedMandals.add(eventNameDoc.id);
         }
         for (const doc of querySnapshot.docs) {
             const event = doc.data();
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            doc.text(`${eventName} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) - ${reportedMandals.has(doc.id) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}`, 10, y);
+            doc.text(`${eventName} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) - ${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}`, 10, y);
             y += 10;
             if (y > 270) {
                 doc.addPage();
