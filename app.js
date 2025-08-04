@@ -6,7 +6,6 @@ const mandals = ["भेंसोदा", "भानपुरा", "गरोठ
 
 // डोम लोड होने पर
 document.addEventListener('DOMContentLoaded', () => {
-    // मंडल लिस्ट को ड्रॉपडाउन में जोड़ें
     const mandalSelect = document.getElementById('mandal');
     const coordMandalSelect = document.getElementById('coordMandal');
     const reportMandalSelect = document.getElementById('reportMandal');
@@ -21,29 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
         reportMandalSelect.appendChild(option3);
     });
 
-    // कार्यक्रम के नाम और डेटा लोड करें
     loadEventNames();
     loadEvents();
 
-    // डीप लिंकिंग
     const urlParams = new URLSearchParams(window.location.search);
     const view = urlParams.get('view') || 'event';
     showTab(view);
-
-    // URL अपडेट करें बिना पेज रीलोड
     window.history.replaceState(null, null, `?view=${view}`);
 });
 
-// टैब स्विचिंग
 function showTab(tabId) {
     try {
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         const tabElement = document.getElementById(tabId);
         if (tabElement) {
             tabElement.classList.add('active');
-            // URL अपडेट करें
             window.history.replaceState(null, null, `?view=${tabId}`);
         } else {
             console.error(`Tab with ID ${tabId} not found`);
@@ -54,7 +45,6 @@ function showTab(tabId) {
 }
 window.showTab = showTab;
 
-// कार्यक्रम के नाम लोड करें
 async function loadEventNames() {
     const eventNameSelect = document.getElementById('eventName');
     const eventSelect = document.getElementById('eventSelect');
@@ -67,9 +57,7 @@ async function loadEventNames() {
 
     try {
         const querySnapshot = await getDocs(collection(db, "eventNames"));
-        if (querySnapshot.empty) {
-            console.warn("No event names found in eventNames collection");
-        }
+        if (querySnapshot.empty) console.warn("No event names found");
         querySnapshot.forEach((doc) => {
             const eventName = doc.data().name;
             const option1 = document.createElement('option');
@@ -80,8 +68,6 @@ async function loadEventNames() {
             eventNameSelect.appendChild(option1);
             eventSelect.appendChild(option2);
             reportEventSelect.appendChild(option3);
-
-            // डैशबोर्ड में नाम लिस्ट
             const div = document.createElement('div');
             div.innerHTML = `${eventName} <button onclick="editEventName('${doc.id}', '${eventName}')">एडिट</button>`;
             eventNameList.appendChild(div);
@@ -92,7 +78,6 @@ async function loadEventNames() {
     }
 }
 
-// इवेंट फॉर्म सबमिशन
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const eventNameId = document.getElementById('eventName').value;
@@ -108,7 +93,8 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         location: document.getElementById('location').value
     };
     try {
-        await addDoc(collection(db, "events"), eventData);
+        const docRef = await addDoc(collection(db, "events"), eventData);
+        console.log("Event added with ID: ", docRef.id);
         alert("कार्यक्रम जोड़ा गया!");
         document.getElementById('eventForm').reset();
         sendTelegramAlert(`नया कार्यक्रम जोड़ा गया: ${eventNameId}`);
@@ -119,7 +105,6 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     }
 });
 
-// संयोजक फॉर्म सबमिशन
 document.getElementById('coordinatorForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const eventNameId = document.getElementById('eventSelect').value;
@@ -138,7 +123,8 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
         coCoordMobile2: document.getElementById('coCoordMobile2').value || ''
     };
     try {
-        await addDoc(collection(db, `eventNames/${eventNameId}/coordinators`), coordinatorData);
+        const docRef = await addDoc(collection(db, `eventNames/${eventNameId}/coordinators`), coordinatorData);
+        console.log("Coordinator added with ID: ", docRef.id);
         alert("संयोजक जोड़ा गया!");
         document.getElementById('coordinatorForm').reset();
         sendTelegramAlert(`नया संयोजक जोड़ा गया: ${eventNameId}`);
@@ -149,7 +135,6 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
     }
 });
 
-// रिपोर्ट फॉर्म सबमिशन
 document.getElementById('reportForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const eventNameId = document.getElementById('reportEventSelect').value;
@@ -179,7 +164,8 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
             details: document.getElementById('details').value,
             photos: photoUrls
         };
-        await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
+        const docRef = await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
+        console.log("Report added with ID: ", docRef.id);
         alert("रिपोर्ट सबमिट की गई!");
         document.getElementById('reportForm').reset();
         sendTelegramAlert(`नई रिपोर्ट सबमिट की गई: ${eventNameId}`);
@@ -190,7 +176,6 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
     }
 });
 
-// कार्यक्रम का नाम जोड़ें
 document.getElementById('eventNameForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const newEventName = document.getElementById('newEventName').value;
@@ -199,7 +184,8 @@ document.getElementById('eventNameForm').addEventListener('submit', async (e) =>
         return;
     }
     try {
-        await addDoc(collection(db, "eventNames"), { name: newEventName });
+        const docRef = await addDoc(collection(db, "eventNames"), { name: newEventName });
+        console.log("Event name added with ID: ", docRef.id);
         alert("कार्यक्रम का नाम जोड़ा गया!");
         document.getElementById('eventNameForm').reset();
         loadEventNames();
@@ -209,8 +195,8 @@ document.getElementById('eventNameForm').addEventListener('submit', async (e) =>
     }
 });
 
-// डैशबोर्ड में डेटा लोड करें
 async function loadEvents() {
+    console.log("Loading events...");
     const eventList = document.getElementById('eventList');
     const coordinatorList = document.getElementById('coordinatorList');
     const reportList = document.getElementById('reportList');
@@ -221,19 +207,15 @@ async function loadEvents() {
     swiperWrapper.innerHTML = '';
 
     try {
-        // इवेंट्स लोड करें
         const querySnapshot = await getDocs(collection(db, "events"));
         const reportedMandals = new Set();
         const eventNamesSnapshot = await getDocs(collection(db, "eventNames"));
 
-        // सभी संयोजक और रिपोर्ट्स लोड करें
         const allCoordinators = [];
         const allReports = [];
         for (const eventNameDoc of eventNamesSnapshot.docs) {
             const coordinatorsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/coordinators`));
-            coordinatorsSnapshot.forEach((coordDoc) => {
-                allCoordinators.push({ eventNameId: eventNameDoc.id, ...coordDoc.data() });
-            });
+            coordinatorsSnapshot.forEach((coordDoc) => allCoordinators.push({ eventNameId: eventNameDoc.id, ...coordDoc.data() }));
             const reportsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
             reportsSnapshot.forEach((reportDoc) => {
                 reportedMandals.add(eventNameDoc.id);
@@ -241,10 +223,10 @@ async function loadEvents() {
             });
         }
 
-        // इवेंट्स टेबल
-        for (const doc of querySnapshot.docs) {
-            const event = doc.data();
-            const eventId = doc.id;
+        for (const docSnap of querySnapshot.docs) {
+            const event = docSnap.data();
+            const eventId = docSnap.id;
+            console.log("Event Name ID:", event.eventNameId); // डिबग लॉग
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
             const row = document.createElement('tr');
@@ -263,7 +245,6 @@ async function loadEvents() {
             eventList.appendChild(row);
         }
 
-        // संयोजक टेबल
         for (const coord of allCoordinators) {
             const eventNameDoc = await getDoc(doc(db, "eventNames", coord.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
@@ -281,12 +262,11 @@ async function loadEvents() {
             coordinatorList.appendChild(row);
         }
 
-        // रिपोर्ट टेबल
         for (const report of allReports) {
             const eventNameDoc = await getDoc(doc(db, "eventNames", report.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const row = document.createElement('tr');
             const photosHtml = report.photos.length ? report.photos.map(url => `<img src="${url}" alt="Report Photo">`).join(' ') : '-';
+            const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${eventName}</td>
                 <td>${report.mandal}</td>
@@ -299,7 +279,6 @@ async function loadEvents() {
             reportList.appendChild(row);
         }
 
-        // फ़ोटो स्लाइडशो
         allReports.forEach((report) => {
             report.photos.forEach((photoUrl) => {
                 const slide = document.createElement('div');
@@ -309,7 +288,6 @@ async function loadEvents() {
             });
         });
 
-        // Swiper स्लाइडशो इनिशियलाइज़ करें
         new Swiper('.swiper', {
             loop: true,
             navigation: {
@@ -320,21 +298,21 @@ async function loadEvents() {
             spaceBetween: 10,
         });
 
-        // गैर-रिपोर्टिंग मंडलों को अलर्ट भेजें
         const nonReported = mandals.filter(mandal => !Array.from(reportedMandals).some(id => {
             const event = querySnapshot.docs.find(doc => doc.data().eventNameId === id);
             return event && event.data().mandal === mandal;
         }));
-        if (nonReported.length > 0) {
-            sendTelegramAlert(`रिपोर्ट बाकी मंडल: ${nonReported.join(', ')}`);
-        }
+        if (nonReported.length > 0) sendTelegramAlert(`रिपोर्ट बाकी मंडल: ${nonReported.join(', ')}`);
+
+        console.log("Events loaded:", querySnapshot.docs.length);
+        console.log("Coordinators loaded:", allCoordinators.length);
+        console.log("Reports loaded:", allReports.length);
     } catch (error) {
         console.error("Error loading events: ", error);
         alert("त्रुटि: डेटा लोड करने में समस्या: " + error.message);
     }
 }
 
-// कार्यक्रम का नाम एडिट करें
 async function editEventName(eventNameId, currentName) {
     const newName = prompt("नया कार्यक्रम का नाम:", currentName);
     if (newName) {
@@ -350,7 +328,6 @@ async function editEventName(eventNameId, currentName) {
 }
 window.editEventName = editEventName;
 
-// इवेंट एडिट करें
 async function editEvent(eventId) {
     const eventDoc = doc(db, "events", eventId);
     const event = (await getDocs(collection(db, "events"))).docs.find(d => d.id === eventId).data();
@@ -378,7 +355,6 @@ async function editEvent(eventId) {
 }
 window.editEvent = editEvent;
 
-// इवेंट डिलीट करें
 async function deleteEvent(eventId) {
     if (confirm("क्या आप इस कार्यक्रम को डिलीट करना चाहते हैं?")) {
         try {
@@ -393,26 +369,25 @@ async function deleteEvent(eventId) {
 }
 window.deleteEvent = deleteEvent;
 
-// Telegram अलर्ट
 async function sendTelegramAlert(message) {
-    const botToken = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
-    const chatId = "733804072";
-    try {
-        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message
-            })
-        });
-    } catch (error) {
-        console.error("Error sending Telegram alert: ", error);
-    }
+    // const botToken = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
+    // const chatId = "733804072";
+    // try {
+    //     const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    //     await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({
+    //             chat_id: chatId,
+    //             text: message
+    //         })
+    //     });
+    // } catch (error) {
+    //     console.error("Error sending Telegram alert: ", error);
+    // }
+    console.log("Telegram alert skipped for testing: ", message);
 }
 
-// CSV एक्सपोर्ट
 async function exportToCSV() {
     let csv = "Event Name,Mandal,Date,Time,Location,Report Status\n";
     try {
@@ -442,7 +417,6 @@ async function exportToCSV() {
 }
 window.exportToCSV = exportToCSV;
 
-// PDF एक्सपोर्ट
 async function exportToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
