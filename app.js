@@ -25,23 +25,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const view = urlParams.get('view') || 'event';
-    const eventId = urlParams.get('eventId');
-    showTab(view);
-    if (eventId) {
-        loadSingleEvent(eventId); // विशिष्ट कार्यक्रम लोड करें
-    }
-    window.history.replaceState(null, null, `?view=${view}${eventId ? '&eventId=' + eventId : ''}`);
+    showTab(view); // केवल चुने गए टैब को लोड करें
+    window.history.replaceState(null, null, `?view=${view}`);
 });
 
+// केवल चुने गए टैब को दिखाए और बाकी को छिपाए
 function showTab(tabId) {
     try {
+        // सभी टैब कंटेंट छिपाएँ
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+
+        // केवल विशिष्ट टैब को दिखाएँ
         const tabElement = document.getElementById(tabId);
-        if (tabElement) {
+        const tabButton = document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`);
+        if (tabElement && tabButton) {
             tabElement.classList.add('active');
+            tabButton.classList.add('active');
             window.history.replaceState(null, null, `?view=${tabId}`);
         } else {
             console.error(`Tab with ID ${tabId} not found`);
+            // डिफॉल्ट टैब (event) लोड करें अगर कोई टैब नहीं मिला
+            const defaultTab = document.getElementById('event');
+            const defaultButton = document.querySelector('.tab-button[onclick="showTab(\'event\')"]');
+            if (defaultTab && defaultButton) {
+                defaultTab.classList.add('active');
+                defaultButton.classList.add('active');
+                window.history.replaceState(null, null, '?view=event');
+            }
         }
     } catch (error) {
         console.error("Error in showTab: ", error);
@@ -213,6 +224,9 @@ async function loadEvents() {
     reportList.innerHTML = '';
     swiperWrapper.innerHTML = '';
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const view = urlParams.get('view') || 'event';
+
     try {
         const querySnapshot = await getDocs(collection(db, "events"));
         const reportedMandals = new Set();
@@ -230,99 +244,104 @@ async function loadEvents() {
             });
         }
 
-        for (const docSnap of querySnapshot.docs) {
-            const event = docSnap.data();
-            const eventId = docSnap.id;
-            console.log("Processing event:", event);
-            if (!event.eventNameId) {
-                console.warn("Event missing eventNameId:", eventId);
-                continue;
+        if (view === 'event' || !view) {
+            for (const docSnap of querySnapshot.docs) {
+                const event = docSnap.data();
+                const eventId = docSnap.id;
+                console.log("Processing event:", event);
+                if (!event.eventNameId) {
+                    console.warn("Event missing eventNameId:", eventId);
+                    continue;
+                }
+                const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
+                const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${eventName}</td>
+                    <td>${event.mandal || '-'}</td>
+                    <td>${event.date || '-'}</td>
+                    <td>${event.time || '-'}</td>
+                    <td>${event.location || '-'}</td>
+                    <td>${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}</td>
+                    <td>
+                        <button onclick="editEvent('${eventId}')">एडिट</button>
+                        <button onclick="deleteEvent('${eventId}')">डिलीट</button>
+                    </td>
+                `;
+                eventList.appendChild(row);
             }
-            const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
-            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${eventName}</td>
-                <td>${event.mandal || '-'}</td>
-                <td>${event.date || '-'}</td>
-                <td>${event.time || '-'}</td>
-                <td>${event.location || '-'}</td>
-                <td>${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}</td>
-                <td>
-                    <button onclick="editEvent('${eventId}')">एडिट</button>
-                    <button onclick="deleteEvent('${eventId}')">डिलीट</button>
-                    <a href="https://mandalevent2.netlify.app/?view=event&eventId=${eventId}" target="_blank">लिंक</a>
-                </td>
-            `;
-            eventList.appendChild(row);
         }
 
-        for (const coord of allCoordinators) {
-            if (!coord.eventNameId) {
-                console.warn("Coordinator missing eventNameId:", coord);
-                continue;
+        if (view === 'coordinator') {
+            for (const coord of allCoordinators) {
+                if (!coord.eventNameId) {
+                    console.warn("Coordinator missing eventNameId:", coord);
+                    continue;
+                }
+                const eventNameDoc = await getDoc(doc(db, "eventNames", coord.eventNameId));
+                const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${eventName}</td>
+                    <td>${coord.mandal || '-'}</td>
+                    <td>${coord.name || '-'}</td>
+                    <td>${coord.mobile || '-'}</td>
+                    <td>${coord.coCoordName1 || '-'}</td>
+                    <td>${coord.coCoordMobile1 || '-'}</td>
+                    <td>${coord.coCoordName2 || '-'}</td>
+                    <td>${coord.coCoordMobile2 || '-'}</td>
+                    <td>
+                        <button onclick="deleteCoordinator('${coord.eventNameId}', '${coord.id}')">डिलीट</button>
+                    </td>
+                `;
+                coordinatorList.appendChild(row);
             }
-            const eventNameDoc = await getDoc(doc(db, "eventNames", coord.eventNameId));
-            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${eventName}</td>
-                <td>${coord.mandal || '-'}</td>
-                <td>${coord.name || '-'}</td>
-                <td>${coord.mobile || '-'}</td>
-                <td>${coord.coCoordName1 || '-'}</td>
-                <td>${coord.coCoordMobile1 || '-'}</td>
-                <td>${coord.coCoordName2 || '-'}</td>
-                <td>${coord.coCoordMobile2 || '-'}</td>
-                <td>
-                    <button onclick="deleteCoordinator('${coord.eventNameId}', '${coord.id}')">डिलीट</button>
-                </td>
-            `;
-            coordinatorList.appendChild(row);
         }
 
-        for (const report of allReports) {
-            if (!report.eventNameId) {
-                console.warn("Report missing eventNameId:", report);
-                continue;
+        if (view === 'report') {
+            for (const report of allReports) {
+                if (!report.eventNameId) {
+                    console.warn("Report missing eventNameId:", report);
+                    continue;
+                }
+                const eventNameDoc = await getDoc(doc(db, "eventNames", report.eventNameId));
+                const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
+                const photosHtml = report.photos?.length ? report.photos.map(url => `<img src="${url}" alt="Report Photo">`).join(' ') : '-';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${eventName}</td>
+                    <td>${report.mandal || '-'}</td>
+                    <td>${report.location || '-'}</td>
+                    <td>${report.attendance || '-'}</td>
+                    <td>${report.guests || '-'}</td>
+                    <td>${report.details || '-'}</td>
+                    <td>${photosHtml}</td>
+                    <td>
+                        <button onclick="deleteReport('${report.eventNameId}', '${report.id}')">डिलीट</button>
+                    </td>
+                `;
+                reportList.appendChild(row);
             }
-            const eventNameDoc = await getDoc(doc(db, "eventNames", report.eventNameId));
-            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const photosHtml = report.photos?.length ? report.photos.map(url => `<img src="${url}" alt="Report Photo">`).join(' ') : '-';
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${eventName}</td>
-                <td>${report.mandal || '-'}</td>
-                <td>${report.location || '-'}</td>
-                <td>${report.attendance || '-'}</td>
-                <td>${report.guests || '-'}</td>
-                <td>${report.details || '-'}</td>
-                <td>${photosHtml}</td>
-                <td>
-                    <button onclick="deleteReport('${report.eventNameId}', '${report.id}')">डिलीट</button>
-                </td>
-            `;
-            reportList.appendChild(row);
-        }
 
-        allReports.forEach((report) => {
-            report.photos?.forEach((photoUrl) => {
-                const slide = document.createElement('div');
-                slide.className = 'swiper-slide';
-                slide.innerHTML = `<img src="${photoUrl}" alt="Event Photo">`;
-                swiperWrapper.appendChild(slide);
+            allReports.forEach((report) => {
+                report.photos?.forEach((photoUrl) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'swiper-slide';
+                    slide.innerHTML = `<img src="${photoUrl}" alt="Event Photo">`;
+                    swiperWrapper.appendChild(slide);
+                });
             });
-        });
 
-        new Swiper('.swiper', {
-            loop: true,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            slidesPerView: 1,
-            spaceBetween: 10,
-        });
+            new Swiper('.swiper', {
+                loop: true,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                slidesPerView: 1,
+                spaceBetween: 10,
+            });
+        }
 
         const nonReported = mandals.filter(mandal => !Array.from(reportedMandals).some(id => {
             const event = querySnapshot.docs.find(doc => doc.data().eventNameId === id);
@@ -336,40 +355,6 @@ async function loadEvents() {
     } catch (error) {
         console.error("Error loading events: ", error);
         alert("त्रुटि: डेटा लोड करने में समस्या: " + error.message);
-    }
-}
-
-async function loadSingleEvent(eventId) {
-    try {
-        const eventDoc = await getDoc(doc(db, "events", eventId));
-        if (eventDoc.exists()) {
-            const event = eventDoc.data();
-            const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
-            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const eventList = document.getElementById('eventList');
-            eventList.innerHTML = ''; // पुराना डेटा क्लियर करें
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${eventName}</td>
-                <td>${event.mandal || '-'}</td>
-                <td>${event.date || '-'}</td>
-                <td>${event.time || '-'}</td>
-                <td>${event.location || '-'}</td>
-                <td>-</td>
-                <td>
-                    <button onclick="editEvent('${eventId}')">एडिट</button>
-                    <button onclick="deleteEvent('${eventId}')">डिलीट</button>
-                </td>
-            `;
-            eventList.appendChild(row);
-        } else {
-            console.warn("Event not found with ID:", eventId);
-            alert("कोई कार्यक्रम नहीं मिला।");
-            loadEvents(); // डिफॉल्ट सभी इवेंट्स लोड करें
-        }
-    } catch (error) {
-        console.error("Error loading single event: ", error);
-        alert("त्रुटि: कार्यक्रम लोड करने में समस्या: " + error.message);
     }
 }
 
