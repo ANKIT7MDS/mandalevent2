@@ -2,24 +2,31 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
-    padding: 20px;
+    padding: 10px;
 }
 h1 {
     color: #ff6200;
     text-align: center;
+    font-size: 1.5rem;
 }
 .tabs {
     background-color: #ff6200;
     padding: 10px;
     text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 .tabs button {
     background: none;
     border: none;
     color: white;
-    padding: 10px 20px;
+    padding: 10px 15px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 1rem;
+}
+.tabs button:hover {
+    background-color: #e55a00;
 }
 .tab-content {
     display: none;
@@ -32,18 +39,77 @@ form {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-width: 400px;
+    max-width: 100%;
+    width: 90%;
     margin: 0 auto;
 }
 input, select, textarea, button {
     padding: 10px;
-    font-size: 16px;
+    font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+textarea {
+    resize: vertical;
 }
 button {
     background-color: #ff6200;
     color: white;
     border: none;
     cursor: pointer;
+}
+button:hover {
+    background-color: #e55a00;
+}
+#eventList div {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 5px 0;
+    background-color: white;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#eventList button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 10px 0;
+}
+.swiper {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+}
+.swiper-slide img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* मोबाइल रिस्पॉन्सिव */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.2rem;
+    }
+    .tabs button {
+        padding: 8px 10px;
+        flexibly: 1;
+    }
+    form {
+        width: 100%;
+    }
+    .export-buttons {
+        flex-direction: column;
+    }
+    .swiper {
+        max-width: 100%;
+    }
 }
