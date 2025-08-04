@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BJP मंडल इवेंट मैनेजमेंट</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
 </head>
 <body>
     <h1>BJP मंडल इवेंट मैनेजमेंट</h1>
@@ -15,6 +14,7 @@
         <button onclick="showTab('report')">रिपोर्ट</button>
         <button onclick="showTab('dashboard')">डैशबोर्ड</button>
     </div>
+
     <div id="event" class="tab-content active">
         <form id="eventForm">
             <input type="text" id="eventName" placeholder="इवेंट का नाम" required>
@@ -27,6 +27,7 @@
             <button type="submit">इवेंट जोड़ें</button>
         </form>
     </div>
+
     <div id="coordinator" class="tab-content">
         <form id="coordinatorForm">
             <select id="eventSelect" required>
@@ -37,6 +38,7 @@
             <button type="submit">संयोजक जोड़ें</button>
         </form>
     </div>
+
     <div id="report" class="tab-content">
         <form id="reportForm">
             <select id="reportEventSelect" required>
@@ -44,31 +46,45 @@
             </select>
             <input type="date" id="reportDate" required>
             <input type="text" id="guests" placeholder="अतिथि" required>
-            <input type="number" id="attendance" placeholder="उupस्थिति" required>
+            <input type="number" id="attendance" placeholder="उपस्थिति" required>
             <textarea id="details" placeholder="विवरण" required></textarea>
-            <input type="file" id="photos" multiple accept="image/*" max="10">
+            <input type="file" id="photos" multiple accept="image/*">
             <button type="submit">रिपोर्ट सबमिट करें</button>
         </form>
     </div>
+
+    <!-- डैशबोर्ड -->
     <div id="dashboard" class="tab-content">
         <h2>डैशबोर्ड</h2>
-        <div id="eventList"></div>
-        <div class="export-buttons">
-            <button onclick="exportToCSV()">CSV में एक्सपोर्ट</button>
-            <button onclick="exportToPDF()">PDF में एक्सपोर्ट</button>
-            <button onclick="window.print()">प्रिंट</button>
+        <div>
+            <button onclick="showDashboardTable('events')">कार्यक्रम</button>
+            <button onclick="showDashboardTable('coordinators')">संयोजक</button>
+            <button onclick="showDashboardTable('reports')">रिपोर्ट्स</button>
         </div>
-        <div id="photoSlideshow" class="swiper">
-            <div class="swiper-wrapper"></div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+        <div id="dashboardFilters"></div>
+        <div style="margin:15px 0;">
+            <button onclick="openAddEventForm()">+ नया कार्यक्रम जोड़ें</button>
         </div>
+        <div id="dashboardTables"></div>
+        <button onclick="exportDashboardToCSV()">CSV में एक्सपोर्ट करें</button>
     </div>
+
+    <!-- Modal -->
+    <div id="addEventModal" style="display:none; position:fixed; top:10%; left:40%; background:#fff; border:1px solid #ccc; padding:20px; z-index:99;">
+        <form id="dashboardAddEventForm">
+            <input type="text" id="dashEventName" placeholder="कार्यक्रम नाम" required>
+            <select id="dashMandal" required></select>
+            <input type="date" id="dashEventDate" required>
+            <input type="time" id="dashEventTime" required>
+            <input type="text" id="dashLocation" placeholder="स्थान" required>
+            <button type="submit">जोड़ें</button>
+            <button type="button" onclick="closeAddEventForm()">रद्द</button>
+        </form>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script type="module" src="firebase.js"></script>
     <script type="module" src="app.js"></script>
 </body>
