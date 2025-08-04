@@ -1,4 +1,4 @@
-import { db, storage } from './firebase.js';
+import { db, storage } from './firebase.js'; // अगर firebase.js अलग है, तो इसे हटा दें और ऊपर index.html में कॉन्फिग का उपयोग करें
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
@@ -56,7 +56,7 @@ function showTab(tabId) {
         } else {
             console.error(`Tab with ID ${tabId} not found, defaulting to 'event'`);
             const defaultTab = document.getElementById('event');
-            const defaultButton = document.querySelector('.tab-button[onclick="showTab(\'event\')"]');
+            const defaultButton = document.querySelector('.tab-button[onclick="showTab('event')"]');
             if (defaultTab && defaultButton) {
                 defaultTab.classList.add('active');
                 defaultButton.classList.add('active');
