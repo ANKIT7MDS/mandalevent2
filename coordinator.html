@@ -4,20 +4,59 @@
     <meta charset="UTF-8">
     <title>संयोजक जोड़ें</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #ffedd2; font-family: 'Segoe UI', Arial, sans-serif; }
+        .container { max-width: 450px; margin: 40px auto; background: #ffd89b; border-radius: 16px; box-shadow: 0 2px 16px #ff980044; padding: 36px 22px 28px 22px; }
+        h1 { color: #e65100; text-align: center; margin-bottom: 18px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 18px; }
+        label { margin-bottom: 6px; font-weight: 500; color: #b85c00; }
+        input, select, textarea { padding: 11px 10px; border-radius: 6px; border: 1.5px solid #ffc27b; background: #fffdf6; font-size: 1.1rem; outline: none; transition: border 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #ff9800; background: #fff7e0; }
+        button, input[type="submit"] { width: 100%; background: #ff9800; color: #fff; border: none; border-radius: 7px; padding: 11px 18px; font-size: 1.13rem; font-weight: bold; cursor: pointer; margin-top: 12px; margin-bottom: 5px; transition: background 0.2s;}
+        button:hover, input[type="submit"]:hover { background: #e65100; }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>संयोजक जोड़ें</h1>
-        <form id="coordinatorForm">
-            <select id="eventSelect" required><option value="">कार्यक्रम का नाम चुनें</option></select>
-            <select id="coordMandal"><option value="">मंडल चुनें</option></select>
-            <input type="text" id="coordName" placeholder="संयोजक का नाम" required>
-            <input type="text" id="coordMobile" placeholder="मोबाइल नंबर" required>
-            <input type="text" id="coCoordName1" placeholder="सह-संयोजक 1 का नाम">
-            <input type="text" id="coCoordMobile1" placeholder="सह-संयोजक 1 का मोबाइल">
-            <input type="text" id="coCoordName2" placeholder="सह-संयोजक 2 का नाम">
-            <input type="text" id="coCoordMobile2" placeholder="सह-संयोजक 2 का मोबाइल">
-            <button type="submit">जोड़ें</button>
+        <form id="coordinatorForm" autocomplete="off">
+            <div class="form-group">
+                <label for="eventSelect">कार्यक्रम का नाम</label>
+                <select id="eventSelect" required>
+                    <option value="">कार्यक्रम का नाम चुनें</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="coordMandal">मंडल</label>
+                <select id="coordMandal" required>
+                    <option value="">-- मंडल चुनें --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="coordName">संयोजक का नाम</label>
+                <input type="text" id="coordName" required placeholder="संयोजक का नाम">
+            </div>
+            <div class="form-group">
+                <label for="coordMobile">मोबाइल नंबर</label>
+                <input type="text" id="coordMobile" required placeholder="मोबाइल नंबर">
+            </div>
+            <div class="form-group">
+                <label for="coCoordName1">सह-संयोजक 1 का नाम</label>
+                <input type="text" id="coCoordName1" placeholder="सह-संयोजक 1 का नाम">
+            </div>
+            <div class="form-group">
+                <label for="coCoordMobile1">सह-संयोजक 1 का मोबाइल</label>
+                <input type="text" id="coCoordMobile1" placeholder="सह-संयोजक 1 का मोबाइल">
+            </div>
+            <div class="form-group">
+                <label for="coCoordName2">सह-संयोजक 2 का नाम</label>
+                <input type="text" id="coCoordName2" placeholder="सह-संयोजक 2 का नाम">
+            </div>
+            <div class="form-group">
+                <label for="coCoordMobile2">सह-संयोजक 2 का मोबाइल</label>
+                <input type="text" id="coCoordMobile2" placeholder="सह-संयोजक 2 का मोबाइल">
+            </div>
+            <button type="submit">संयोजक जोड़ें</button>
         </form>
     </div>
     <script type="module">
@@ -61,3 +100,28 @@
                 eventSelect.appendChild(option);
             });
         }
+
+        document.getElementById('coordinatorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const eventNameId = document.getElementById('eventSelect').value;
+            const coordinatorData = {
+                eventNameId,
+                mandal: document.getElementById('coordMandal').value,
+                name: document.getElementById('coordName').value,
+                mobile: document.getElementById('coordMobile').value,
+                coCoordName1: document.getElementById('coCoordName1').value,
+                coCoordMobile1: document.getElementById('coCoordMobile1').value,
+                coCoordName2: document.getElementById('coCoordName2').value,
+                coCoordMobile2: document.getElementById('coCoordMobile2').value
+            };
+            try {
+                await addDoc(collection(db, `eventNames/${eventNameId}/coordinators`), coordinatorData);
+                alert("संयोजक जोड़ा गया!");
+                document.getElementById('coordinatorForm').reset();
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
