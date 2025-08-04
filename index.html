@@ -29,21 +29,6 @@
                 <input type="text" id="location" placeholder="स्थान" required>
                 <button type="submit">जोड़ें</button>
             </form>
-            <h3>कार्यक्रम सूची</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>कार्यक्रम का नाम</th>
-                        <th>मंडल</th>
-                        <th>तारीख</th>
-                        <th>समय</th>
-                        <th>स्थान</th>
-                        <th>रिपोर्ट स्थिति</th>
-                        <th>कार्रवाई</th>
-                    </tr>
-                </thead>
-                <tbody id="eventList"></tbody>
-            </table>
         </div>
 
         <div id="coordinator" class="tab-content">
@@ -59,23 +44,6 @@
                 <input type="text" id="coCoordMobile2" placeholder="सह-संयोजक 2 का मोबाइल">
                 <button type="submit">जोड़ें</button>
             </form>
-            <h3>संयोजक सूची</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>कार्यक्रम का नाम</th>
-                        <th>मंडल</th>
-                        <th>संयोजक का नाम</th>
-                        <th>मोबाइल</th>
-                        <th>सह-संयोजक 1</th>
-                        <th>मोबाइल 1</th>
-                        <th>सह-संयोजक 2</th>
-                        <th>मोबाइल 2</th>
-                        <th>कार्रवाई</th>
-                    </tr>
-                </thead>
-                <tbody id="coordinatorList"></tbody>
-            </table>
         </div>
 
         <div id="report" class="tab-content">
@@ -90,27 +58,6 @@
                 <input type="file" id="photos" multiple accept="image/*">
                 <button type="submit">सबमिट करें</button>
             </form>
-            <h3>रिपोर्ट सूची</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>कार्यक्रम का नाम</th>
-                        <th>मंडल</th>
-                        <th>स्थान</th>
-                        <th>उपस्थिति</th>
-                        <th>विशिष्ट अतिथि</th>
-                        <th>विवरण</th>
-                        <th>फोटो</th>
-                        <th>कार्रवाई</th>
-                    </tr>
-                </thead>
-                <tbody id="reportList"></tbody>
-            </table>
-            <div class="swiper">
-                <div class="swiper-wrapper" id="swiperWrapper"></div>
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
-            </div>
         </div>
 
         <div>
@@ -121,9 +68,6 @@
             </form>
             <div id="eventNameList"></div>
         </div>
-
-        <button onclick="exportToCSV()">CSV में एक्सपोर्ट करें</button>
-        <button onclick="exportToPDF()">PDF में एक्सपोर्ट करें</button>
     </div>
 
     <script type="module">
