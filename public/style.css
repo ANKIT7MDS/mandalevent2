@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+h1 {
+    color: #ff6200;
+    text-align: center;
+}
+.tabs {
+    background-color: #ff6200;
+    padding: 10px;
+    text-align: center;
+}
+.tabs button {
+    background: none;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.tab-content {
+    display: none;
+    margin-top: 20px;
+}
+.tab-content.active {
+    display: block;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+input, select, textarea, button {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+button {
+    background-color: #ff6200;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
