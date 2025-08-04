@@ -67,6 +67,7 @@ function showTab(tabId) {
         console.error("Error in showTab: ", error);
     }
 }
+export { showTab };
 window.showTab = showTab;
 
 async function loadEventNames() {
@@ -101,6 +102,7 @@ async function loadEventNames() {
         alert("त्रुटि: कार्यक्रम के नाम लोड करने में समस्या।");
     }
 }
+export { loadEventNames };
 
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -366,6 +368,7 @@ async function loadEvents() {
         alert("त्रुटि: डेटा लोड करने में समस्या: " + error.message);
     }
 }
+export { loadEvents };
 
 async function editEventName(eventNameId, currentName) {
     const newName = prompt("नया कार्यक्रम का नाम:", currentName);
@@ -380,6 +383,7 @@ async function editEventName(eventNameId, currentName) {
         }
     }
 }
+export { editEventName };
 window.editEventName = editEventName;
 
 async function editEvent(eventId) {
@@ -407,6 +411,7 @@ async function editEvent(eventId) {
         }
     }
 }
+export { editEvent };
 window.editEvent = editEvent;
 
 async function deleteEvent(eventId) {
@@ -421,6 +426,7 @@ async function deleteEvent(eventId) {
         }
     }
 }
+export { deleteEvent };
 window.deleteEvent = deleteEvent;
 
 async function deleteCoordinator(eventNameId, coordinatorId) {
@@ -435,6 +441,7 @@ async function deleteCoordinator(eventNameId, coordinatorId) {
         }
     }
 }
+export { deleteCoordinator };
 window.deleteCoordinator = deleteCoordinator;
 
 async function deleteReport(eventNameId, reportId) {
@@ -449,11 +456,14 @@ async function deleteReport(eventNameId, reportId) {
         }
     }
 }
+export { deleteReport };
 window.deleteReport = deleteReport;
 
 async function sendTelegramAlert(message) {
     console.log("Telegram alert skipped for testing: ", message);
 }
+export { sendTelegramAlert };
+window.sendTelegramAlert = sendTelegramAlert;
 
 async function exportToCSV() {
     let csv = "Event Name,Mandal,Date,Time,Location,Report Status\n";
@@ -482,6 +492,7 @@ async function exportToCSV() {
         console.error("Error exporting to CSV: ", error);
     }
 }
+export { exportToCSV };
 window.exportToCSV = exportToCSV;
 
 async function exportToPDF() {
@@ -516,4 +527,5 @@ async function exportToPDF() {
         console.error("Error exporting to PDF: ", error);
     }
 }
+export { exportToPDF };
 window.exportToPDF = exportToPDF;
