@@ -9,6 +9,10 @@ h1 {
     text-align: center;
     font-size: 1.5rem;
 }
+h2, h3 {
+    color: #333;
+    font-size: 1.2rem;
+}
 .tabs {
     background-color: #ff6200;
     padding: 10px;
@@ -63,7 +67,7 @@ button {
 button:hover {
     background-color: #e55a00;
 }
-#eventList div {
+#eventList div, #eventNameList div {
     border: 1px solid #ccc;
     padding: 10px;
     margin: 5px 0;
@@ -73,7 +77,7 @@ button:hover {
     justify-content: space-between;
     align-items: center;
 }
-#eventList button {
+#eventList button, #eventNameList button {
     padding: 5px 10px;
     font-size: 0.9rem;
 }
@@ -101,7 +105,7 @@ button:hover {
     }
     .tabs button {
         padding: 8px 10px;
-        flexibly: 1;
+        flex: 1;
     }
     form {
         width: 100%;
