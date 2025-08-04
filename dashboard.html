@@ -90,7 +90,81 @@
         #eventNameList span {
             min-width: 110px;
             display: inline-block;
-        }
+        } /* कार्ड/फॉर्म की चौड़ाई कम करें */
+#eventNameForm, .eventNameAddForm form {
+    max-width: 450px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px #ffc10721;
+    padding: 18px 18px 12px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* इनपुट का साइज */
+#newEventName, .eventNameAddForm input[type="text"] {
+    font-size: 1rem;
+    padding: 9px 11px;
+    border-radius: 6px;
+    border: 1.2px solid #ffa726a9;
+}
+
+/* जॉइन बटन को सिंपल व सुंदर */
+#eventNameForm button, .eventNameAddForm button {
+    width: 100%;
+    font-size: 1.04rem;
+    padding: 8px 0;
+    margin: 8px 0 0 0;
+    border-radius: 7px;
+    background: #ff9800;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.19s;
+}
+#eventNameForm button:hover, .eventNameAddForm button:hover {
+    background: #e65100;
+}
+
+/* कार्यक्रम नाम सूची की लिस्ट */
+#eventNameListBox ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+#eventNameList li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 1rem;
+    background: #fffaf3;
+    border-radius: 7px;
+    padding: 8px 9px 7px 11px;
+}
+
+/* Edit/Delete बटन छोटा और आइकन जैसा */
+#eventNameList button {
+    font-size: 1.16rem;
+    padding: 3px 13px 2px 13px;
+    border-radius: 6px;
+    background: #ff9800;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+#eventNameList button:nth-child(3) {
+    background: #e53935;
+    margin-left: 4px;
+}
+#eventNameList button:hover { background: #e65100; }
+#eventNameList button:nth-child(3):hover { background: #b71c1c; }
+
     </style>
 </head>
 <body>
