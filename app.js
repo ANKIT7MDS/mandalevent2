@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reportMandalSelect.appendChild(option3);
     });
 
-    // कार्यक्रम के नाम और इवेंट्स लोड करें
+    // कार्यक्रम के नाम और डेटा लोड करें
     loadEventNames();
     loadEvents();
 
@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const view = urlParams.get('view') || 'event';
     showTab(view);
+
+    // URL अपडेट करें बिना पेज रीलोड
+    window.history.replaceState(null, null, `?view=${view}`);
 });
 
 // टैब स्विचिंग
@@ -40,6 +43,8 @@ function showTab(tabId) {
         const tabElement = document.getElementById(tabId);
         if (tabElement) {
             tabElement.classList.add('active');
+            // URL अपडेट करें
+            window.history.replaceState(null, null, `?view=${tabId}`);
         } else {
             console.error(`Tab with ID ${tabId} not found`);
         }
@@ -104,13 +109,13 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     };
     try {
         await addDoc(collection(db, "events"), eventData);
-        alert("इवेंट जोड़ा गया!");
+        alert("कार्यक्रम जोड़ा गया!");
         document.getElementById('eventForm').reset();
-        sendTelegramAlert(`नया इवेंट जोड़ा गया: ${eventNameId}`);
+        sendTelegramAlert(`नया कार्यक्रम जोड़ा गया: ${eventNameId}`);
         loadEvents();
     } catch (error) {
         console.error("Error adding event: ", error);
-        alert("त्रुटि: इवेंट जोड़ने में समस्या: " + error.message);
+        alert("त्रुटि: कार्यक्रम जोड़ने में समस्या: " + error.message);
     }
 });
 
@@ -137,6 +142,7 @@ document.getElementById('coordinatorForm').addEventListener('submit', async (e) 
         alert("संयोजक जोड़ा गया!");
         document.getElementById('coordinatorForm').reset();
         sendTelegramAlert(`नया संयोजक जोड़ा गया: ${eventNameId}`);
+        loadEvents();
     } catch (error) {
         console.error("Error adding coordinator: ", error);
         alert("त्रुटि: संयोजक जोड़ने में समस्या: " + error.message);
@@ -203,20 +209,31 @@ document.getElementById('eventNameForm').addEventListener('submit', async (e) =>
     }
 });
 
-// डैशबोर्ड में इवेंट्स लोड करें
+// डैशबोर्ड में डेटा लोड करें
 async function loadEvents() {
     const eventList = document.getElementById('eventList');
-    eventList.innerHTML = '';
+    const coordinatorList = document.getElementById('coordinatorList');
+    const reportList = document.getElementById('reportList');
     const swiperWrapper = document.querySelector('.swiper-wrapper');
+    eventList.innerHTML = '';
+    coordinatorList.innerHTML = '';
+    reportList.innerHTML = '';
     swiperWrapper.innerHTML = '';
+
     try {
+        // इवेंट्स लोड करें
         const querySnapshot = await getDocs(collection(db, "events"));
         const reportedMandals = new Set();
-        const allReports = [];
-
-        // सभी रिपोर्ट्स लोड करें
         const eventNamesSnapshot = await getDocs(collection(db, "eventNames"));
+
+        // सभी संयोजक और रिपोर्ट्स लोड करें
+        const allCoordinators = [];
+        const allReports = [];
         for (const eventNameDoc of eventNamesSnapshot.docs) {
+            const coordinatorsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/coordinators`));
+            coordinatorsSnapshot.forEach((coordDoc) => {
+                allCoordinators.push({ eventNameId: eventNameDoc.id, ...coordDoc.data() });
+            });
             const reportsSnapshot = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
             reportsSnapshot.forEach((reportDoc) => {
                 reportedMandals.add(eventNameDoc.id);
@@ -224,20 +241,62 @@ async function loadEvents() {
             });
         }
 
-        // इवेंट्स और उनकी स्थिति दिखाएँ
+        // इवेंट्स टेबल
         for (const doc of querySnapshot.docs) {
             const event = doc.data();
             const eventId = doc.id;
             const eventNameDoc = await getDoc(doc(db, "eventNames", event.eventNameId));
             const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
-            const div = document.createElement('div');
-            div.innerHTML = `
-                ${eventName} - ${event.mandal} (${event.date}, ${event.time}, ${event.location}) 
-                - ${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}
-                <button onclick="editEvent('${eventId}')">एडिट</button>
-                <button onclick="deleteEvent('${eventId}')">डिलीट</button>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${eventName}</td>
+                <td>${event.mandal}</td>
+                <td>${event.date}</td>
+                <td>${event.time}</td>
+                <td>${event.location}</td>
+                <td>${reportedMandals.has(event.eventNameId) ? 'रिपोर्ट की गई' : 'रिपोर्ट बाकी'}</td>
+                <td>
+                    <button onclick="editEvent('${eventId}')">एडिट</button>
+                    <button onclick="deleteEvent('${eventId}')">डिलीट</button>
+                </td>
             `;
-            eventList.appendChild(div);
+            eventList.appendChild(row);
+        }
+
+        // संयोजक टेबल
+        for (const coord of allCoordinators) {
+            const eventNameDoc = await getDoc(doc(db, "eventNames", coord.eventNameId));
+            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${eventName}</td>
+                <td>${coord.mandal}</td>
+                <td>${coord.name}</td>
+                <td>${coord.mobile}</td>
+                <td>${coord.coCoordName1 || '-'}</td>
+                <td>${coord.coCoordMobile1 || '-'}</td>
+                <td>${coord.coCoordName2 || '-'}</td>
+                <td>${coord.coCoordMobile2 || '-'}</td>
+            `;
+            coordinatorList.appendChild(row);
+        }
+
+        // रिपोर्ट टेबल
+        for (const report of allReports) {
+            const eventNameDoc = await getDoc(doc(db, "eventNames", report.eventNameId));
+            const eventName = eventNameDoc.exists() ? eventNameDoc.data().name : "Unknown";
+            const row = document.createElement('tr');
+            const photosHtml = report.photos.length ? report.photos.map(url => `<img src="${url}" alt="Report Photo">`).join(' ') : '-';
+            row.innerHTML = `
+                <td>${eventName}</td>
+                <td>${report.mandal}</td>
+                <td>${report.location}</td>
+                <td>${report.attendance}</td>
+                <td>${report.guests}</td>
+                <td>${report.details}</td>
+                <td>${photosHtml}</td>
+            `;
+            reportList.appendChild(row);
         }
 
         // फ़ोटो स्लाइडशो
@@ -271,6 +330,7 @@ async function loadEvents() {
         }
     } catch (error) {
         console.error("Error loading events: ", error);
+        alert("त्रुटि: डेटा लोड करने में समस्या: " + error.message);
     }
 }
 
@@ -308,11 +368,11 @@ async function editEvent(eventId) {
                 time: newTime,
                 location: newLocation
             });
-            alert("इवेंट अपडेट किया गया!");
+            alert("कार्यक्रम अपडेट किया गया!");
             loadEvents();
         } catch (error) {
             console.error("Error updating event: ", error);
-            alert("त्रुटि: इवेंट अपडेट करने में समस्या: " + error.message);
+            alert("त्रुटि: कार्यक्रम अपडेट करने में समस्या: " + error.message);
         }
     }
 }
@@ -320,14 +380,14 @@ window.editEvent = editEvent;
 
 // इवेंट डिलीट करें
 async function deleteEvent(eventId) {
-    if (confirm("क्या आप इस इवेंट को डिलीट करना चाहते हैं?")) {
+    if (confirm("क्या आप इस कार्यक्रम को डिलीट करना चाहते हैं?")) {
         try {
             await deleteDoc(doc(db, "events", eventId));
-            alert("इवेंट डिलीट किया गया!");
+            alert("कार्यक्रम डिलीट किया गया!");
             loadEvents();
         } catch (error) {
             console.error("Error deleting event: ", error);
-            alert("त्रुटि: इवेंट डिलीट करने में समस्या: " + error.message);
+            alert("त्रुटि: कार्यक्रम डिलीट करने में समस्या: " + error.message);
         }
     }
 }
