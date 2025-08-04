@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>कार्यक्रम जोड़ें</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>कार्यक्रम जोड़ें</h1>
+        <form id="eventForm">
+            <select id="eventName" required><option value="">कार्यक्रम का नाम चुनें</option></select>
+            <select id="mandal"><option value="">मंडल चुनें</option></select>
+            <input type="date" id="eventDate" required>
+            <input type="time" id="eventTime" required>
+            <input type="text" id="location" placeholder="स्थान" required>
+            <button type="submit">जोड़ें</button>
+        </form>
+    </div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+            authDomain: "mandaleventall.firebaseapp.com",
+            projectId: "mandaleventall",
+            storageBucket: "mandaleventall.firebasestorage.app",
+            messagingSenderId: "900190130114",
+            appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+            measurementId: "G-2BBZZNRS88"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+
+        // मंडल populate
+        document.addEventListener('DOMContentLoaded', async () => {
+            const mandalSelect = document.getElementById('mandal');
+            mandals.forEach(mandal => {
+                const option = document.createElement('option');
+                option.value = mandal;
+                option.textContent = mandal;
+                mandalSelect.appendChild(option);
+            });
+            await loadEventNames();
+        });
+
+        // प्रोग्राम नाम populate
+        async function loadEventNames() {
+            const eventNameSelect = document.getElementById('eventName');
+            eventNameSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+            const querySnapshot = await getDocs(collection(db, "eventNames"));
+            querySnapshot.forEach((doc) => {
+                const eventName = doc.data().name;
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = eventName;
+                eventNameSelect.appendChild(option);
+            });
+        }
+
+        // फॉर्म सबमिट
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const eventData = {
+                eventNameId: document.getElementById('eventName').value,
+                mandal: document.getElementById('mandal').value,
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value,
+                location: document.getElementById('location').value
+            };
+            try {
+                await addDoc(collection(db, "events"), eventData);
+                alert("कार्यक्रम जोड़ा गया!");
+                document.getElementById('eventForm').reset();
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
