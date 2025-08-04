@@ -28,6 +28,9 @@
     </div>
     <div id="coordinator" class="tab-content">
         <form id="coordinatorForm">
+            <select id="eventSelect" required>
+                <option value="">इवेंट चुनें</option>
+            </select>
             <input type="text" id="coordName" placeholder="संयोजक का नाम" required>
             <input type="tel" id="coordMobile" placeholder="मोबाइल नंबर" required>
             <button type="submit">संयोजक जोड़ें</button>
@@ -35,11 +38,14 @@
     </div>
     <div id="report" class="tab-content">
         <form id="reportForm">
+            <select id="reportEventSelect" required>
+                <option value="">इवेंट चुनें</option>
+            </select>
             <input type="date" id="reportDate" required>
             <input type="text" id="guests" placeholder="अतिथि" required>
             <input type="number" id="attendance" placeholder="उपस्थिति" required>
             <textarea id="details" placeholder="विवरण" required></textarea>
-            <input type="file" id="photos" multiple accept="image/*">
+            <input type="file" id="photos" multiple accept="image/*" max="10">
             <button type="submit">रिपोर्ट सबमिट करें</button>
         </form>
     </div>
@@ -51,7 +57,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
-    <script src="firebase.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
