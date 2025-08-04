@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>संयोजक जोड़ें</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>संयोजक जोड़ें</h1>
+        <form id="coordinatorForm">
+            <select id="eventSelect" required><option value="">कार्यक्रम का नाम चुनें</option></select>
+            <select id="coordMandal"><option value="">मंडल चुनें</option></select>
+            <input type="text" id="coordName" placeholder="संयोजक का नाम" required>
+            <input type="text" id="coordMobile" placeholder="मोबाइल नंबर" required>
+            <input type="text" id="coCoordName1" placeholder="सह-संयोजक 1 का नाम">
+            <input type="text" id="coCoordMobile1" placeholder="सह-संयोजक 1 का मोबाइल">
+            <input type="text" id="coCoordName2" placeholder="सह-संयोजक 2 का नाम">
+            <input type="text" id="coCoordMobile2" placeholder="सह-संयोजक 2 का मोबाइल">
+            <button type="submit">जोड़ें</button>
+        </form>
+    </div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+            authDomain: "mandaleventall.firebaseapp.com",
+            projectId: "mandaleventall",
+            storageBucket: "mandaleventall.firebasestorage.app",
+            messagingSenderId: "900190130114",
+            appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+            measurementId: "G-2BBZZNRS88"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const coordMandalSelect = document.getElementById('coordMandal');
+            mandals.forEach(mandal => {
+                const option = document.createElement('option');
+                option.value = mandal;
+                option.textContent = mandal;
+                coordMandalSelect.appendChild(option);
+            });
+            await loadEventNames();
+        });
+
+        async function loadEventNames() {
+            const eventSelect = document.getElementById('eventSelect');
+            eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+            const querySnapshot = await getDocs(collection(db, "eventNames"));
+            querySnapshot.forEach((doc) => {
+                const eventName = doc.data().name;
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = eventName;
+                eventSelect.appendChild(option);
+            });
+        }
