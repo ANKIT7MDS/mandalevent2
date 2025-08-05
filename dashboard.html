@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>डैशबोर्ड</title>
-    <link rel="stylesheet" href="style.css"> <!-- आपकी पुरानी CSS, कोई छेड़खानी नहीं -->
+    <link rel="stylesheet" href="style.css">
     <style>
-        /* Export dropdown, pagination, show more — Only dashboard specific! */
         .export-dropdown {
             position: relative;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
         #exportMenuBtn {
             background: #039be5;
             color: #fff;
             font-weight: 600;
             border: none;
-            padding: 8px 28px 8px 14px;
-            border-radius: 6px;
+            padding: 12px 28px 12px 18px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1.08rem;
         }
@@ -28,28 +27,29 @@
             box-shadow: 0 8px 24px #0001;
             min-width: 210px;
             z-index: 9999;
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
             border: 1px solid #e0e0e0;
         }
         #exportMenu button {
             width: 80px;
-            margin: 0 3px 5px 0;
+            margin: 0 5px 7px 0;
             background: #ff9800;
             border-radius: 5px;
-            font-size: 0.97rem;
+            font-size: 1.01rem;
         }
         #exportMenu button:hover { background: #e65100; }
-        #exportMenu span { display:block; color:#444; font-size:0.98em; margin: 4px 0 2px 0; font-weight: 700; }
-        #exportMenu hr { border: none; border-top: 1px solid #eee; margin: 7px 0; }
+        #exportMenu span { display:block; color:#444; font-size:0.99em; margin: 4px 0 2px 0; font-weight: 700; }
+        #exportMenu hr { border: none; border-top: 1px solid #eee; margin: 9px 0; }
         .show-more-btn { display:block; margin:12px auto 28px auto; padding:6px 22px; background:#ff9800; border-radius:6px; color:#fff; border:none; font-size:1rem;}
         .show-more-btn:hover { background: #e65100; }
     </style>
+    <!-- Hindi Font -->
+    <script src="hindi-font.js"></script>
     <!-- Libs -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
-    <script src="hindi-font.js"></script>
 </head>
 <body>
     <div class="container">
@@ -73,7 +73,7 @@
                 <button onclick="exportReports('excel')">Excel</button>
                 <button onclick="exportReports('pdf')">PDF</button>
                 <hr>
-                <span>संयुक्त (AllData)</span>
+                <span>AllData</span>
                 <button onclick="exportCombinedTable('csv')">CSV</button>
                 <button onclick="exportCombinedTable('excel')">Excel</button>
                 <button onclick="exportCombinedTable('pdf')">PDF</button>
@@ -82,9 +82,7 @@
                 <button onclick="exportReportsHindiPDF()">PDF (हिंदी + फोटो)</button>
             </div>
         </div>
-        <!-- Filters, Forms, Tables go here -->
-        <!-- (बाकी structure/filters/tables बिलकुल पहले जैसा रखें) -->
-        <!-- Example Event Table + Show More: -->
+        <!-- आपकी बाकी table/filters/forms यहां रहें, जैसा पहले था -->
         <h2>कार्यक्रम सूची</h2>
         <table>
             <thead>
@@ -100,9 +98,44 @@
             <tbody id="eventList"></tbody>
         </table>
         <button id="eventShowMore" class="show-more-btn" onclick="showMoreEvents()" style="display:none;">Show More</button>
-        <!-- Coordinator, Report Table भी ऐसे ही... -->
+
+        <h2>संयोजक सूची</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>कार्यक्रम नाम</th>
+                    <th>मंडल</th>
+                    <th>संयोजक</th>
+                    <th>मोबाइल</th>
+                    <th>सह-संयोजक 1</th>
+                    <th>मोबाइल 1</th>
+                    <th>सह-संयोजक 2</th>
+                    <th>मोबाइल 2</th>
+                    <th>डिलीट</th>
+                </tr>
+            </thead>
+            <tbody id="coordinatorList"></tbody>
+        </table>
+        <button id="coordinatorShowMore" class="show-more-btn" onclick="showMoreCoordinators()" style="display:none;">Show More</button>
+
+        <h2>रिपोर्ट सूची</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>कार्यक्रम नाम</th>
+                    <th>मंडल</th>
+                    <th>स्थान</th>
+                    <th>उपस्थिति</th>
+                    <th>विशिष्ट अतिथि</th>
+                    <th>विवरण</th>
+                    <th>फोटो</th>
+                    <th>डिलीट</th>
+                </tr>
+            </thead>
+            <tbody id="reportList"></tbody>
+        </table>
+        <button id="reportShowMore" class="show-more-btn" onclick="showMoreReports()" style="display:none;">Show More</button>
     </div>
-    <!-- बाकी फॉर्म/फिल्टर HTML ... -->
     <script src="dashboard.js"></script>
 </body>
 </html>
