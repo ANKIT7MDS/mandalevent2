@@ -2,67 +2,245 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>आप के मंडल में सम्पन्न हुए वर्तमान कार्यक्रम की पूरी जानकारी भेजिए </title>
-    <link rel="stylesheet" href="style.css">
+    <title>मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
-        body { background: #ffedd2; font-family: 'Segoe UI', Arial, sans-serif; }
-        .container { max-width: 450px; margin: 40px auto; background: #ffd89b; border-radius: 16px; box-shadow: 0 2px 16px #ff980044; padding: 36px 22px 28px 22px; }
-        h1 { color: #e65100; text-align: center; margin-bottom: 18px; }
-        .form-group { display: flex; flex-direction: column; margin-bottom: 18px; }
-        label { margin-bottom: 6px; font-weight: 500; color: #b85c00; }
-        input, select, textarea { padding: 11px 10px; border-radius: 6px; border: 1.5px solid #ffc27b; background: #fffdf6; font-size: 1.1rem; outline: none; transition: border 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: #ff9800; background: #fff7e0; }
-        button, input[type="submit"] { width: 100%; background: #ff9800; color: #fff; border: none; border-radius: 7px; padding: 11px 18px; font-size: 1.13rem; font-weight: bold; cursor: pointer; margin-top: 12px; margin-bottom: 5px; transition: background 0.2s;}
-        button:hover, input[type="submit"]:hover { background: #e65100; }
+        body {
+            background: #f4f6fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #1c2942;
+            margin: 0;
+            padding: 0;
+        }
+        .container-tv {
+            max-width: 1200px;
+            margin: 32px auto 16px auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 30px #e6a74918;
+            padding: 22px 16px 28px 16px;
+            position: relative;
+        }
+        .tv-title-bar {
+            display: flex;
+            align-items: center;
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+        }
+        .tv-logo {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            min-height: 64px;
+            background: linear-gradient(120deg, #ffe1b9 0%, #ffc46d 100%);
+            border: 4px solid #fff3e0;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px #ff980022;
+            font-weight: 700;
+            font-size: 2.1rem;
+            color: #e65100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 17px;
+            letter-spacing: 1px;
+        }
+        .tv-title-main {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #263b64;
+            margin-bottom: 2px;
+        }
+        .tv-title-sub {
+            font-size: 1.1rem;
+            color: #7c6e5a;
+            margin-left: 3px;
+        }
+        .tv-pagination {
+            position: absolute;
+            right: 38px; top: 32px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #b78937;
+        }
+        .slideshow-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+        }
+        .slide-card {
+            flex: 1 1 355px;
+            background: #f8fafc;
+            border-radius: 15px;
+            box-shadow: 0 2px 12px #ffe9d77e;
+            padding: 22px 18px 14px 28px;
+            min-width: 290px;
+            max-width: 410px;
+        }
+        .slide-title {
+            font-size: 1.26rem;
+            font-weight: 600;
+            color: #d07011;
+            margin-bottom: 9px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .slide-details {
+            margin-bottom: 9px;
+        }
+        .slide-details-row {
+            font-size: 1.02rem;
+            margin: 2px 0;
+        }
+        .slide-details-row span {
+            color: #77530e;
+            font-weight: 500;
+            min-width: 64px;
+            display: inline-block;
+        }
+        .slide-description {
+            font-size: 1.06rem;
+            margin: 7px 0 2px 0;
+            color: #212427;
+            line-height: 1.5;
+        }
+        .slide-gallery-card {
+            flex: 1 1 390px;
+            min-width: 320px;
+            background: #fffaf3;
+            border-radius: 15px;
+            box-shadow: 0 2px 12px #ffe9d744;
+            padding: 16px 13px;
+        }
+        .gallery-title {
+            font-size: 1.16rem;
+            font-weight: 600;
+            color: #d07011;
+            margin-bottom: 7px;
+            border-left: 4px solid #ff9800;
+            padding-left: 10px;
+            letter-spacing: 0.3px;
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 13px 12px;
+        }
+        .gallery-img-box {
+            position: relative;
+            border-radius: 11px;
+            overflow: hidden;
+            box-shadow: 0 1px 8px #c99e6652;
+        }
+        .gallery-img-box img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 11px;
+            display: block;
+            background: #fff;
+            cursor: pointer;
+            transition: box-shadow 0.14s;
+        }
+        .gallery-img-box img:hover {
+            box-shadow: 0 0 18px #ff980088;
+        }
+        .view-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 11px;
+            background: #ff9800;
+            color: #fff;
+            border-radius: 7px;
+            padding: 4px 15px 4px 14px;
+            font-size: 1.09rem;
+            font-weight: 600;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 1px 7px #ff98004a;
+            transition: background 0.17s;
+        }
+        .view-btn:hover { background: #e65100;}
+        .gallery-img-box .view-btn:active { background: #ff9800;}
+        /* Pagination controls */
+        .tv-controls {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin: 23px 0 8px 0;
+        }
+        .tv-controls button {
+            background: #ff9800;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 7px;
+            padding: 8px 30px;
+            font-size: 1.13rem;
+            cursor: pointer;
+            transition: background 0.14s;
+            letter-spacing: 1px;
+        }
+        .tv-controls button:hover { background: #d27e13; }
+        /* Photo zoom modal */
+        #imgZoomModal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+        }
+        #imgZoomModal img {
+            max-width: 92vw;
+            max-height: 90vh;
+            border-radius: 16px;
+            border: 5px solid #fff;
+            background: #fff;
+            box-shadow: 0 0 18px #ff9800a7;
+        }
+        @media (max-width: 990px) {
+            .slideshow-section { flex-direction: column; gap: 16px; }
+            .slide-card, .slide-gallery-card { max-width: 100%; min-width: 0;}
+        }
+        @media (max-width: 600px) {
+            .container-tv { padding: 2vw 0vw 4vw 0vw; }
+            .gallery-img-box img { height: 25vw; }
+            .tv-logo { width: 45px; height: 45px; min-width: 45px;}
+            .tv-title-main { font-size: 1.2rem;}
+            .slide-card, .slide-gallery-card { padding: 8px 2vw 10px 2vw;}
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>आप के मंडल में सम्पन्न हुए वर्तमान कार्यक्रम की पूरी जानकारी भेजिए</h1>
-        <form id="reportForm" autocomplete="off">
-            <div class="form-group">
-                <label for="reportEventSelect">कार्यक्रम का नाम</label>
-                <select id="reportEventSelect" required>
-                    <option value="">कार्यक्रम का नाम चुनें</option>
-                </select>
+    <div class="container-tv">
+        <div class="tv-title-bar">
+            <div class="tv-logo">BJ</div>
+            <div>
+                <div class="tv-title-main">मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</div>
+                <div class="tv-title-sub">#मोदी जी कि मन की बात • कार्यक्रम रिपोर्टिंग</div>
             </div>
-            <div class="form-group">
-                <label for="reportMandal">मंडल</label>
-                <select id="reportMandal" required>
-                    <option value="">-- मंडल चुनें --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="reportLocation">स्थान</label>
-                <input type="text" id="reportLocation" required placeholder="जहा कार्यक्रम संप्पन हुआ वो स्थान लिखे ">
-            </div>
-            <div class="form-group">
-                <label for="attendance">उपस्थिति</label>
-                <input type="number" id="attendance" required placeholder="कार्यक्रम में कुल उपस्तिथ संख्या ">
-                <label>दिनांक</label>
-<input id="reportDate" type="date" required>
-
-            </div>
-            <div class="form-group">
-                <label for="guests">विशिष्ट अतिथि</label>
-                <input type="text" id="guests" placeholder="विशिष्ट अतिथि, जनप्रतिनिधि,प्रभारी ,वक्ता आदि ">
-            </div>
-            <div class="form-group">
-                <label for="details">विवरण</label>
-                <textarea id="details" rows="3" placeholder="कार्यक्रम का संक्षिप्त विवरण फोटो सिलेक्ट करके सबमिट बटन एक बार दबाये फॉर्म सबमिट होने में 1 मिनिट का समय लगता है "></textarea>
-            </div>
-            <div class="form-group">
-                <label for="photos">फोटो अपलोड करें</label>
-                <input type="file" id="photos" multiple accept="image/*">
-            </div>
-            <button type="submit">रिपोर्ट सबमिट करें</button>
-        </form>
+            <div class="tv-pagination" id="tv-pagination">1 / 1</div>
+        </div>
+        <div class="slideshow-section" id="tv-slideshow"></div>
+        <div class="tv-controls">
+            <button onclick="prevSlide()">पिछला</button>
+            <button onclick="nextSlide()">अगला</button>
+        </div>
+    </div>
+    <!-- फोटो Zoom Modal -->
+    <div id="imgZoomModal">
+        <img id="imgZoomModalImg" src="">
     </div>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
+        // Firebase config (अपना config)
         const firebaseConfig = {
             apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
             authDomain: "mandaleventall.firebaseapp.com",
@@ -74,63 +252,105 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+        let reports = [];
+        let slideIndex = 0;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const reportMandalSelect = document.getElementById('reportMandal');
-            mandals.forEach(mandal => {
-                const option = document.createElement('option');
-                option.value = mandal;
-                option.textContent = mandal;
-                reportMandalSelect.appendChild(option);
+        async function loadReports() {
+            // Event Names
+            const eventNamesSnap = await getDocs(collection(db, "eventNames"));
+            const eventNames = {};
+            eventNamesSnap.forEach(docSnap => {
+                eventNames[docSnap.id] = docSnap.data().name || '';
             });
-            await loadEventNames();
-        });
-
-        async function loadEventNames() {
-            const eventSelect = document.getElementById('reportEventSelect');
-            eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-            const querySnapshot = await getDocs(collection(db, "eventNames"));
-            querySnapshot.forEach((doc) => {
-                const eventName = doc.data().name;
-                const option = document.createElement('option');
-                option.value = doc.id;
-                option.textContent = eventName;
-                eventSelect.appendChild(option);
-            });
+            // सभी रिपोर्ट्स
+            let allReports = [];
+            for (const eventNameId of Object.keys(eventNames)) {
+                const reportSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
+                reportSnap.forEach(docSnap => {
+                    const r = docSnap.data();
+                    allReports.push({
+                        ...r,
+                        id: docSnap.id,
+                        eventNameId,
+                        eventName: eventNames[eventNameId]
+                    });
+                });
+            }
+            // Date desc sort (अगर date है)
+            allReports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            reports = allReports;
+            showSlide(0);
         }
 
-        document.getElementById('reportForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const eventNameId = document.getElementById('reportEventSelect').value;
-            const files = document.getElementById('photos').files;
-            const photoUrls = [];
-            try {
-                for (let file of files) {
-                    const storageRef = ref(storage, `reports/${eventNameId}/${file.name}`);
-                    await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(storageRef);
-                    photoUrls.push(url);
-                }
-                const reportData = {
-                    eventNameId: eventNameId,
-                    mandal: document.getElementById('reportMandal').value,
-                    location: document.getElementById('reportLocation').value,
-                    attendance: document.getElementById('attendance').value,
-                    const reportDate = document.getElementById("reportDate").value;
-                    guests: document.getElementById('guests').value,
-                    details: document.getElementById('details').value,
-                    photos: photoUrls
-                };
-                await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
-                alert("रिपोर्ट सबमिट की गई!");
-                document.getElementById('reportForm').reset();
-            } catch (error) {
-                alert("Error: " + error.message);
+        window.prevSlide = function() {
+            if (!reports.length) return;
+            slideIndex = (slideIndex-1+reports.length) % reports.length;
+            showSlide(slideIndex);
+        }
+        window.nextSlide = function() {
+            if (!reports.length) return;
+            slideIndex = (slideIndex+1)%reports.length;
+            showSlide(slideIndex);
+        }
+
+        function showSlide(idx) {
+            if (!reports.length) {
+                document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.2rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
+                document.getElementById('tv-pagination').innerText = "";
+                return;
             }
-        });
+            slideIndex = idx;
+            const r = reports[idx];
+            // DETAILS CARD
+            let detailsHtml = `
+            <div class="slide-card">
+                <div class="slide-title">${r.eventName || 'कार्यक्रम'}</div>
+                <div class="slide-details">
+                    <div class="slide-details-row"><span>तारीख:</span> ${r.date || '-'}</div>
+                    <div class="slide-details-row"><span>स्थान:</span> ${r.location || '-'}</div>
+                    <div class="slide-details-row"><span>मंडल:</span> ${r.mandal || '-'}</div>
+                    <div class="slide-details-row"><span>प्रकार:</span> ${r.type || (r.prakar||'कार्यक्रम')}</div>
+                    <div class="slide-details-row"><span>उपस्थिति:</span> ${r.attendance || '-'}</div>
+                    <div class="slide-details-row"><span>अतिथि:</span> ${r.guests || '-'}</div>
+                </div>
+                <div class="slide-description">${(r.details||'').replace(/\n/g,'<br>')}</div>
+                ${r.hashtag ? `<div class="slide-details-row" style="margin-top:4px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
+            </div>
+            `;
+            // फोटो कार्ड
+            let photos = (Array.isArray(r.photos) ? r.photos : []).slice(0,4);
+            let galleryHtml = `<div class="slide-gallery-card">
+                <div class="gallery-title">फोटो गैलरी</div>
+                <div class="gallery-grid">`;
+            if (photos.length) {
+                photos.forEach((url, idx) => {
+                    galleryHtml += `
+                    <div class="gallery-img-box">
+                        <img src="${url}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${url}')">
+                        <button class="view-btn" onclick="zoomImage(event, '${url}')">देखें</button>
+                    </div>`;
+                });
+            } else {
+                galleryHtml += `<div style="color:#b87f3a; font-size:1rem;">कोई फोटो उपलब्ध नहीं</div>`;
+            }
+            galleryHtml += `</div></div>`;
+            document.getElementById('tv-slideshow').innerHTML = detailsHtml + galleryHtml;
+            document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
+        }
+
+        // फोटो ज़ूम
+        window.zoomImage = function(e, url) {
+            e.preventDefault();
+            document.getElementById('imgZoomModalImg').src = url;
+            document.getElementById('imgZoomModal').style.display = 'flex';
+        };
+        document.getElementById('imgZoomModal').onclick = function() {
+            this.style.display = 'none';
+            document.getElementById('imgZoomModalImg').src = '';
+        };
+
+        loadReports();
     </script>
 </body>
 </html>
