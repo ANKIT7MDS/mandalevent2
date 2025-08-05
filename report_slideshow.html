@@ -2,141 +2,245 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>कार्यक्रम रिपोर्ट स्लाइडशो</title>
+    <title>मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
         body {
-            background: #fff9f3;
+            background: #f4f6fa;
             font-family: 'Segoe UI', Arial, sans-serif;
-            color: #222;
+            color: #1c2942;
             margin: 0;
             padding: 0;
         }
-        .slideshow-container {
-            max-width: 880px;
-            margin: 44px auto 20px auto;
-            background: #fff6ea;
-            border-radius: 16px;
-            box-shadow: 0 2px 16px #ff980020;
-            padding: 30px 10px 25px 10px;
+        .container-tv {
+            max-width: 1200px;
+            margin: 32px auto 16px auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 30px #e6a74918;
+            padding: 22px 16px 28px 16px;
+            position: relative;
+        }
+        .tv-title-bar {
             display: flex;
             align-items: center;
-            gap: 24px;
-            min-height: 370px;
-            flex-wrap: wrap;
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
         }
-        .slide-info {
-            flex: 1 1 280px;
-            max-width: 340px;
-            padding: 10px 15px;
-        }
-        .slide-info h2 {
+        .tv-logo {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            min-height: 64px;
+            background: linear-gradient(120deg, #ffe1b9 0%, #ffc46d 100%);
+            border: 4px solid #fff3e0;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px #ff980022;
+            font-weight: 700;
+            font-size: 2.1rem;
             color: #e65100;
-            margin-top: 0;
-        }
-        .slide-info table {
-            width: 100%;
-            font-size: 1.1rem;
-            background: none;
-            border-collapse: collapse;
-        }
-        .slide-info td {
-            padding: 5px 7px 3px 0;
-            vertical-align: top;
-        }
-        .slide-photos {
-            flex: 1 1 360px;
             display: flex;
-            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            margin-right: 17px;
+            letter-spacing: 1px;
+        }
+        .tv-title-main {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #263b64;
+            margin-bottom: 2px;
+        }
+        .tv-title-sub {
+            font-size: 1.1rem;
+            color: #7c6e5a;
+            margin-left: 3px;
+        }
+        .tv-pagination {
+            position: absolute;
+            right: 38px; top: 32px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #b78937;
+        }
+        .slideshow-section {
+            display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            justify-content: flex-start;
+            gap: 22px;
         }
-        .slide-photos img {
-            max-width: 170px;
-            max-height: 120px;
-            border-radius: 9px;
-            border: 2px solid #ff9800;
-            cursor: pointer;
-            transition: box-shadow 0.17s;
-            background: #fff;
+        .slide-card {
+            flex: 1 1 355px;
+            background: #f8fafc;
+            border-radius: 15px;
+            box-shadow: 0 2px 12px #ffe9d77e;
+            padding: 22px 18px 14px 28px;
+            min-width: 290px;
+            max-width: 410px;
+        }
+        .slide-title {
+            font-size: 1.26rem;
+            font-weight: 600;
+            color: #d07011;
+            margin-bottom: 9px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .slide-details {
+            margin-bottom: 9px;
+        }
+        .slide-details-row {
+            font-size: 1.02rem;
+            margin: 2px 0;
+        }
+        .slide-details-row span {
+            color: #77530e;
+            font-weight: 500;
+            min-width: 64px;
+            display: inline-block;
+        }
+        .slide-description {
+            font-size: 1.06rem;
+            margin: 7px 0 2px 0;
+            color: #212427;
+            line-height: 1.5;
+        }
+        .slide-gallery-card {
+            flex: 1 1 390px;
+            min-width: 320px;
+            background: #fffaf3;
+            border-radius: 15px;
+            box-shadow: 0 2px 12px #ffe9d744;
+            padding: 16px 13px;
+        }
+        .gallery-title {
+            font-size: 1.16rem;
+            font-weight: 600;
+            color: #d07011;
+            margin-bottom: 7px;
+            border-left: 4px solid #ff9800;
+            padding-left: 10px;
+            letter-spacing: 0.3px;
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 13px 12px;
+        }
+        .gallery-img-box {
+            position: relative;
+            border-radius: 11px;
+            overflow: hidden;
+            box-shadow: 0 1px 8px #c99e6652;
+        }
+        .gallery-img-box img {
+            width: 100%;
+            height: 130px;
             object-fit: cover;
+            border-radius: 11px;
+            display: block;
+            background: #fff;
+            cursor: pointer;
+            transition: box-shadow 0.14s;
         }
-        .slide-photos img:hover {
-            box-shadow: 0 2px 16px #ff980044;
+        .gallery-img-box img:hover {
+            box-shadow: 0 0 18px #ff980088;
         }
-        .slideshow-controls {
-            text-align: center;
-            margin-top: 16px;
-        }
-        .slideshow-controls button {
+        .view-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 11px;
             background: #ff9800;
             color: #fff;
+            border-radius: 7px;
+            padding: 4px 15px 4px 14px;
+            font-size: 1.09rem;
+            font-weight: 600;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 1px 7px #ff98004a;
+            transition: background 0.17s;
+        }
+        .view-btn:hover { background: #e65100;}
+        .gallery-img-box .view-btn:active { background: #ff9800;}
+        /* Pagination controls */
+        .tv-controls {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin: 23px 0 8px 0;
+        }
+        .tv-controls button {
+            background: #ff9800;
+            color: #fff;
+            font-weight: 600;
             border: none;
             border-radius: 7px;
-            padding: 8px 22px;
+            padding: 8px 30px;
             font-size: 1.13rem;
             cursor: pointer;
-            margin: 0 8px;
-            font-weight: 600;
-            transition: background 0.15s;
+            transition: background 0.14s;
+            letter-spacing: 1px;
         }
-        .slideshow-controls button:hover {
-            background: #e65100;
-        }
-        /* Modal for zoom image */
+        .tv-controls button:hover { background: #d27e13; }
+        /* Photo zoom modal */
         #imgZoomModal {
             display: none;
             position: fixed;
             z-index: 2000;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.82);
+            background: rgba(0,0,0,0.85);
             align-items: center;
             justify-content: center;
         }
         #imgZoomModal img {
-            max-width: 94vw;
-            max-height: 93vh;
+            max-width: 92vw;
+            max-height: 90vh;
+            border-radius: 16px;
             border: 5px solid #fff;
-            border-radius: 12px;
             background: #fff;
-            box-shadow: 0 0 18px #ff9800c2;
+            box-shadow: 0 0 18px #ff9800a7;
         }
-        @media (max-width: 900px) {
-            .slideshow-container { flex-direction: column; align-items: stretch; }
-            .slide-info, .slide-photos { max-width: 100%; }
-            .slide-photos { justify-content: center; }
+        @media (max-width: 990px) {
+            .slideshow-section { flex-direction: column; gap: 16px; }
+            .slide-card, .slide-gallery-card { max-width: 100%; min-width: 0;}
         }
-        @media (max-width: 540px) {
-            .slide-photos img { max-width: 98vw; width: 94vw; min-width: 0; }
-            .slide-info { padding: 4px; }
+        @media (max-width: 600px) {
+            .container-tv { padding: 2vw 0vw 4vw 0vw; }
+            .gallery-img-box img { height: 25vw; }
+            .tv-logo { width: 45px; height: 45px; min-width: 45px;}
+            .tv-title-main { font-size: 1.2rem;}
+            .slide-card, .slide-gallery-card { padding: 8px 2vw 10px 2vw;}
         }
     </style>
 </head>
 <body>
-    <div id="slideSection" style="display:none;">
-        <div class="slideshow-container" id="slideshowBox">
-            <!-- JS से भरेंगे -->
+    <div class="container-tv">
+        <div class="tv-title-bar">
+            <div class="tv-logo">BJ</div>
+            <div>
+                <div class="tv-title-main">मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</div>
+                <div class="tv-title-sub">#मोदी जी कि मन की बात • कार्यक्रम रिपोर्टिंग</div>
+            </div>
+            <div class="tv-pagination" id="tv-pagination">1 / 1</div>
         </div>
-        <div class="slideshow-controls">
+        <div class="slideshow-section" id="tv-slideshow"></div>
+        <div class="tv-controls">
             <button onclick="prevSlide()">पिछला</button>
-            <span id="slideNumber"></span>
             <button onclick="nextSlide()">अगला</button>
         </div>
-    </div>
-    <div id="noDataBox" style="text-align:center; font-size:1.17rem; margin:50px 0; color:#b87f3a;display:none;">
-        कोई रिपोर्ट डेटा उपलब्ध नहीं है।
     </div>
     <!-- फोटो Zoom Modal -->
     <div id="imgZoomModal">
         <img id="imgZoomModalImg" src="">
     </div>
-    <!-- Firebase JS -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
         import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-        // --- Firebase Config (अपना config यहाँ रखें, डैशबोर्ड वाला) ---
+        // Firebase config (अपना config)
         const firebaseConfig = {
             apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
             authDomain: "mandaleventall.firebaseapp.com",
@@ -149,18 +253,17 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ---- स्लाइड शो logic ----
         let reports = [];
         let slideIndex = 0;
 
         async function loadReports() {
-            // सारे eventNames लें
+            // Event Names
             const eventNamesSnap = await getDocs(collection(db, "eventNames"));
             const eventNames = {};
             eventNamesSnap.forEach(docSnap => {
                 eventNames[docSnap.id] = docSnap.data().name || '';
             });
-            // सभी रिपोर्ट्स लाओ
+            // सभी रिपोर्ट्स
             let allReports = [];
             for (const eventNameId of Object.keys(eventNames)) {
                 const reportSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
@@ -174,16 +277,9 @@
                     });
                 });
             }
-            // Sort by event name + date/time if available
+            // Date desc sort (अगर date है)
             allReports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
             reports = allReports;
-            if (!reports.length) {
-                document.getElementById('slideSection').style.display = 'none';
-                document.getElementById('noDataBox').style.display = '';
-                return;
-            }
-            document.getElementById('noDataBox').style.display = 'none';
-            document.getElementById('slideSection').style.display = '';
             showSlide(0);
         }
 
@@ -199,35 +295,48 @@
         }
 
         function showSlide(idx) {
-            if (!reports.length) return;
+            if (!reports.length) {
+                document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.2rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
+                document.getElementById('tv-pagination').innerText = "";
+                return;
+            }
             slideIndex = idx;
             const r = reports[idx];
-            // Details Info (Left)
-            let infoHtml = `
-                <div class="slide-info">
-                    <h2>${r.eventName || 'कार्यक्रम'}</h2>
-                    <table>
-                        <tr><td><b>मंडल:</b></td><td>${r.mandal || '-'}</td></tr>
-                        <tr><td><b>स्थान:</b></td><td>${r.location || '-'}</td></tr>
-                        <tr><td><b>उपस्थिति:</b></td><td>${r.attendance || '-'}</td></tr>
-                        <tr><td><b>विशिष्ट अतिथि:</b></td><td>${r.guests || '-'}</td></tr>
-                        <tr><td><b>विवरण:</b></td><td>${r.details || '-'}</td></tr>
-                    </table>
+            // DETAILS CARD
+            let detailsHtml = `
+            <div class="slide-card">
+                <div class="slide-title">${r.eventName || 'कार्यक्रम'}</div>
+                <div class="slide-details">
+                    <div class="slide-details-row"><span>तारीख:</span> ${r.date || '-'}</div>
+                    <div class="slide-details-row"><span>स्थान:</span> ${r.location || '-'}</div>
+                    <div class="slide-details-row"><span>मंडल:</span> ${r.mandal || '-'}</div>
+                    <div class="slide-details-row"><span>प्रकार:</span> ${r.type || (r.prakar||'कार्यक्रम')}</div>
+                    <div class="slide-details-row"><span>उपस्थिति:</span> ${r.attendance || '-'}</div>
+                    <div class="slide-details-row"><span>अतिथि:</span> ${r.guests || '-'}</div>
                 </div>
+                <div class="slide-description">${(r.details||'').replace(/\n/g,'<br>')}</div>
+                ${r.hashtag ? `<div class="slide-details-row" style="margin-top:4px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
+            </div>
             `;
-            // Photos (Right)
+            // फोटो कार्ड
             let photos = (Array.isArray(r.photos) ? r.photos : []).slice(0,4);
-            let photosHtml = `<div class="slide-photos">`;
+            let galleryHtml = `<div class="slide-gallery-card">
+                <div class="gallery-title">फोटो गैलरी</div>
+                <div class="gallery-grid">`;
             if (photos.length) {
-                photos.forEach(url => {
-                    photosHtml += `<img src="${url}" onclick="zoomImage(event, '${url}')" alt="कार्यक्रम फोटो">`;
+                photos.forEach((url, idx) => {
+                    galleryHtml += `
+                    <div class="gallery-img-box">
+                        <img src="${url}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${url}')">
+                        <button class="view-btn" onclick="zoomImage(event, '${url}')">देखें</button>
+                    </div>`;
                 });
             } else {
-                photosHtml += `<div style="color:#b87f3a; font-size:1rem;">कोई फोटो उपलब्ध नहीं</div>`;
+                galleryHtml += `<div style="color:#b87f3a; font-size:1rem;">कोई फोटो उपलब्ध नहीं</div>`;
             }
-            photosHtml += `</div>`;
-            document.getElementById('slideshowBox').innerHTML = infoHtml + photosHtml;
-            document.getElementById('slideNumber').innerText = `(${idx+1} / ${reports.length})`;
+            galleryHtml += `</div></div>`;
+            document.getElementById('tv-slideshow').innerHTML = detailsHtml + galleryHtml;
+            document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
         }
 
         // फोटो ज़ूम
@@ -241,7 +350,6 @@
             document.getElementById('imgZoomModalImg').src = '';
         };
 
-        // लोड करें
         loadReports();
     </script>
 </body>
