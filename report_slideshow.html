@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <!-- PDF Export: jsPDF + Noto font -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
     <style>
         body {
             background: #f4f6fa;
@@ -52,17 +59,43 @@
             color: #263b64;
             margin-bottom: 2px;
         }
-        .tv-title-sub {
-            font-size: 1.1rem;
-            color: #7c6e5a;
-            margin-left: 3px;
-        }
         .tv-pagination {
             position: absolute;
             right: 38px; top: 32px;
             font-size: 1.2rem;
             font-weight: 600;
             color: #b78937;
+        }
+        .tv-controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 18px 0 10px 0;
+        }
+        .tv-controls button {
+            background: #ff9800;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 7px;
+            padding: 8px 24px;
+            font-size: 1.13rem;
+            cursor: pointer;
+            transition: background 0.14s;
+            letter-spacing: 1px;
+        }
+        .tv-controls button:hover { background: #d27e13; }
+        .tv-controls .autoplay-btn {
+            background: #1976d2;
+        }
+        .tv-controls .autoplay-btn.active {
+            background: #44a62c;
+        }
+        .tv-controls .pdf-btn {
+            background: #5e35b1;
+        }
+        .tv-controls .pdf-btn:hover {
+            background: #4527a0;
         }
         .slideshow-section {
             display: flex;
@@ -87,9 +120,7 @@
             align-items: center;
             gap: 6px;
         }
-        .slide-details {
-            margin-bottom: 9px;
-        }
+        .slide-details { margin-bottom: 9px; }
         .slide-details-row {
             font-size: 1.02rem;
             margin: 2px 0;
@@ -132,20 +163,23 @@
             position: relative;
             border-radius: 11px;
             overflow: hidden;
-            box-shadow: 0 1px 8px #c99e6652;
+            aspect-ratio: 4/3;
+            background: #fff;
+            min-width: 0;
+            min-height: 0;
         }
         .gallery-img-box img {
             width: 100%;
-            height: 130px;
+            height: 100%;
             object-fit: cover;
+            object-position: center center;
             border-radius: 11px;
             display: block;
             background: #fff;
             cursor: pointer;
             transition: box-shadow 0.14s;
-        }
-        .gallery-img-box img:hover {
-            box-shadow: 0 0 18px #ff980088;
+            position: absolute;
+            left: 0; top: 0;
         }
         .view-btn {
             position: absolute;
@@ -164,27 +198,11 @@
             transition: background 0.17s;
         }
         .view-btn:hover { background: #e65100;}
-        .gallery-img-box .view-btn:active { background: #ff9800;}
-        /* Pagination controls */
-        .tv-controls {
-            display: flex;
-            justify-content: center;
-            gap: 18px;
-            margin: 23px 0 8px 0;
+        .edit-btn {
+            background: #1976d2;
+            right: 102px;
         }
-        .tv-controls button {
-            background: #ff9800;
-            color: #fff;
-            font-weight: 600;
-            border: none;
-            border-radius: 7px;
-            padding: 8px 30px;
-            font-size: 1.13rem;
-            cursor: pointer;
-            transition: background 0.14s;
-            letter-spacing: 1px;
-        }
-        .tv-controls button:hover { background: #d27e13; }
+        .edit-btn:hover { background: #0d47a1; }
         /* Photo zoom modal */
         #imgZoomModal {
             display: none;
@@ -202,6 +220,22 @@
             border: 5px solid #fff;
             background: #fff;
             box-shadow: 0 0 18px #ff9800a7;
+        }
+        /* Adjust View Modal */
+        #adjustViewModal {
+            display:none; position:fixed; z-index:5000; top:0;left:0;width:100vw;height:100vh;
+            background:rgba(0,0,0,0.7); align-items:center; justify-content:center;
+        }
+        #adjustViewModal .modal-box {
+            background:#fff; padding:15px 20px; border-radius:14px; box-shadow:0 2px 30px #ff980075;
+            display:flex; flex-direction:column; align-items:center;
+        }
+        #adjustViewModal .drag-box {
+            position:relative; width:340px; height:255px; overflow:hidden; border-radius:11px; background:#eee;
+        }
+        #adjViewImg {
+            position:absolute; left:0; top:0; cursor:grab; min-width:100%; min-height:100%;
+            user-select: none;
         }
         @media (max-width: 990px) {
             .slideshow-section { flex-direction: column; gap: 16px; }
@@ -222,7 +256,6 @@
             <div class="tv-logo">BJ</div>
             <div>
                 <div class="tv-title-main">मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</div>
-                <div class="tv-title-sub">#मोदी जी कि मन की बात • कार्यक्रम रिपोर्टिंग</div>
             </div>
             <div class="tv-pagination" id="tv-pagination">1 / 1</div>
         </div>
@@ -230,15 +263,29 @@
         <div class="tv-controls">
             <button onclick="prevSlide()">पिछला</button>
             <button onclick="nextSlide()">अगला</button>
+            <button class="autoplay-btn" id="autoplayBtn" onclick="toggleAutoplay()">ऑटो-प्ले</button>
+            <button class="pdf-btn" onclick="downloadPDF()">PDF डाउनलोड</button>
         </div>
     </div>
     <!-- फोटो Zoom Modal -->
     <div id="imgZoomModal">
         <img id="imgZoomModalImg" src="">
     </div>
+    <!-- फोटो Adjust View Modal -->
+    <div id="adjustViewModal">
+      <div class="modal-box">
+        <div class="drag-box">
+          <img id="adjViewImg" src="">
+        </div>
+        <div style="margin-top:12px; text-align:center;">
+          <button onclick="saveViewPos()">सेव</button>
+          <button onclick="closeAdjView()">कैंसिल</button>
+        </div>
+      </div>
+    </div>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         // Firebase config (अपना config)
         const firebaseConfig = {
@@ -255,29 +302,32 @@
 
         let reports = [];
         let slideIndex = 0;
+        let autoplay = false;
+        let autoplayInterval = null;
+        let currPhotoPos = {}; // key: reportIdx-imgIdx
 
         async function loadReports() {
-            // Event Names
             const eventNamesSnap = await getDocs(collection(db, "eventNames"));
             const eventNames = {};
             eventNamesSnap.forEach(docSnap => {
                 eventNames[docSnap.id] = docSnap.data().name || '';
             });
-            // सभी रिपोर्ट्स
             let allReports = [];
             for (const eventNameId of Object.keys(eventNames)) {
                 const reportSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
                 reportSnap.forEach(docSnap => {
                     const r = docSnap.data();
+                    // यदि फोटो में offsetX, offsetY है तो उसे नोट करें
+                    let photoOffsets = Array.isArray(r.photoOffsets) ? r.photoOffsets : [];
                     allReports.push({
                         ...r,
                         id: docSnap.id,
                         eventNameId,
-                        eventName: eventNames[eventNameId]
+                        eventName: eventNames[eventNameId],
+                        photoOffsets
                     });
                 });
             }
-            // Date desc sort (अगर date है)
             allReports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
             reports = allReports;
             showSlide(0);
@@ -292,6 +342,19 @@
             if (!reports.length) return;
             slideIndex = (slideIndex+1)%reports.length;
             showSlide(slideIndex);
+        }
+        function toggleAutoplay() {
+            autoplay = !autoplay;
+            let btn = document.getElementById('autoplayBtn');
+            btn.classList.toggle('active', autoplay);
+            btn.textContent = autoplay ? "ऑटो-प्ले बंद करें" : "ऑटो-प्ले";
+            if (autoplay) {
+                autoplayInterval = setInterval(() => {
+                    nextSlide();
+                }, 5000);
+            } else {
+                clearInterval(autoplayInterval);
+            }
         }
 
         function showSlide(idx) {
@@ -320,15 +383,19 @@
             `;
             // फोटो कार्ड
             let photos = (Array.isArray(r.photos) ? r.photos : []).slice(0,4);
+            let photoOffsets = Array.isArray(r.photoOffsets) ? r.photoOffsets : [];
             let galleryHtml = `<div class="slide-gallery-card">
                 <div class="gallery-title">फोटो गैलरी</div>
                 <div class="gallery-grid">`;
             if (photos.length) {
-                photos.forEach((url, idx) => {
+                photos.forEach((url, pidx) => {
+                    let pos = photoOffsets[pidx] || {x:0, y:0};
+                    let style = `left:${pos.x||0}px; top:${pos.y||0}px;`;
                     galleryHtml += `
                     <div class="gallery-img-box">
-                        <img src="${url}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${url}')">
+                        <img src="${url}" alt="कार्यक्रम फोटो" style="${style}" onclick="zoomImage(event, '${url}')">
                         <button class="view-btn" onclick="zoomImage(event, '${url}')">देखें</button>
+                        <button class="view-btn edit-btn" onclick="openAdjView(${idx},${pidx},'${url}')">सेट व्यू</button>
                     </div>`;
                 });
             } else {
@@ -339,7 +406,7 @@
             document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
         }
 
-        // फोटो ज़ूम
+        // --- फोटो ZOOM ---
         window.zoomImage = function(e, url) {
             e.preventDefault();
             document.getElementById('imgZoomModalImg').src = url;
@@ -350,6 +417,115 @@
             document.getElementById('imgZoomModalImg').src = '';
         };
 
+        // --- एडजस्ट व्यू (DRAG) ---
+        let dragData = {isDrag:false, startX:0, startY:0, imgX:0, imgY:0, boxW:340, boxH:255};
+        let adjIdx = null, adjPidx = null;
+        window.openAdjView = function(idx, pidx, url) {
+            adjIdx = idx; adjPidx = pidx;
+            document.getElementById('adjViewImg').src = url;
+            let pos = ((reports[idx]||{}).photoOffsets||[])[pidx] || {x:0,y:0};
+            let img = document.getElementById('adjViewImg');
+            img.onload = function() {
+                img.style.left = (pos.x||0)+"px";
+                img.style.top = (pos.y||0)+"px";
+                dragData.imgX = parseInt(img.style.left)||0;
+                dragData.imgY = parseInt(img.style.top)||0;
+            }
+            setTimeout(() => {
+                dragData.imgX = pos.x||0; dragData.imgY = pos.y||0;
+                dragData.isDrag = false;
+            }, 120);
+            document.getElementById('adjustViewModal').style.display = 'flex';
+        };
+        document.getElementById('adjViewImg').addEventListener('mousedown', function(e){
+            dragData.isDrag = true;
+            dragData.startX = e.clientX;
+            dragData.startY = e.clientY;
+            dragData.imgX = parseInt(this.style.left)||0;
+            dragData.imgY = parseInt(this.style.top)||0;
+        });
+        window.addEventListener('mousemove', function(e){
+            if(!dragData.isDrag) return;
+            let dx = e.clientX - dragData.startX;
+            let dy = e.clientY - dragData.startY;
+            let img = document.getElementById('adjViewImg');
+            let boxW = dragData.boxW, boxH = dragData.boxH;
+            let imgRatio = img.naturalWidth/img.naturalHeight;
+            let scaleW = Math.max(boxW, boxH*imgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
+            let imgW = scaleW, imgH = scaleW/imgRatio;
+            if (imgH < boxH) { imgH = boxH; imgW = boxH*imgRatio; }
+            let minX = boxW-imgW, minY = boxH-imgH;
+            let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
+            let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
+            img.style.left = nx + "px";
+            img.style.top = ny + "px";
+        });
+        window.addEventListener('mouseup', function(e){
+            dragData.isDrag = false;
+        });
+        window.closeAdjView = function() {
+            document.getElementById('adjustViewModal').style.display = 'none';
+        };
+        window.saveViewPos = async function() {
+            let img = document.getElementById('adjViewImg');
+            let left = parseInt(img.style.left)||0;
+            let top = parseInt(img.style.top)||0;
+            // Firestore में सेव करें (report doc में photoOffsets array में)
+            let r = reports[adjIdx];
+            let photoOffsets = Array.isArray(r.photoOffsets)? r.photoOffsets : [];
+            photoOffsets[adjPidx] = {x:left, y:top};
+            // Firestore update:
+            await updateDoc(doc(db, `eventNames/${r.eventNameId}/reports`, r.id), { photoOffsets });
+            // Local भी अपडेट करें
+            reports[adjIdx].photoOffsets = photoOffsets;
+            alert("सेट हो गया!");
+            closeAdjView();
+            showSlide(slideIndex);
+        };
+
+        // --- PDF Export (Hindi Font) ---
+        window.downloadPDF = function() {
+            if (!reports[slideIndex]) return;
+            let r = reports[slideIndex];
+            const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+            doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+            doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+            doc.setFont("NotoSansDevanagari");
+            doc.setFontSize(18);
+            doc.text(r.eventName || 'कार्यक्रम', 45, 48, {lang:"hi"});
+            doc.setFontSize(12);
+            let y = 76;
+            let details = [
+                ["तारीख", r.date||'-'], ["स्थान", r.location||'-'], ["मंडल", r.mandal||'-'],
+                ["प्रकार", r.type||(r.prakar||'कार्यक्रम')], ["उपस्थिति", r.attendance||'-'],
+                ["अतिथि", r.guests||'-']
+            ];
+            doc.autoTable({
+                startY: y, head:[["फील्ड", "विवरण"]], body: details,
+                styles:{ font:"NotoSansDevanagari", fontSize:12 }
+            });
+            y = doc.lastAutoTable.finalY + 15;
+            doc.text("कार्यक्रम विवरण:", 45, y, {lang:"hi"});
+            y+=18;
+            let desc = (r.details||'-').replace(/\n/g," ");
+            doc.text(desc, 55, y, {maxWidth:720,lang:"hi"});
+            // फोटो (पहली 2 फोटो): as thumbnails (optional)
+            let photos = (Array.isArray(r.photos)?r.photos:[]).slice(0,2);
+            let imgY = y+32;
+            photos.forEach((url,idx)=>{
+                let img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = function() {
+                    doc.addImage(img, "JPEG", 60+idx*260, imgY, 220, 160);
+                    if (idx==photos.length-1) doc.save((r.eventName||'report')+".pdf");
+                };
+                img.onerror = function() { if(idx==photos.length-1) doc.save((r.eventName||'report')+".pdf"); };
+                img.src = url;
+            });
+            if(!photos.length) doc.save((r.eventName||'report')+".pdf");
+        };
+
+        // --- Page load ---
         loadReports();
     </script>
 </body>
