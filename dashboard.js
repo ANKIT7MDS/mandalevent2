@@ -1,4 +1,4 @@
-// Export Dropdown open/close
+// ---- Export Dropdown (show/hide) ----
 document.getElementById('exportMenuBtn').onclick = function(e){
     e.stopPropagation();
     document.getElementById('exportMenu').style.display =
@@ -10,48 +10,251 @@ window.onclick = function(e){
     }
 };
 
-// ------- Pagination Variables ------
-let eventsPage = 1, PAGE_SIZE = 10, allEventsData = [];
-// ... ऐसे ही coordinatorsPage, allCoordinatorsData etc.
+// ---- Firebase (v8, window.firebase via cdn) ----
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+};
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
 
-// Firebase import/init (Type="module" में हो तो ये भी dashboard.js में)
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+// ---- Pagination Variables ----
+let eventsData = [], eventsPage = 1;
+let coordinatorsData = [], coordinatorsPage = 1;
+let reportsData = [], reportsPage = 1;
+const PAGE_SIZE = 10;
 
-const firebaseConfig = { /* आपकी config */ };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// -------- Event Pagination -------
+// ---- EVENTS ----
 async function loadEvents() {
-    // ...Firebase से लाओ (फिल्टर apply), फिर:
-    allEventsData = []; // fetch करके भरना है!
-    // Example: allEventsData = [{...}, {...}]
+    eventsData = [];
+    let snapshot = await db.collection("events").get();
+    snapshot.forEach(doc => {
+        let d = doc.data();
+        d.id = doc.id;
+        eventsData.push(d);
+    });
     showEventsPage(1);
 }
 function showEventsPage(page) {
     eventsPage = page;
-    const start = (page-1)*PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    const visibleRows = allEventsData.slice(0, end); // Progressive Show More
-    const eventList = document.getElementById('eventList');
-    eventList.innerHTML = '';
-    visibleRows.forEach(event => {
-        // ...row.innerHTML
-        eventList.appendChild(row);
+    const end = page * PAGE_SIZE;
+    const rows = eventsData.slice(0, end);
+    const table = document.getElementById("eventList");
+    table.innerHTML = "";
+    rows.forEach(d => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${d.eventName || '-'}</td>
+            <td>${d.mandal || '-'}</td>
+            <td>${d.date || '-'}</td>
+            <td>${d.time || '-'}</td>
+            <td>${d.location || '-'}</td>
+            <td><button onclick="deleteEvent('${d.id}')">Delete</button></td>
+        `;
+        table.appendChild(tr);
     });
     document.getElementById('eventShowMore').style.display =
-        allEventsData.length > end ? 'block' : 'none';
+        eventsData.length > end ? 'block' : 'none';
 }
-window.showMoreEvents = function() { showEventsPage(eventsPage+1); }
+window.showMoreEvents = function() { showEventsPage(eventsPage + 1); }
+window.deleteEvent = async function(id) {
+    if(confirm("डिलीट करें?")) {
+        await db.collection("events").doc(id).delete();
+        loadEvents();
+    }
+};
 
-// ------ बाकी tables के लिए भी यही पैटर्न -------
+// ---- COORDINATORS ----
+async function loadCoordinators() {
+    coordinatorsData = [];
+    let snapshot = await db.collection("coordinators").get();
+    snapshot.forEach(doc => {
+        let d = doc.data();
+        d.id = doc.id;
+        coordinatorsData.push(d);
+    });
+    showCoordinatorsPage(1);
+}
+function showCoordinatorsPage(page) {
+    coordinatorsPage = page;
+    const end = page * PAGE_SIZE;
+    const rows = coordinatorsData.slice(0, end);
+    const table = document.getElementById("coordinatorList");
+    table.innerHTML = "";
+    rows.forEach(d => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${d.eventName || '-'}</td>
+            <td>${d.mandal || '-'}</td>
+            <td>${d.name || '-'}</td>
+            <td>${d.mobile || '-'}</td>
+            <td>${d.coCoordName1 || '-'}</td>
+            <td>${d.coCoordMobile1 || '-'}</td>
+            <td>${d.coCoordName2 || '-'}</td>
+            <td>${d.coCoordMobile2 || '-'}</td>
+            <td><button onclick="deleteCoordinator('${d.id}')">Delete</button></td>
+        `;
+        table.appendChild(tr);
+    });
+    document.getElementById('coordinatorShowMore').style.display =
+        coordinatorsData.length > end ? 'block' : 'none';
+}
+window.showMoreCoordinators = function() { showCoordinatorsPage(coordinatorsPage + 1); }
+window.deleteCoordinator = async function(id) {
+    if(confirm("डिलीट करें?")) {
+        await db.collection("coordinators").doc(id).delete();
+        loadCoordinators();
+    }
+};
 
-// ---------- Export Functions (PDF/Excel/CSV) ------------
-// ... पहले जैसा code, सिर्फ function call ड्रॉपडाउन के बटन से हो!
+// ---- REPORTS ----
+async function loadReports() {
+    reportsData = [];
+    let snapshot = await db.collection("reports").get();
+    snapshot.forEach(doc => {
+        let d = doc.data();
+        d.id = doc.id;
+        reportsData.push(d);
+    });
+    showReportsPage(1);
+}
+function showReportsPage(page) {
+    reportsPage = page;
+    const end = page * PAGE_SIZE;
+    const rows = reportsData.slice(0, end);
+    const table = document.getElementById("reportList");
+    table.innerHTML = "";
+    rows.forEach(d => {
+        let photosHTML = "";
+        if(Array.isArray(d.photos)) {
+            photosHTML = d.photos.map(url => `<a href="${url}" target="_blank"><img src="${url}" width="48"></a>`).join('');
+        }
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${d.eventName || '-'}</td>
+            <td>${d.mandal || '-'}</td>
+            <td>${d.location || '-'}</td>
+            <td>${d.attendance || '-'}</td>
+            <td>${d.guests || '-'}</td>
+            <td>${d.details || '-'}</td>
+            <td>${photosHTML}</td>
+            <td><button onclick="deleteReport('${d.id}')">Delete</button></td>
+        `;
+        table.appendChild(tr);
+    });
+    document.getElementById('reportShowMore').style.display =
+        reportsData.length > end ? 'block' : 'none';
+}
+window.showMoreReports = function() { showReportsPage(reportsPage + 1); }
+window.deleteReport = async function(id) {
+    if(confirm("डिलीट करें?")) {
+        await db.collection("reports").doc(id).delete();
+        loadReports();
+    }
+};
 
-// Hindi+Photo PDF export
-window.exportReportsHindiPDF = async function() {
+// ---- EXPORTS ----
+window.exportEvents = function(type) {
+    exportTableData(document.getElementById('eventList').closest('table'), type, "कार्यक्रम सूची");
+}
+window.exportCoordinators = function(type) {
+    exportTableData(document.getElementById('coordinatorList').closest('table'), type, "संयोजक सूची");
+}
+window.exportReports = function(type) {
+    exportTableData(document.getElementById('reportList').closest('table'), type, "रिपोर्ट सूची");
+}
+window.exportCombinedTable = function(type) {
+    const masterHeader = [
+        "डेटा स्रोत",
+        "कार्यक्रम नाम", "मंडल", "तारीख", "समय", "स्थान",
+        "संयोजक", "मोबाइल", "सह-संयोजक1", "मोबाइल1", "सह-संयोजक2", "मोबाइल2",
+        "उपस्थिति", "विशिष्ट अतिथि", "विवरण"
+    ];
+    let allRows = [masterHeader];
+    eventsData.forEach(d => {
+        allRows.push([
+            "कार्यक्रम सूची",
+            d.eventName || "", d.mandal || "", d.date || "", d.time || "", d.location || "",
+            "", "", "", "", "", "", "", "", ""
+        ]);
+    });
+    coordinatorsData.forEach(d => {
+        allRows.push([
+            "संयोजक सूची",
+            d.eventName || "", d.mandal || "", "", "", "",
+            d.name || "", d.mobile || "",
+            d.coCoordName1 || "", d.coCoordMobile1 || "",
+            d.coCoordName2 || "", d.coCoordMobile2 || "",
+            "", ""
+        ]);
+    });
+    reportsData.forEach(d => {
+        allRows.push([
+            "रिपोर्ट सूची",
+            d.eventName || "", d.mandal || "", "", "", d.location || "",
+            "", "", "", "", "", "",
+            d.attendance || "", d.guests || "", d.details || ""
+        ]);
+    });
+
+    if(type === "csv" || type === "excel") {
+        const ws = XLSX.utils.aoa_to_sheet(allRows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "AllData");
+        if(type === "csv") XLSX.writeFile(wb, "AllData.csv");
+        else XLSX.writeFile(wb, "AllData.xlsx");
+    }
+    if(type === "pdf") {
+        const doc = new window.jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+        doc.setFont('helvetica','normal');
+        doc.text("मंडल संयुक्त डेटा एक्सपोर्ट", 40, 40, {lang: "hi"});
+        doc.autoTable({
+            startY: 60,
+            head: [masterHeader],
+            body: allRows.slice(1),
+            styles: { font: "helvetica", fontSize: 10 },
+            headStyles: {fillColor:[255,152,0]},
+            bodyStyles: {textColor:30}
+        });
+        doc.save("AllData.pdf");
+    }
+};
+
+function exportTableData(table, type, title) {
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const data = rows.map(row => Array.from(row.children).map(cell => cell.innerText));
+    if (!data.length) return alert("डेटा उपलब्ध नहीं है!");
+    if (type === 'csv' || type === 'excel') {
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, title);
+        if (type === 'csv') XLSX.writeFile(wb, `${title}.csv`);
+        else XLSX.writeFile(wb, `${title}.xlsx`);
+    }
+    if (type === 'pdf') {
+        const doc = new window.jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+        doc.setFont('helvetica','normal');
+        doc.text(title, 40, 40, {lang: "hi"});
+        doc.autoTable({
+            startY: 60,
+            head: [data[0]],
+            body: data.slice(1),
+            styles: { font: "helvetica", fontSize: 12 },
+            headStyles: {fillColor:[255,152,0]},
+            bodyStyles: {textColor:30}
+        });
+        doc.save(`${title}.pdf`);
+    }
+}
+
+// ---- PDF with Hindi Font + Photo
+window.exportReportsHindiPDF = function() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
     if (!doc.getFontList()["NotoSansDevanagari"]) {
@@ -61,14 +264,36 @@ window.exportReportsHindiPDF = async function() {
     doc.setFont("NotoSansDevanagari");
     doc.setFontSize(15);
     doc.text("रिपोर्ट सूची (फोटो सहित)", 40, 40, {lang: "hi"});
-    // ...rest (autotable, फोटो addImage, etc.)
+    let startY = 60;
+    const headers = ["कार्यक्रम नाम", "मंडल", "स्थान", "उपस्थिति", "विशिष्ट अतिथि", "विवरण", "फोटो"];
+    const rows = reportsData.map(d => [
+        d.eventName || "", d.mandal || "", d.location || "", d.attendance || "", d.guests || "", d.details || "", d.photos || []
+    ]);
+    doc.autoTable({
+        startY,
+        head: [headers],
+        body: rows.map(r => [...r.slice(0,6), r[6].length ? "फोटो" : ""]),
+        styles: { font: "NotoSansDevanagari", fontSize: 11 },
+        headStyles: {fillColor:[255,152,0]},
+        bodyStyles: {textColor:30}
+    });
+    // फोटो add करें
+    rows.forEach((row, idx) => {
+        const imgArr = row[6];
+        if(Array.isArray(imgArr) && imgArr.length) {
+            let x = 750;
+            let y = 95 + idx*22;
+            imgArr.forEach((src, k) => {
+                doc.addImage(src, "JPEG", x+(k*45), y, 40, 24);
+            });
+        }
+    });
     doc.save("reports_hindi_photo.pdf");
 };
 
-// ---- बाकी: loadAll(), filters, delete, edit etc. ----
-
-// ----------- INITIAL LOAD -----------
+// ---- INIT -----
 window.onload = function() {
     loadEvents();
-    // ...बाकी tables भी!
+    loadCoordinators();
+    loadReports();
 };
