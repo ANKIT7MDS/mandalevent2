@@ -73,99 +73,115 @@
             border: 1.2px solid #ffa72680;
             margin-right: 6px;
         }
-        #eventNameListBox {
-            margin: 16px 0 28px 0;
-            text-align: left;
+        #eventNameForm, .eventNameAddForm form {
+            max-width: 550px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #ffc10721;
+            padding: 18px 18px 12px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        #newEventName, .eventNameAddForm input[type="text"] {
+            font-size: 1rem;
+            padding: 9px 11px;
+            border-radius: 6px;
+            border: 1.2px solid #ffa726a9;
+        }
+        #eventNameForm button, .eventNameAddForm button {
+            width: 100%;
+            font-size: 1.04rem;
+            padding: 8px 0;
+            margin: 8px 0 0 0;
+            border-radius: 7px;
+            background: #ff9800;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.19s;
+        }
+        #eventNameForm button:hover, .eventNameAddForm button:hover {
+            background: #e65100;
+        }
+        #eventNameListBox ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
         #eventNameList li {
             display: flex;
             align-items: center;
-            gap: 7px;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
             font-size: 1rem;
+            background: #fffaf3;
+            border-radius: 7px;
+            padding: 8px 9px 7px 18px;
+        }
+        .eventNameActions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         #eventNameList button {
-            padding: 2px 12px;
-            font-size: 0.96rem;
+            font-size: 1.16rem;
+            padding: 3px 13px 2px 13px;
+            border-radius: 6px;
+            background: #ff9800;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.18s;
+            margin: 0 0 0 0;
+            min-width: 36px;
         }
-        #eventNameList span {
-            min-width: 110px;
-            display: inline-block;
-        } /* कार्ड/फॉर्म की चौड़ाई कम करें */
-#eventNameForm, .eventNameAddForm form {
-    max-width: 450px;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px #ffc10721;
-    padding: 18px 18px 12px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-/* इनपुट का साइज */
-#newEventName, .eventNameAddForm input[type="text"] {
-    font-size: 1rem;
-    padding: 9px 11px;
-    border-radius: 6px;
-    border: 1.2px solid #ffa726a9;
-}
-
-/* जॉइन बटन को सिंपल व सुंदर */
-#eventNameForm button, .eventNameAddForm button {
-    width: 100%;
-    font-size: 1.04rem;
-    padding: 8px 0;
-    margin: 8px 0 0 0;
-    border-radius: 7px;
-    background: #ff9800;
-    color: #fff;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.19s;
-}
-#eventNameForm button:hover, .eventNameAddForm button:hover {
-    background: #e65100;
-}
-
-/* कार्यक्रम नाम सूची की लिस्ट */
-#eventNameListBox ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-#eventNameList li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-    font-size: 1rem;
-    background: #fffaf3;
-    border-radius: 7px;
-    padding: 8px 9px 7px 11px;
-}
-
-/* Edit/Delete बटन छोटा और आइकन जैसा */
-#eventNameList button {
-    font-size: 1.16rem;
-    padding: 3px 13px 2px 13px;
-    border-radius: 6px;
-    background: #ff9800;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    transition: background 0.18s;
-}
-#eventNameList button:nth-child(3) {
-    background: #e53935;
-    margin-left: 4px;
-}
-#eventNameList button:hover { background: #e65100; }
-#eventNameList button:nth-child(3):hover { background: #b71c1c; }
-
+        #eventNameList button:last-child {
+            background: #e53935;
+            margin-left: 5px;
+        }
+        #eventNameList button:hover { background: #e65100; }
+        #eventNameList button:last-child:hover { background: #b71c1c; }
+        /* Export buttons style */
+        .export-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+            justify-content: flex-end;
+        }
+        .export-controls button {
+            padding: 6px 15px;
+            border-radius: 6px;
+            background: #039be5;
+            color: #fff;
+            font-weight: 500;
+            font-size: 0.99rem;
+        }
+        .export-controls button:hover {
+            background: #0277bd;
+        }
+        @media (max-width: 650px) {
+            .container {
+                max-width: 98vw;
+                padding: 6vw 2vw 3vw 2vw;
+            }
+            table, th, td {
+                font-size: 0.95rem;
+                padding: 4px 6px;
+            }
+            .eventNameAddForm, #eventNameForm { padding: 7px 4px !important; }
+            .export-controls { justify-content: center; }
+        }
     </style>
+    <!-- Export libs -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -185,7 +201,7 @@
                 </select>
             </div>
         </div>
-        <!-- Add Event Name -->
+        <!-- कार्यक्रम नाम जोड़ें -->
         <div class="eventNameAddForm">
             <h2>कार्यक्रम नाम जोड़ें</h2>
             <form id="eventNameForm" autocomplete="off">
@@ -193,12 +209,23 @@
                 <button type="submit">जोड़ें</button>
             </form>
         </div>
-        <!-- Event Name List with Edit/Delete -->
+        <!-- कार्यक्रम नाम लिस्ट -->
         <div id="eventNameListBox">
             <h3>कार्यक्रम नाम सूची (<span id="eventNameCount">0</span>)</h3>
             <ul id="eventNameList"></ul>
         </div>
-        <!-- Events Table -->
+        <!-- Export बटन - All Data -->
+        <div class="export-controls">
+            <button onclick="exportCombinedTable('excel')">संयुक्त डेटा Excel</button>
+            <button onclick="exportCombinedTable('csv')">संयुक्त डेटा CSV</button>
+            <button onclick="exportCombinedTable('pdf')">संयुक्त डेटा PDF</button>
+        </div>
+        <!-- Events Export & Table -->
+        <div class="export-controls">
+            <button onclick="exportEvents('csv')">कार्यक्रम CSV</button>
+            <button onclick="exportEvents('excel')">कार्यक्रम Excel</button>
+            <button onclick="exportEvents('pdf')">कार्यक्रम PDF</button>
+        </div>
         <h2>कार्यक्रम सूची</h2>
         <table>
             <thead>
@@ -213,7 +240,12 @@
             </thead>
             <tbody id="eventList"></tbody>
         </table>
-        <!-- Coordinators Table -->
+        <!-- Coordinators Export & Table -->
+        <div class="export-controls">
+            <button onclick="exportCoordinators('csv')">संयोजक CSV</button>
+            <button onclick="exportCoordinators('excel')">संयोजक Excel</button>
+            <button onclick="exportCoordinators('pdf')">संयोजक PDF</button>
+        </div>
         <h2>संयोजक सूची</h2>
         <table>
             <thead>
@@ -231,7 +263,12 @@
             </thead>
             <tbody id="coordinatorList"></tbody>
         </table>
-        <!-- Reports Table -->
+        <!-- Reports Export & Table -->
+        <div class="export-controls">
+            <button onclick="exportReports('csv')">रिपोर्ट CSV</button>
+            <button onclick="exportReports('excel')">रिपोर्ट Excel</button>
+            <button onclick="exportReports('pdf')">रिपोर्ट PDF</button>
+        </div>
         <h2>रिपोर्ट सूची</h2>
         <table>
             <thead>
@@ -249,10 +286,10 @@
             <tbody id="reportList"></tbody>
         </table>
     </div>
-    <!-- JS -->
+    <!-- Firebase JS (Your own config or as needed) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, getDoc, deleteDoc, addDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
@@ -299,9 +336,13 @@
                 // लिस्ट में Add (Edit/Delete ऑप्शन के साथ)
                 const li = document.createElement('li');
                 li.style.marginBottom = '4px';
-                li.innerHTML = `<span id="ename-${docSnap.id}">${data.name}</span>
-                    <button style="background:#ff9800;" onclick="editEventNamePrompt('${docSnap.id}')">✏️</button>
-                    <button style="background:#d32f2f;" onclick="deleteEventName('${docSnap.id}')">❌</button>`;
+                li.innerHTML = `
+                    <span id="ename-${docSnap.id}">${data.name}</span>
+                    <span class="eventNameActions">
+                        <button onclick="editEventNamePrompt('${docSnap.id}')" title="संपादित करें">✏️</button>
+                        <button onclick="deleteEventName('${docSnap.id}')" title="हटाएं">❌</button>
+                    </span>
+                `;
                 list.appendChild(li);
 
                 // फ़िल्टर ड्रॉपडाउन में भी Add
@@ -376,24 +417,25 @@
             const filterMandalVal = document.getElementById('filterMandal').value;
             const eventNames = await getDocs(collection(db, "eventNames"));
             for (const eventNameDoc of eventNames.docs) {
-                if (filterEventId && eventNameDoc.id !== filterEventId) continue;
-                const eventName = eventNameDoc.data().name || 'Unknown';
-                const coordinators = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/coordinators`));
-                for (const coordDoc of coordinators.docs) {
-                    const coord = coordDoc.data();
-                    if (filterMandalVal && coord.mandal !== filterMandalVal) continue;
+                const eventNameId = eventNameDoc.id;
+                if (filterEventId && eventNameId !== filterEventId) continue;
+                const name = eventNameDoc.data().name || '';
+                const coords = await getDocs(collection(db, `eventNames/${eventNameId}/coordinators`));
+                for (const docSnap of coords.docs) {
+                    const c = docSnap.data();
+                    if (filterMandalVal && c.mandal !== filterMandalVal) continue;
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${eventName}</td>
-                        <td>${coord.mandal || '-'}</td>
-                        <td>${coord.name || '-'}</td>
-                        <td>${coord.mobile || '-'}</td>
-                        <td>${coord.coCoordName1 || '-'}</td>
-                        <td>${coord.coCoordMobile1 || '-'}</td>
-                        <td>${coord.coCoordName2 || '-'}</td>
-                        <td>${coord.coCoordMobile2 || '-'}</td>
+                        <td>${name}</td>
+                        <td>${c.mandal || '-'}</td>
+                        <td>${c.name || '-'}</td>
+                        <td>${c.mobile || '-'}</td>
+                        <td>${c.coCoordName1 || '-'}</td>
+                        <td>${c.coCoordMobile1 || '-'}</td>
+                        <td>${c.coCoordName2 || '-'}</td>
+                        <td>${c.coCoordMobile2 || '-'}</td>
                         <td>
-                            <button onclick="deleteCoordinator('${eventNameDoc.id}','${coordDoc.id}')">Delete</button>
+                            <button onclick="deleteCoordinator('${eventNameId}','${docSnap.id}')">Delete</button>
                         </td>
                     `;
                     coordinatorList.appendChild(row);
@@ -407,26 +449,28 @@
             const filterMandalVal = document.getElementById('filterMandal').value;
             const eventNames = await getDocs(collection(db, "eventNames"));
             for (const eventNameDoc of eventNames.docs) {
-                if (filterEventId && eventNameDoc.id !== filterEventId) continue;
-                const eventName = eventNameDoc.data().name || 'Unknown';
-                const reports = await getDocs(collection(db, `eventNames/${eventNameDoc.id}/reports`));
-                for (const reportDoc of reports.docs) {
-                    const report = reportDoc.data();
-                    if (filterMandalVal && report.mandal !== filterMandalVal) continue;
-                    const photosHtml = report.photos?.length
-                        ? report.photos.map(url => `<img src="${url}" alt="फोटो">`).join(' ')
-                        : '-';
+                const eventNameId = eventNameDoc.id;
+                if (filterEventId && eventNameId !== filterEventId) continue;
+                const name = eventNameDoc.data().name || '';
+                const reports = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
+                for (const docSnap of reports.docs) {
+                    const r = docSnap.data();
+                    if (filterMandalVal && r.mandal !== filterMandalVal) continue;
+                    let photosHTML = "";
+                    if (Array.isArray(r.photos)) {
+                        photosHTML = r.photos.map(url=>`<a href="${url}" target="_blank"><img src="${url}"></a>`).join('');
+                    }
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${eventName}</td>
-                        <td>${report.mandal || '-'}</td>
-                        <td>${report.location || '-'}</td>
-                        <td>${report.attendance || '-'}</td>
-                        <td>${report.guests || '-'}</td>
-                        <td>${report.details || '-'}</td>
-                        <td>${photosHtml}</td>
+                        <td>${name}</td>
+                        <td>${r.mandal || '-'}</td>
+                        <td>${r.location || '-'}</td>
+                        <td>${r.attendance || '-'}</td>
+                        <td>${r.guests || '-'}</td>
+                        <td>${r.details || '-'}</td>
+                        <td>${photosHTML}</td>
                         <td>
-                            <button onclick="deleteReport('${eventNameDoc.id}','${reportDoc.id}')">Delete</button>
+                            <button onclick="deleteReport('${eventNameId}','${docSnap.id}')">Delete</button>
                         </td>
                     `;
                     reportList.appendChild(row);
@@ -434,32 +478,146 @@
             }
         }
 
-        window.deleteEvent = async function (eventId) {
-            if (confirm("डिलीट करना है?")) {
-                await deleteDoc(doc(db, "events", eventId));
-                loadAll();
+        window.deleteEvent = async function(id) {
+            if (confirm("पक्का डिलीट करना है?")) {
+                await deleteDoc(doc(db, "events", id));
+                await loadEvents();
             }
         };
-        window.deleteCoordinator = async function (eventNameId, coordinatorId) {
-            if (confirm("डिलीट करना है?")) {
-                await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordinatorId));
-                loadAll();
+        window.deleteCoordinator = async function(eventNameId, coordId) {
+            if (confirm("पक्का डिलीट करना है?")) {
+                await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
+                await loadCoordinators();
             }
         };
-        window.deleteReport = async function (eventNameId, reportId) {
-            if (confirm("डिलीट करना है?")) {
+        window.deleteReport = async function(eventNameId, reportId) {
+            if (confirm("पक्का डिलीट करना है?")) {
                 await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
-                loadAll();
+                await loadReports();
             }
         };
 
+        // Main loader
         async function loadAll() {
             await loadEventNames();
             await loadEvents();
             await loadCoordinators();
             await loadReports();
         }
-        document.addEventListener('DOMContentLoaded', loadAll);
+        // Start!
+        loadAll();
+    </script>
+    <!-- Export Functions (CSV/Excel/PDF + Combined) -->
+    <script>
+        // Export individual Events
+        window.exportEvents = function(type) {
+            const table = document.querySelectorAll('table')[0];
+            exportTableData(table, type, "कार्यक्रम सूची");
+        };
+        // Export Coordinators
+        window.exportCoordinators = function(type) {
+            const table = document.querySelectorAll('table')[1];
+            exportTableData(table, type, "संयोजक सूची");
+        };
+        // Export Reports
+        window.exportReports = function(type) {
+            const table = document.querySelectorAll('table')[2];
+            exportTableData(table, type, "रिपोर्ट सूची");
+        };
+
+        // Helper for Export
+        function exportTableData(table, type, title) {
+            const rows = Array.from(table.querySelectorAll('tr'));
+            const data = rows.map(row => Array.from(row.children).map(cell => cell.innerText));
+            if (!data.length) return alert("डेटा उपलब्ध नहीं है!");
+            if (type === 'csv' || type === 'excel') {
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, title);
+                if (type === 'csv') XLSX.writeFile(wb, `${title}.csv`);
+                else XLSX.writeFile(wb, `${title}.xlsx`);
+            }
+            if (type === 'pdf') {
+                const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+                doc.setFont('helvetica','normal');
+                doc.text(title, 40, 40, {lang: "hi"});
+                doc.autoTable({
+                    startY: 60,
+                    head: [data[0]],
+                    body: data.slice(1),
+                    styles: { font: "helvetica", fontSize: 12 },
+                    headStyles: {fillColor:[255,152,0]},
+                    bodyStyles: {textColor:30}
+                });
+                doc.save(`${title}.pdf`);
+            }
+        }
+
+        // ✅ Combined Export - All Tables Compiled in One Table
+        window.exportCombinedTable = function(type="excel") {
+            const masterHeader = [
+                "डेटा स्रोत",
+                "कार्यक्रम नाम", "मंडल", "तारीख", "समय", "स्थान",
+                "संयोजक", "मोबाइल", "सह-संयोजक1", "मोबाइल1", "सह-संयोजक2", "मोबाइल2",
+                "उपस्थिति", "विशिष्ट अतिथि", "विवरण"
+            ];
+            let allRows = [masterHeader];
+            // Events
+            document.querySelectorAll("#eventList tr").forEach(tr => {
+                const tds = [...tr.querySelectorAll("td")];
+                if(tds.length) allRows.push([
+                    "कार्यक्रम सूची",
+                    tds[0]?.innerText||"", tds[1]?.innerText||"", tds[2]?.innerText||"", tds[3]?.innerText||"", tds[4]?.innerText||"",
+                    "", "", "", "", "", "", "", "", ""
+                ]);
+            });
+            // Coordinators
+            document.querySelectorAll("#coordinatorList tr").forEach(tr => {
+                const tds = [...tr.querySelectorAll("td")];
+                if(tds.length) allRows.push([
+                    "संयोजक सूची",
+                    tds[0]?.innerText||"", tds[1]?.innerText||"", "", "", "",
+                    tds[2]?.innerText||"", tds[3]?.innerText||"",
+                    tds[4]?.innerText||"", tds[5]?.innerText||"",
+                    tds[6]?.innerText||"", tds[7]?.innerText||"",
+                    "", ""
+                ]);
+            });
+            // Reports
+            document.querySelectorAll("#reportList tr").forEach(tr => {
+                const tds = [...tr.querySelectorAll("td")];
+                if(tds.length) allRows.push([
+                    "रिपोर्ट सूची",
+                    tds[0]?.innerText||"", tds[1]?.innerText||"", "", "", tds[2]?.innerText||"",
+                    "", "", "", "", "", "",
+                    tds[3]?.innerText||"", tds[4]?.innerText||"", tds[5]?.innerText||""
+                ]);
+            });
+
+            // Export (SheetJS/CSV/PDF)
+            if(type==="csv" || type==="excel") {
+                const ws = XLSX.utils.aoa_to_sheet(allRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "AllData");
+                if(type==="csv") XLSX.writeFile(wb, "AllData.csv");
+                else XLSX.writeFile(wb, "AllData.xlsx");
+            }
+            else if(type==="pdf") {
+                const doc = new jspdf.jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+                doc.setFont("helvetica");
+                doc.setFontSize(13);
+                doc.text("मंडल संयुक्त डेटा एक्सपोर्ट", 40, 40, {lang: "hi"});
+                doc.autoTable({
+                    startY: 60,
+                    head: [masterHeader],
+                    body: allRows.slice(1),
+                    styles: { font: "helvetica", fontSize: 10 },
+                    headStyles: {fillColor:[255,152,0]},
+                    bodyStyles: {textColor:30}
+                });
+                doc.save("AllData.pdf");
+            }
+        };
     </script>
 </body>
 </html>
