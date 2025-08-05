@@ -62,6 +62,7 @@
             margin: 2px;
             border-radius: 8px;
             border: 2px solid #ff9800;
+            transition: box-shadow 0.2s;
         }
         .eventNameAddForm {
             margin-bottom: 28px;
@@ -146,7 +147,6 @@
         }
         #eventNameList button:hover { background: #e65100; }
         #eventNameList button:last-child:hover { background: #b71c1c; }
-        /* Export controls style */
         .export-controls {
             display: flex;
             flex-wrap: wrap;
@@ -175,6 +175,53 @@
         .export-controls button:hover {
             background: #0277bd;
         }
+        /* फोटो बराबर में रखने के लिए */
+        .report-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .report-photos a {
+            display: inline-block;
+        }
+        .pagination-controls {
+            text-align: center;
+            margin: 8px 0 18px 0;
+        }
+        .pagination-controls button {
+            background: #ff9800;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 15px;
+            font-size: 0.99rem;
+            margin: 0 8px;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        .pagination-controls button:disabled {
+            background: #ffd699;
+            color: #b9892d;
+            cursor: not-allowed;
+        }
+        /* फोटो zoom मोडल */
+        #imgZoomModal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.83);
+            align-items: center;
+            justify-content: center;
+        }
+        #imgZoomModal img {
+            max-width: 93vw;
+            max-height: 92vh;
+            box-shadow: 0 0 14px #ff980080;
+            border-radius: 14px;
+            border: 5px solid #fff;
+            background: #fff;
+        }
         @media (max-width: 650px) {
             .container {
                 max-width: 98vw;
@@ -186,12 +233,15 @@
             }
             .eventNameAddForm, #eventNameForm { padding: 7px 4px !important; }
             .export-controls { justify-content: center; }
+            .report-photos { gap: 2px; }
         }
     </style>
     <!-- Export libs -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <!-- Hindi Font Embed for jsPDF -->
+    <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
 </head>
 <body>
     <div class="container">
@@ -211,7 +261,6 @@
                 </select>
             </div>
         </div>
-
         <!-- Export Dropdown Section: Start -->
         <div class="export-controls" style="justify-content: flex-end; margin-bottom: 28px;">
           <select id="exportDropdown">
@@ -240,7 +289,6 @@
           <button onclick="handleExport()">डाउनलोड</button>
         </div>
         <!-- Export Dropdown Section: End -->
-
         <!-- कार्यक्रम नाम जोड़ें -->
         <div class="eventNameAddForm">
             <h2>कार्यक्रम नाम जोड़ें</h2>
@@ -263,11 +311,12 @@
                     <th>तारीख</th>
                     <th>समय</th>
                     <th>स्थान</th>
-                    <th>डिलीट</th>
+                    <th>एक्शन</th>
                 </tr>
             </thead>
             <tbody id="eventList"></tbody>
         </table>
+        <div id="eventPagination"></div>
         <h2>संयोजक सूची</h2>
         <table>
             <thead>
@@ -280,11 +329,12 @@
                     <th>मोबाइल 1</th>
                     <th>सह-संयोजक 2</th>
                     <th>मोबाइल 2</th>
-                    <th>डिलीट</th>
+                    <th>एक्शन</th>
                 </tr>
             </thead>
             <tbody id="coordinatorList"></tbody>
         </table>
+        <div id="coordPagination"></div>
         <h2>रिपोर्ट सूची</h2>
         <table>
             <thead>
@@ -296,16 +346,21 @@
                     <th>विशिष्ट अतिथि</th>
                     <th>विवरण</th>
                     <th>फोटो</th>
-                    <th>डिलीट</th>
+                    <th>एक्शन</th>
                 </tr>
             </thead>
             <tbody id="reportList"></tbody>
         </table>
+        <div id="reportPagination"></div>
     </div>
-    <!-- Firebase JS (Your own config or as needed) -->
+    <!-- फोटो zoom modal -->
+    <div id="imgZoomModal">
+        <img id="imgZoomModalImg" src="">
+    </div>
+    <!-- Firebase JS -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
@@ -319,10 +374,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // मंडल लिस्ट
         const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+        const eventNameMap = {};
 
-        const eventNameMap = {}; // eventNameId => name
+        // Pagination state
+        let eventPage = 1, coordPage = 1, reportPage = 1;
+        const PAGE_SIZE = 21;
 
         // कार्यक्रम नाम जोड़ना
         document.getElementById('eventNameForm').addEventListener('submit', async function (e) {
@@ -396,21 +453,29 @@
         });
 
         // Filters (onchange)
-        document.getElementById('filterEvent').addEventListener('change', loadAll);
-        document.getElementById('filterMandal').addEventListener('change', loadAll);
+        document.getElementById('filterEvent').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
+        document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
 
-        // Load functions with Filters
+        // इवेंट लिस्ट
         async function loadEvents() {
             const eventList = document.getElementById('eventList');
             eventList.innerHTML = '';
+            document.getElementById('eventPagination').innerHTML = '';
             const filterEventId = document.getElementById('filterEvent').value;
             const filterMandalVal = document.getElementById('filterMandal').value;
             const events = await getDocs(collection(db, "events"));
+            // Filters
+            let filtered = [];
             for (const docSnap of events.docs) {
                 const event = docSnap.data();
-                // Apply Filters
                 if (filterEventId && event.eventNameId !== filterEventId) continue;
                 if (filterMandalVal && event.mandal !== filterMandalVal) continue;
+                filtered.push({id: docSnap.id, ...event});
+            }
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            if (eventPage > totalPages) eventPage = totalPages;
+            const pageEvents = filtered.slice((eventPage-1)*PAGE_SIZE, eventPage*PAGE_SIZE);
+            for (const event of pageEvents) {
                 let eventName = eventNameMap[event.eventNameId] || 'Unknown';
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -420,17 +485,53 @@
                     <td>${event.time || '-'}</td>
                     <td>${event.location || '-'}</td>
                     <td>
-                        <button onclick="deleteEvent('${docSnap.id}')">Delete</button>
+                        <button onclick="editEvent('${event.id}')">✏️</button>
+                        <button onclick="deleteEvent('${event.id}')">🗑️</button>
                     </td>
                 `;
                 eventList.appendChild(row);
             }
+            // Pagination Controls
+            document.getElementById('eventPagination').innerHTML = `
+            <div class="pagination-controls">
+                <button onclick="changeEventPage(-1)" ${eventPage==1?'disabled':''}>पिछला</button>
+                ${eventPage}/${totalPages}
+                <button onclick="changeEventPage(1)" ${eventPage==totalPages?'disabled':''}>अगला</button>
+            </div>`;
         }
+        window.changeEventPage = function(diff) {
+            eventPage += diff;
+            loadEvents();
+        };
+        // Edit Event
+        window.editEvent = async function(id) {
+            const docSnap = await getDoc(doc(db, "events", id));
+            if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
+            const event = docSnap.data();
+            const mandal = prompt("मंडल:", event.mandal || "");
+            const date = prompt("तारीख:", event.date || "");
+            const time = prompt("समय:", event.time || "");
+            const location = prompt("स्थान:", event.location || "");
+            if (mandal !== null && date !== null && time !== null && location !== null) {
+                await updateDoc(doc(db, "events", id), { mandal, date, time, location });
+                await loadEvents();
+            }
+        };
+        window.deleteEvent = async function(id) {
+            if (confirm("पक्का डिलीट करना है?")) {
+                await deleteDoc(doc(db, "events", id));
+                await loadEvents();
+            }
+        };
+
+        // संयोजक लिस्ट
         async function loadCoordinators() {
             const coordinatorList = document.getElementById('coordinatorList');
             coordinatorList.innerHTML = '';
+            document.getElementById('coordPagination').innerHTML = '';
             const filterEventId = document.getElementById('filterEvent').value;
             const filterMandalVal = document.getElementById('filterMandal').value;
+            let filtered = [];
             const eventNames = await getDocs(collection(db, "eventNames"));
             for (const eventNameDoc of eventNames.docs) {
                 const eventNameId = eventNameDoc.id;
@@ -440,9 +541,16 @@
                 for (const docSnap of coords.docs) {
                     const c = docSnap.data();
                     if (filterMandalVal && c.mandal !== filterMandalVal) continue;
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${name}</td>
+                    filtered.push({id: docSnap.id, eventNameId, name, ...c});
+                }
+            }
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            if (coordPage > totalPages) coordPage = totalPages;
+            const pageCoords = filtered.slice((coordPage-1)*PAGE_SIZE, coordPage*PAGE_SIZE);
+            for (const c of pageCoords) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${c.name || ''}</td>
                         <td>${c.mandal || '-'}</td>
                         <td>${c.name || '-'}</td>
                         <td>${c.mobile || '-'}</td>
@@ -451,18 +559,56 @@
                         <td>${c.coCoordName2 || '-'}</td>
                         <td>${c.coCoordMobile2 || '-'}</td>
                         <td>
-                            <button onclick="deleteCoordinator('${eventNameId}','${docSnap.id}')">Delete</button>
+                            <button onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button>
+                            <button onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button>
                         </td>
-                    `;
-                    coordinatorList.appendChild(row);
-                }
+                `;
+                coordinatorList.appendChild(row);
             }
+            document.getElementById('coordPagination').innerHTML = `
+            <div class="pagination-controls">
+                <button onclick="changeCoordPage(-1)" ${coordPage==1?'disabled':''}>पिछला</button>
+                ${coordPage}/${totalPages}
+                <button onclick="changeCoordPage(1)" ${coordPage==totalPages?'disabled':''}>अगला</button>
+            </div>`;
         }
+        window.changeCoordPage = function(diff) {
+            coordPage += diff;
+            loadCoordinators();
+        };
+        window.editCoordinator = async function(eventNameId, coordId) {
+            const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
+            if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
+            const c = docSnap.data();
+            const mandal = prompt("मंडल:", c.mandal || "");
+            const name = prompt("संयोजक:", c.name || "");
+            const mobile = prompt("मोबाइल:", c.mobile || "");
+            const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || "");
+            const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || "");
+            const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || "");
+            const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || "");
+            if (mandal !== null && name !== null) {
+                await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), {
+                    mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2
+                });
+                await loadCoordinators();
+            }
+        };
+        window.deleteCoordinator = async function(eventNameId, coordId) {
+            if (confirm("पक्का डिलीट करना है?")) {
+                await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
+                await loadCoordinators();
+            }
+        };
+
+        // रिपोर्ट लिस्ट
         async function loadReports() {
             const reportList = document.getElementById('reportList');
             reportList.innerHTML = '';
+            document.getElementById('reportPagination').innerHTML = '';
             const filterEventId = document.getElementById('filterEvent').value;
             const filterMandalVal = document.getElementById('filterMandal').value;
+            let filtered = [];
             const eventNames = await getDocs(collection(db, "eventNames"));
             for (const eventNameDoc of eventNames.docs) {
                 const eventNameId = eventNameDoc.id;
@@ -472,13 +618,22 @@
                 for (const docSnap of reports.docs) {
                     const r = docSnap.data();
                     if (filterMandalVal && r.mandal !== filterMandalVal) continue;
-                    let photosHTML = "";
-                    if (Array.isArray(r.photos)) {
-                        photosHTML = r.photos.map(url=>`<a href="${url}" target="_blank"><img src="${url}"></a>`).join('');
-                    }
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${name}</td>
+                    filtered.push({id: docSnap.id, eventNameId, name, ...r});
+                }
+            }
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            if (reportPage > totalPages) reportPage = totalPages;
+            const pageReports = filtered.slice((reportPage-1)*PAGE_SIZE, reportPage*PAGE_SIZE);
+            for (const r of pageReports) {
+                let photosHTML = "";
+                if (Array.isArray(r.photos)) {
+                    photosHTML = `<div class="report-photos">` + r.photos.map(url => 
+                        `<a href="${url}" onclick="zoomImage(event, '${url}')"><img src="${url}" style="cursor:zoom-in"></a>`
+                    ).join('') + `</div>`;
+                }
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${r.name}</td>
                         <td>${r.mandal || '-'}</td>
                         <td>${r.location || '-'}</td>
                         <td>${r.attendance || '-'}</td>
@@ -486,24 +641,37 @@
                         <td>${r.details || '-'}</td>
                         <td>${photosHTML}</td>
                         <td>
-                            <button onclick="deleteReport('${eventNameId}','${docSnap.id}')">Delete</button>
+                            <button onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button>
+                            <button onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button>
                         </td>
-                    `;
-                    reportList.appendChild(row);
-                }
+                `;
+                reportList.appendChild(row);
             }
+            document.getElementById('reportPagination').innerHTML = `
+            <div class="pagination-controls">
+                <button onclick="changeReportPage(-1)" ${reportPage==1?'disabled':''}>पिछला</button>
+                ${reportPage}/${totalPages}
+                <button onclick="changeReportPage(1)" ${reportPage==totalPages?'disabled':''}>अगला</button>
+            </div>`;
         }
-
-        window.deleteEvent = async function(id) {
-            if (confirm("पक्का डिलीट करना है?")) {
-                await deleteDoc(doc(db, "events", id));
-                await loadEvents();
-            }
+        window.changeReportPage = function(diff) {
+            reportPage += diff;
+            loadReports();
         };
-        window.deleteCoordinator = async function(eventNameId, coordId) {
-            if (confirm("पक्का डिलीट करना है?")) {
-                await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
-                await loadCoordinators();
+        window.editReport = async function(eventNameId, reportId) {
+            const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
+            if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
+            const r = docSnap.data();
+            const mandal = prompt("मंडल:", r.mandal || "");
+            const location = prompt("स्थान:", r.location || "");
+            const attendance = prompt("उपस्थिति:", r.attendance || "");
+            const guests = prompt("विशिष्ट अतिथि:", r.guests || "");
+            const details = prompt("विवरण:", r.details || "");
+            if (mandal !== null && location !== null) {
+                await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), {
+                    mandal, location, attendance, guests, details
+                });
+                await loadReports();
             }
         };
         window.deleteReport = async function(eventNameId, reportId) {
@@ -511,6 +679,17 @@
                 await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
                 await loadReports();
             }
+        };
+
+        // फोटो Zoom
+        window.zoomImage = function(e, url) {
+            e.preventDefault();
+            document.getElementById('imgZoomModalImg').src = url;
+            document.getElementById('imgZoomModal').style.display = 'flex';
+        };
+        document.getElementById('imgZoomModal').onclick = function() {
+            this.style.display = 'none';
+            document.getElementById('imgZoomModalImg').src = '';
         };
 
         // Main loader
@@ -525,23 +704,18 @@
     </script>
     <!-- Export Functions (CSV/Excel/PDF + Combined) -->
     <script>
-        // Export individual Events
         window.exportEvents = function(type) {
             const table = document.querySelectorAll('table')[0];
             exportTableData(table, type, "कार्यक्रम सूची");
         };
-        // Export Coordinators
         window.exportCoordinators = function(type) {
             const table = document.querySelectorAll('table')[1];
             exportTableData(table, type, "संयोजक सूची");
         };
-        // Export Reports
         window.exportReports = function(type) {
             const table = document.querySelectorAll('table')[2];
             exportTableData(table, type, "रिपोर्ट सूची");
         };
-
-        // Helper for Export
         function exportTableData(table, type, title) {
             const rows = Array.from(table.querySelectorAll('tr'));
             const data = rows.map(row => Array.from(row.children).map(cell => cell.innerText));
@@ -555,21 +729,22 @@
             }
             if (type === 'pdf') {
                 const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
-                doc.setFont('helvetica','normal');
+                doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+                doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+                doc.setFont("NotoSansDevanagari");
+                doc.setFontSize(14);
                 doc.text(title, 40, 40, {lang: "hi"});
                 doc.autoTable({
                     startY: 60,
                     head: [data[0]],
                     body: data.slice(1),
-                    styles: { font: "helvetica", fontSize: 12 },
+                    styles: { font: "NotoSansDevanagari", fontSize: 12 },
                     headStyles: {fillColor:[255,152,0]},
                     bodyStyles: {textColor:30}
                 });
                 doc.save(`${title}.pdf`);
             }
         }
-
-        // ✅ Combined Export - All Tables Compiled in One Table
         window.exportCombinedTable = function(type="excel") {
             const masterHeader = [
                 "डेटा स्रोत",
@@ -578,7 +753,6 @@
                 "उपस्थिति", "विशिष्ट अतिथि", "विवरण"
             ];
             let allRows = [masterHeader];
-            // Events
             document.querySelectorAll("#eventList tr").forEach(tr => {
                 const tds = [...tr.querySelectorAll("td")];
                 if(tds.length) allRows.push([
@@ -587,7 +761,6 @@
                     "", "", "", "", "", "", "", "", ""
                 ]);
             });
-            // Coordinators
             document.querySelectorAll("#coordinatorList tr").forEach(tr => {
                 const tds = [...tr.querySelectorAll("td")];
                 if(tds.length) allRows.push([
@@ -599,7 +772,6 @@
                     "", ""
                 ]);
             });
-            // Reports
             document.querySelectorAll("#reportList tr").forEach(tr => {
                 const tds = [...tr.querySelectorAll("td")];
                 if(tds.length) allRows.push([
@@ -610,7 +782,6 @@
                 ]);
             });
 
-            // Export (SheetJS/CSV/PDF)
             if(type==="csv" || type==="excel") {
                 const ws = XLSX.utils.aoa_to_sheet(allRows);
                 const wb = XLSX.utils.book_new();
@@ -620,22 +791,22 @@
             }
             else if(type==="pdf") {
                 const doc = new jspdf.jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-                doc.setFont("helvetica");
-                doc.setFontSize(13);
+                doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+                doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+                doc.setFont("NotoSansDevanagari");
+                doc.setFontSize(14);
                 doc.text("मंडल संयुक्त डेटा एक्सपोर्ट", 40, 40, {lang: "hi"});
                 doc.autoTable({
                     startY: 60,
                     head: [masterHeader],
                     body: allRows.slice(1),
-                    styles: { font: "helvetica", fontSize: 10 },
+                    styles: { font: "NotoSansDevanagari", fontSize: 10 },
                     headStyles: {fillColor:[255,152,0]},
                     bodyStyles: {textColor:30}
                 });
                 doc.save("AllData.pdf");
             }
         };
-
-        // 🎯 Export Dropdown Handler
         window.handleExport = function() {
           const value = document.getElementById('exportDropdown').value;
           if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
