@@ -146,7 +146,7 @@
         }
         #eventNameList button:hover { background: #e65100; }
         #eventNameList button:last-child:hover { background: #b71c1c; }
-        /* Export buttons style */
+        /* Export controls style */
         .export-controls {
             display: flex;
             flex-wrap: wrap;
@@ -154,13 +154,23 @@
             margin-bottom: 18px;
             justify-content: flex-end;
         }
-        .export-controls button {
-            padding: 6px 15px;
+        .export-controls select, .export-controls button {
+            font-size: 1rem;
+            padding: 7px 13px;
+        }
+        .export-controls select {
+            min-width: 220px;
             border-radius: 6px;
+            border: 1.2px solid #ffa726a9;
+            background: #fffaf5;
+            color: #442300;
+        }
+        .export-controls button {
             background: #039be5;
             color: #fff;
             font-weight: 500;
-            font-size: 0.99rem;
+            border-radius: 6px;
+            margin-left: 5px;
         }
         .export-controls button:hover {
             background: #0277bd;
@@ -201,6 +211,36 @@
                 </select>
             </div>
         </div>
+
+        <!-- Export Dropdown Section: Start -->
+        <div class="export-controls" style="justify-content: flex-end; margin-bottom: 28px;">
+          <select id="exportDropdown">
+            <option value="">डेटा एक्सपोर्ट करें...</option>
+            <optgroup label="संयुक्त (Combined)">
+              <option value="combined-excel">संयुक्त डेटा Excel</option>
+              <option value="combined-csv">संयुक्त डेटा CSV</option>
+              <option value="combined-pdf">संयुक्त डेटा PDF</option>
+            </optgroup>
+            <optgroup label="कार्यक्रम">
+              <option value="events-excel">कार्यक्रम Excel</option>
+              <option value="events-csv">कार्यक्रम CSV</option>
+              <option value="events-pdf">कार्यक्रम PDF</option>
+            </optgroup>
+            <optgroup label="संयोजक">
+              <option value="coordinators-excel">संयोजक Excel</option>
+              <option value="coordinators-csv">संयोजक CSV</option>
+              <option value="coordinators-pdf">संयोजक PDF</option>
+            </optgroup>
+            <optgroup label="रिपोर्ट">
+              <option value="reports-excel">रिपोर्ट Excel</option>
+              <option value="reports-csv">रिपोर्ट CSV</option>
+              <option value="reports-pdf">रिपोर्ट PDF</option>
+            </optgroup>
+          </select>
+          <button onclick="handleExport()">डाउनलोड</button>
+        </div>
+        <!-- Export Dropdown Section: End -->
+
         <!-- कार्यक्रम नाम जोड़ें -->
         <div class="eventNameAddForm">
             <h2>कार्यक्रम नाम जोड़ें</h2>
@@ -213,18 +253,6 @@
         <div id="eventNameListBox">
             <h3>कार्यक्रम नाम सूची (<span id="eventNameCount">0</span>)</h3>
             <ul id="eventNameList"></ul>
-        </div>
-        <!-- Export बटन - All Data -->
-        <div class="export-controls">
-            <button onclick="exportCombinedTable('excel')">संयुक्त डेटा Excel</button>
-            <button onclick="exportCombinedTable('csv')">संयुक्त डेटा CSV</button>
-            <button onclick="exportCombinedTable('pdf')">संयुक्त डेटा PDF</button>
-        </div>
-        <!-- Events Export & Table -->
-        <div class="export-controls">
-            <button onclick="exportEvents('csv')">कार्यक्रम CSV</button>
-            <button onclick="exportEvents('excel')">कार्यक्रम Excel</button>
-            <button onclick="exportEvents('pdf')">कार्यक्रम PDF</button>
         </div>
         <h2>कार्यक्रम सूची</h2>
         <table>
@@ -240,12 +268,6 @@
             </thead>
             <tbody id="eventList"></tbody>
         </table>
-        <!-- Coordinators Export & Table -->
-        <div class="export-controls">
-            <button onclick="exportCoordinators('csv')">संयोजक CSV</button>
-            <button onclick="exportCoordinators('excel')">संयोजक Excel</button>
-            <button onclick="exportCoordinators('pdf')">संयोजक PDF</button>
-        </div>
         <h2>संयोजक सूची</h2>
         <table>
             <thead>
@@ -263,12 +285,6 @@
             </thead>
             <tbody id="coordinatorList"></tbody>
         </table>
-        <!-- Reports Export & Table -->
-        <div class="export-controls">
-            <button onclick="exportReports('csv')">रिपोर्ट CSV</button>
-            <button onclick="exportReports('excel')">रिपोर्ट Excel</button>
-            <button onclick="exportReports('pdf')">रिपोर्ट PDF</button>
-        </div>
         <h2>रिपोर्ट सूची</h2>
         <table>
             <thead>
@@ -617,6 +633,25 @@
                 });
                 doc.save("AllData.pdf");
             }
+        };
+
+        // 🎯 Export Dropdown Handler
+        window.handleExport = function() {
+          const value = document.getElementById('exportDropdown').value;
+          if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
+          if (value.startsWith("combined-")) {
+            const type = value.split("-")[1];
+            exportCombinedTable(type);
+          } else if (value.startsWith("events-")) {
+            const type = value.split("-")[1];
+            exportEvents(type);
+          } else if (value.startsWith("coordinators-")) {
+            const type = value.split("-")[1];
+            exportCoordinators(type);
+          } else if (value.startsWith("reports-")) {
+            const type = value.split("-")[1];
+            exportReports(type);
+          }
         };
     </script>
 </body>
