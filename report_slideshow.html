@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>कार्यक्रम रिपोर्ट स्लाइडशो</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        body {
+            background: #fff9f3;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        .slideshow-container {
+            max-width: 880px;
+            margin: 44px auto 20px auto;
+            background: #fff6ea;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px #ff980020;
+            padding: 30px 10px 25px 10px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            min-height: 370px;
+            flex-wrap: wrap;
+        }
+        .slide-info {
+            flex: 1 1 280px;
+            max-width: 340px;
+            padding: 10px 15px;
+        }
+        .slide-info h2 {
+            color: #e65100;
+            margin-top: 0;
+        }
+        .slide-info table {
+            width: 100%;
+            font-size: 1.1rem;
+            background: none;
+            border-collapse: collapse;
+        }
+        .slide-info td {
+            padding: 5px 7px 3px 0;
+            vertical-align: top;
+        }
+        .slide-photos {
+            flex: 1 1 360px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+        .slide-photos img {
+            max-width: 170px;
+            max-height: 120px;
+            border-radius: 9px;
+            border: 2px solid #ff9800;
+            cursor: pointer;
+            transition: box-shadow 0.17s;
+            background: #fff;
+            object-fit: cover;
+        }
+        .slide-photos img:hover {
+            box-shadow: 0 2px 16px #ff980044;
+        }
+        .slideshow-controls {
+            text-align: center;
+            margin-top: 16px;
+        }
+        .slideshow-controls button {
+            background: #ff9800;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 8px 22px;
+            font-size: 1.13rem;
+            cursor: pointer;
+            margin: 0 8px;
+            font-weight: 600;
+            transition: background 0.15s;
+        }
+        .slideshow-controls button:hover {
+            background: #e65100;
+        }
+        /* Modal for zoom image */
+        #imgZoomModal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.82);
+            align-items: center;
+            justify-content: center;
+        }
+        #imgZoomModal img {
+            max-width: 94vw;
+            max-height: 93vh;
+            border: 5px solid #fff;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 0 18px #ff9800c2;
+        }
+        @media (max-width: 900px) {
+            .slideshow-container { flex-direction: column; align-items: stretch; }
+            .slide-info, .slide-photos { max-width: 100%; }
+            .slide-photos { justify-content: center; }
+        }
+        @media (max-width: 540px) {
+            .slide-photos img { max-width: 98vw; width: 94vw; min-width: 0; }
+            .slide-info { padding: 4px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="slideSection" style="display:none;">
+        <div class="slideshow-container" id="slideshowBox">
+            <!-- JS से भरेंगे -->
+        </div>
+        <div class="slideshow-controls">
+            <button onclick="prevSlide()">पिछला</button>
+            <span id="slideNumber"></span>
+            <button onclick="nextSlide()">अगला</button>
+        </div>
+    </div>
+    <div id="noDataBox" style="text-align:center; font-size:1.17rem; margin:50px 0; color:#b87f3a;display:none;">
+        कोई रिपोर्ट डेटा उपलब्ध नहीं है।
+    </div>
+    <!-- फोटो Zoom Modal -->
+    <div id="imgZoomModal">
+        <img id="imgZoomModalImg" src="">
+    </div>
+    <!-- Firebase JS -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        // --- Firebase Config (अपना config यहाँ रखें, डैशबोर्ड वाला) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+            authDomain: "mandaleventall.firebaseapp.com",
+            projectId: "mandaleventall",
+            storageBucket: "mandaleventall.firebasestorage.app",
+            messagingSenderId: "900190130114",
+            appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+            measurementId: "G-2BBZZNRS88"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ---- स्लाइड शो logic ----
+        let reports = [];
+        let slideIndex = 0;
+
+        async function loadReports() {
+            // सारे eventNames लें
+            const eventNamesSnap = await getDocs(collection(db, "eventNames"));
+            const eventNames = {};
+            eventNamesSnap.forEach(docSnap => {
+                eventNames[docSnap.id] = docSnap.data().name || '';
+            });
+            // सभी रिपोर्ट्स लाओ
+            let allReports = [];
+            for (const eventNameId of Object.keys(eventNames)) {
+                const reportSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
+                reportSnap.forEach(docSnap => {
+                    const r = docSnap.data();
+                    allReports.push({
+                        ...r,
+                        id: docSnap.id,
+                        eventNameId,
+                        eventName: eventNames[eventNameId]
+                    });
+                });
+            }
+            // Sort by event name + date/time if available
+            allReports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            reports = allReports;
+            if (!reports.length) {
+                document.getElementById('slideSection').style.display = 'none';
+                document.getElementById('noDataBox').style.display = '';
+                return;
+            }
+            document.getElementById('noDataBox').style.display = 'none';
+            document.getElementById('slideSection').style.display = '';
+            showSlide(0);
+        }
+
+        window.prevSlide = function() {
+            if (!reports.length) return;
+            slideIndex = (slideIndex-1+reports.length) % reports.length;
+            showSlide(slideIndex);
+        }
+        window.nextSlide = function() {
+            if (!reports.length) return;
+            slideIndex = (slideIndex+1)%reports.length;
+            showSlide(slideIndex);
+        }
+
+        function showSlide(idx) {
+            if (!reports.length) return;
+            slideIndex = idx;
+            const r = reports[idx];
+            // Details Info (Left)
+            let infoHtml = `
+                <div class="slide-info">
+                    <h2>${r.eventName || 'कार्यक्रम'}</h2>
+                    <table>
+                        <tr><td><b>मंडल:</b></td><td>${r.mandal || '-'}</td></tr>
+                        <tr><td><b>स्थान:</b></td><td>${r.location || '-'}</td></tr>
+                        <tr><td><b>उपस्थिति:</b></td><td>${r.attendance || '-'}</td></tr>
+                        <tr><td><b>विशिष्ट अतिथि:</b></td><td>${r.guests || '-'}</td></tr>
+                        <tr><td><b>विवरण:</b></td><td>${r.details || '-'}</td></tr>
+                    </table>
+                </div>
+            `;
+            // Photos (Right)
+            let photos = (Array.isArray(r.photos) ? r.photos : []).slice(0,4);
+            let photosHtml = `<div class="slide-photos">`;
+            if (photos.length) {
+                photos.forEach(url => {
+                    photosHtml += `<img src="${url}" onclick="zoomImage(event, '${url}')" alt="कार्यक्रम फोटो">`;
+                });
+            } else {
+                photosHtml += `<div style="color:#b87f3a; font-size:1rem;">कोई फोटो उपलब्ध नहीं</div>`;
+            }
+            photosHtml += `</div>`;
+            document.getElementById('slideshowBox').innerHTML = infoHtml + photosHtml;
+            document.getElementById('slideNumber').innerText = `(${idx+1} / ${reports.length})`;
+        }
+
+        // फोटो ज़ूम
+        window.zoomImage = function(e, url) {
+            e.preventDefault();
+            document.getElementById('imgZoomModalImg').src = url;
+            document.getElementById('imgZoomModal').style.display = 'flex';
+        };
+        document.getElementById('imgZoomModal').onclick = function() {
+            this.style.display = 'none';
+            document.getElementById('imgZoomModalImg').src = '';
+        };
+
+        // लोड करें
+        loadReports();
+    </script>
+</body>
+</html>
