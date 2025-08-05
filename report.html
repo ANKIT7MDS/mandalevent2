@@ -40,9 +40,8 @@
                 <label for="attendance">उपस्थिति</label>
                 <input type="number" id="attendance" required placeholder="कार्यक्रम में कुल उपस्तिथ संख्या ">
             </div>
-<label>दिनांक</label>
-<input id="reportDate" type="date" required>
-
+            <label>दिनांक</label>
+            <input id="reportDate" type="date" required>
             <div class="form-group">
                 <label for="guests">विशिष्ट अतिथि</label>
                 <input type="text" id="guests" placeholder="विशिष्ट अतिथि, जनप्रतिनिधि,प्रभारी ,वक्ता आदि ">
@@ -55,7 +54,12 @@
                 <label for="photos">फोटो अपलोड करें</label>
                 <input type="file" id="photos" multiple accept="image/*">
             </div>
-            <button type="submit">रिपोर्ट सबमिट करें</button>
+            <!-- ↓↓↓ ये लाइन जोड़ी है: वेटिंग मेसेज के लिए -->
+            <div id="loadingMessage" style="display:none;text-align:center;color:#e65100;margin-bottom:10px;">
+                रिपोर्ट सबमिट हो रही है, कृपया प्रतीक्षा करें…
+            </div>
+            <!-- ↑↑↑ ये लाइन जोड़ी है: वेटिंग मेसेज के लिए -->
+            <button type="submit" id="submitBtn">रिपोर्ट सबमिट करें</button>
         </form>
     </div>
     <script type="module">
@@ -104,6 +108,12 @@
 
         document.getElementById('reportForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            // ↓↓↓ ये लाइन जोड़ी है: बटन और लोडिंग डिव को पकड़ने के लिए
+            const submitBtn = document.getElementById('submitBtn');  // जोड़ी गई लाइन
+            const loadingDiv = document.getElementById('loadingMessage'); // जोड़ी गई लाइन
+            submitBtn.disabled = true;                // जोड़ी गई लाइन: बटन को disable करें
+            loadingDiv.style.display = "block";       // जोड़ी गई लाइन: मेसेज दिखाएँ
+
             const eventNameId = document.getElementById('reportEventSelect').value;
             const files = document.getElementById('photos').files;
             const photoUrls = [];
@@ -114,12 +124,13 @@
                     const url = await getDownloadURL(storageRef);
                     photoUrls.push(url);
                 }
+                const reportDate = document.getElementById("reportDate").value;
                 const reportData = {
                     eventNameId: eventNameId,
                     mandal: document.getElementById('reportMandal').value,
                     location: document.getElementById('reportLocation').value,
                     attendance: document.getElementById('attendance').value,
-                    const reportDate = document.getElementById("reportDate").value;
+                    reportDate: reportDate,
                     guests: document.getElementById('guests').value,
                     details: document.getElementById('details').value,
                     photos: photoUrls
@@ -130,6 +141,8 @@
             } catch (error) {
                 alert("Error: " + error.message);
             }
+            submitBtn.disabled = false;           // जोड़ी गई लाइन: बटन वापस enable करें
+            loadingDiv.style.display = "none";    // जोड़ी गई लाइन: मेसेज छुपाएँ
         });
     </script>
 </body>
