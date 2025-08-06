@@ -12,67 +12,80 @@
             color: #1c2942; margin: 0; padding: 0;
         }
         .container-tv {
-            max-width: 1200px; margin: 12px auto 8px auto;
-            background: #fff; border-radius: 12px; box-shadow: 0 4px 24px #e6a74912;
-            padding: 8px 1vw 14px 1vw; position: relative;
+            max-width: 1380px; margin: 12px auto 8px auto;
+            background: #fff; border-radius: 18px; box-shadow: 0 4px 24px #e6a74912;
+            padding: 12px 2vw 20px 2vw; position: relative;
         }
         .tv-title-bar {
             display: flex; align-items: center; border-bottom: 3px solid #ff9800;
-            padding-bottom: 6px; margin-bottom: 8px; gap: 10px;
+            padding-bottom: 6px; margin-bottom: 10px; gap: 12px;
         }
-        .tv-logo { width: 38px; height: 38px; min-width: 38px; background: linear-gradient(120deg,#ffe1b9,#ffc46d); border:2.5px solid #fff3e0; border-radius:50%; font-weight:700; font-size:1.1rem; color:#e65100; display:flex;align-items:center;justify-content:center;}
-        .tv-title-main { font-size: 1.08rem; font-weight: 700; color: #263b64; white-space: normal; word-break: break-word; max-width: 72vw;}
-        .tv-pagination {margin-left:auto;font-size:0.98rem;font-weight:600;color:#b78937;}
-        .tv-controls {display:flex;justify-content:center;gap:7px;margin:10px 0 3px 0;flex-wrap:wrap;}
-        .tv-controls button {background:#ff9800;color:#fff;font-weight:600;border:none;border-radius:7px;padding:7px 12px;font-size:0.97rem;cursor:pointer;transition:background 0.12s;letter-spacing:1px;}
+        .tv-logo { width: 46px; height: 46px; min-width: 46px; background: linear-gradient(120deg,#ffe1b9,#ffc46d); border:2.5px solid #fff3e0; border-radius:50%; font-weight:700; font-size:1.25rem; color:#e65100; display:flex;align-items:center;justify-content:center;}
+        .tv-title-main { font-size: 1.28rem; font-weight: 700; color: #263b64; white-space: normal; word-break: break-word; max-width: 82vw;}
+        .tv-pagination {margin-left:auto;font-size:1.07rem;font-weight:600;color:#b78937;}
+        .tv-controls {display:flex;justify-content:center;gap:13px;margin:20px 0 3px 0;flex-wrap:wrap;}
+        .tv-controls button {background:#ff9800;color:#fff;font-weight:600;border:none;border-radius:9px;padding:12px 24px;font-size:1.18rem;cursor:pointer;transition:background 0.12s;letter-spacing:1px;}
         .tv-controls .autoplay-btn {background:#1976d2;}
         .tv-controls .autoplay-btn.active {background:#44a62c;}
         .tv-controls .pdf-btn {background:#5e35b1;}
         .tv-controls .pdf-btn:hover {background:#4527a0;}
         /* -------- Main Flex -------- */
         .slideshow-section {
-            display: flex; flex-direction: row;
-            gap: 14px; margin-bottom: 8px;
+            display: flex; flex-direction: row; gap: 24px; margin-bottom: 12px;
             align-items: flex-start;
+            min-height: 450px;
         }
         .slide-card {
-            background:#f8fafc; border-radius:10px; box-shadow:0 2px 10px #ffe9d72a; padding:10px 5px 7px 10px; min-width:250px; flex:1 1 320px; max-width:450px;
+            background:#f8fafc; border-radius:14px; box-shadow:0 2px 16px #ffe9d72a; padding:19px 22px 14px 18px; min-width:320px; flex:1 1 58%; max-width:700px;
         }
-        .slide-title { font-size:1rem; font-weight:700; color:#d07011; margin-bottom:6px;}
-        .slide-details-row { font-size:0.94rem; margin:2px 0;}
-        .slide-details-row span {color:#77530e;font-weight:500;min-width:52px;display:inline-block;}
-        .slide-description {font-size:0.96rem; margin:7px 0 2px 0; color:#212427; line-height:1.42;}
+        .slide-title { font-size:1.18rem; font-weight:700; color:#d07011; margin-bottom:9px;}
+        .slide-details-row { font-size:1.09rem; margin:4px 0;}
+        .slide-details-row span {color:#77530e;font-weight:500;min-width:74px;display:inline-block;}
+        .slide-description {font-size:1.07rem; margin:13px 0 2px 0; color:#212427; line-height:1.48;}
         /* ---- Gallery RIGHT ---- */
         .slide-gallery-card {
-            background:#fffaf3; border-radius:10px; box-shadow:0 2px 8px #ffe9d744;
-            padding:10px 1vw 8px 1vw; min-width: 190px; max-width: 265px;
-            flex: 0 0 240px;
+            background:#fffaf3; border-radius:13px; box-shadow:0 2px 10px #ffe9d744;
+            padding:18px 1vw 16px 1vw; min-width: 280px; max-width: 380px; flex: 0 0 32%;
         }
-        .gallery-title {font-size:0.97rem;font-weight:700;color:#d07011;margin-bottom:4px;border-left:4px solid #ff9800;padding-left:7px;}
-        .gallery-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 6px 6px;}
-        .gallery-img-box {position:relative; border-radius:8px; overflow:hidden; aspect-ratio:4/3; background:#fff; min-width:0;}
-        .gallery-img-box img {width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:8px;display:block;background:#fff;cursor:pointer;position:absolute;left:0;top:0;touch-action:none;}
-        .view-btn,.edit-btn {position:absolute;bottom:6px;padding:2.5px 8px 2.5px 8px;font-size:0.80rem;font-weight:600;border:none;outline:none;cursor:pointer;border-radius:5px;box-shadow:0 1px 7px #ff98004a;transition:background 0.12s;}
-        .view-btn {right:5px;background:#ff9800;color:#fff;}
-        .edit-btn {right:53px;background:#1976d2;color:#fff;}
+        .gallery-title {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:9px;border-left:4px solid #ff9800;padding-left:10px;}
+        .gallery-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 13px 12px;}
+        .gallery-img-box {position:relative; border-radius:10px; overflow:hidden; aspect-ratio:4/3; background:#fff; min-width:0;}
+        .gallery-img-box img {width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:10px;display:block;background:#fff;cursor:pointer;position:absolute;left:0;top:0;touch-action:none;}
+        .view-btn,.edit-btn {position:absolute;bottom:8px;padding:4.5px 13px 4.5px 13px;font-size:1.01rem;font-weight:600;border:none;outline:none;cursor:pointer;border-radius:7px;box-shadow:0 1px 7px #ff98004a;transition:background 0.12s;}
+        .view-btn {right:10px;background:#ff9800;color:#fff;}
+        .edit-btn {right:83px;background:#1976d2;color:#fff;}
         .edit-btn:hover {background:#0d47a1;} .view-btn:hover {background:#e65100;}
         #imgZoomModal {display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.87);align-items:center;justify-content:center;}
         #imgZoomModal img {max-width:97vw;max-height:93vh;border-radius:11px;border:2px solid #fff;background:#fff;box-shadow:0 0 10px #ff9800a7;}
         #adjustViewModal {display:none;position:fixed;z-index:5000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
-        #adjustViewModal .modal-box {background:#fff;padding:8px 6px;border-radius:9px;box-shadow:0 2px 14px #ff980055;display:flex;flex-direction:column;align-items:center;width:98vw;max-width:340px;}
-        #adjustViewModal .drag-box {position:relative;width:98vw;max-width:240px;height:170px;overflow:hidden;border-radius:9px;background:#eee;}
+        #adjustViewModal .modal-box {background:#fff;padding:8px 6px;border-radius:9px;box-shadow:0 2px 14px #ff980055;display:flex;flex-direction:column;align-items:center;width:98vw;max-width:400px;}
+        #adjustViewModal .drag-box {position:relative;width:98vw;max-width:340px;height:245px;overflow:hidden;border-radius:9px;background:#eee;}
         #adjViewImg {position:absolute;left:0;top:0;cursor:grab;min-width:100%;min-height:100%;user-select:none;touch-action:none;}
-        #adjustViewModal .abtns {margin-top:8px;text-align:center;display:flex;gap:12px;}
-        #adjustViewModal button {padding: 5px 10px; border-radius:7px; border:none; background:#ff9800; color:#fff; font-size:0.91rem; font-weight:600; cursor:pointer;}
+        #adjustViewModal .abtns {margin-top:12px;text-align:center;display:flex;gap:18px;}
+        #adjustViewModal button {padding: 8px 15px; border-radius:9px; border:none; background:#ff9800; color:#fff; font-size:1.08rem; font-weight:600; cursor:pointer;}
         #adjustViewModal button:hover { background: #d27e13;}
+        @media (max-width:1100px) {
+            .container-tv {max-width: 98vw;}
+            .slideshow-section {gap: 10px;}
+            .slide-gallery-card {max-width: 300px;min-width:190px;}
+            .slide-card {max-width:calc(100vw - 320px);}
+        }
         @media (max-width:900px) {
-            .slide-gallery-card {max-width: 210px;min-width:140px;}
-            .slide-card {max-width:calc(100vw - 240px);}
+            .slideshow-section {gap: 4vw;}
+            .slide-gallery-card {max-width: 220px;min-width:120px;padding:11px 2vw 11px 2vw;}
+            .slide-card {max-width:calc(100vw - 190px);}
+            .gallery-img-box {border-radius:7px;}
         }
         @media (max-width:700px) {
             .slideshow-section {flex-direction:column;}
-            .slide-card {max-width:100vw;}
-            .slide-gallery-card {max-width:97vw;min-width:0;}
+            .slide-card {max-width:99vw;}
+            .slide-gallery-card {max-width:98vw;min-width:0;}
+        }
+        @media (max-width:540px) {
+            .tv-title-main {font-size:1.02rem;}
+            .slide-card {padding:10px 4vw 10px 4vw;}
+            .gallery-title {font-size:0.95rem;}
+            .tv-controls button {font-size:0.98rem;padding:10px 9px;}
         }
     </style>
     <!-- PDF -->
@@ -112,7 +125,6 @@
     </div>
 </div>
 <script type="module">
-// ---- (Same JS code, कोई बदलाव नहीं) ----
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 const firebaseConfig = {
@@ -166,7 +178,7 @@ window.nextSlide = function() {
     slideIndex = (slideIndex+1)%reports.length;
     showSlide(slideIndex);
 }
-function toggleAutoplay() {
+window.toggleAutoplay = function() {
     autoplay = !autoplay;
     let btn = document.getElementById('autoplayBtn');
     btn.classList.toggle('active', autoplay);
@@ -181,7 +193,7 @@ function toggleAutoplay() {
 }
 function showSlide(idx) {
     if (!reports.length) {
-        document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.1rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
+        document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.2rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
         document.getElementById('tv-pagination').innerText = "";
         return;
     }
@@ -199,7 +211,7 @@ function showSlide(idx) {
             <div class="slide-details-row"><span>अतिथि:</span> ${r.guests || '-'}</div>
         </div>
         <div class="slide-description">${(r.details||'').replace(/\n/g,'<br>')}</div>
-        ${r.hashtag ? `<div class="slide-details-row" style="margin-top:4px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
+        ${r.hashtag ? `<div class="slide-details-row" style="margin-top:7px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
     </div>
     `;
     let photos = (Array.isArray(r.photos) ? r.photos : []);
@@ -234,7 +246,7 @@ document.getElementById('imgZoomModal').onclick = function() {
     this.style.display = 'none';
     document.getElementById('imgZoomModalImg').src = '';
 };
-let dragData = {isDrag:false, startX:0, startY:0, imgX:0, imgY:0, boxW:240, boxH:170};
+let dragData = {isDrag:false, startX:0, startY:0, imgX:0, imgY:0, boxW:340, boxH:245};
 let adjIdx = null, adjPidx = null;
 window.openAdjView = function(idx, pidx, url) {
     adjIdx = idx; adjPidx = pidx;
@@ -326,9 +338,9 @@ window.downloadPDF = function() {
     doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
     doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
     doc.setFont("NotoSansDevanagari");
-    doc.setFontSize(16);
+    doc.setFontSize(19);
     doc.text(r.eventName || 'कार्यक्रम', 45, 44, {lang:"hi"});
-    doc.setFontSize(12);
+    doc.setFontSize(13);
     let y = 72;
     let details = [
         ["तारीख", r.date||'-'], ["स्थान", r.location||'-'], ["मंडल", r.mandal||'-'],
@@ -337,20 +349,20 @@ window.downloadPDF = function() {
     ];
     doc.autoTable({
         startY: y, head:[["फील्ड", "विवरण"]], body: details,
-        styles:{ font:"NotoSansDevanagari", fontSize:12 }
+        styles:{ font:"NotoSansDevanagari", fontSize:13 }
     });
-    y = doc.lastAutoTable.finalY + 15;
+    y = doc.lastAutoTable.finalY + 18;
     doc.text("कार्यक्रम विवरण:", 45, y, {lang:"hi"});
-    y+=17;
+    y+=19;
     let desc = (r.details||'-').replace(/\n/g," ");
     doc.text(desc, 55, y, {maxWidth:720,lang:"hi"});
     let photos = (Array.isArray(r.photos)?r.photos:[]).slice(0,1);
-    let imgY = y+30;
+    let imgY = y+33;
     if(photos.length){
         let img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = function() {
-            doc.addImage(img, "JPEG", 60, imgY, 200, 140);
+            doc.addImage(img, "JPEG", 60, imgY, 260, 180);
             doc.save((r.eventName||'report')+".pdf");
         };
         img.onerror = function() { doc.save((r.eventName||'report')+".pdf"); };
