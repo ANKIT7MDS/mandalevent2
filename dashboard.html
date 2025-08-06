@@ -3,177 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <title>डैशबोर्ड</title>
-  <!-- Fonts and CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: #fff9f3;
-      color: #222;
-      font-family: 'Noto Sans Devanagari', Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 24px auto;
-      background: #fff6ea;
-      border-radius: 14px;
-      box-shadow: 0 2px 16px #ff980020;
-      padding: 18px 10px 18px 10px;
-    }
-    h1 {
-      color: #e65100;
-      text-align: center;
-      margin-bottom: 12px;
-      font-size: 2.1rem;
-    }
-    /* Top Bar: all controls in single line, responsive */
-    .top-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .top-bar .left, .top-bar .right {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .top-bar select, .top-bar button, .top-bar input[type="text"] {
-      font-size: 1rem;
-      padding: 5px 9px;
-      border-radius: 5px;
-      border: 1.2px solid #ffa726a9;
-      background: #fffaf5;
-      color: #442300;
-    }
-    .top-bar button, .tab-btn, input[type="submit"] {
-      background: #ff9800;
-      color: #fff;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      padding: 7px 14px;
-      border-radius: 6px;
-      margin: 0 0 0 0;
-      transition: background 0.2s;
-    }
+    body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px 18px 10px; }
+    h1 { color: #e65100; text-align: center; margin-bottom: 12px; font-size: 2.1rem; }
+    .top-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .top-bar .left, .top-bar .right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .top-bar select, .top-bar button, .top-bar input[type="text"] { font-size: 1rem; padding: 5px 9px; border-radius: 5px; border: 1.2px solid #ffa726a9; background: #fffaf5; color: #442300; }
+    .top-bar button, .tab-btn, input[type="submit"] { background: #ff9800; color: #fff; font-weight: 600; border: none; cursor: pointer; padding: 7px 14px; border-radius: 6px; margin: 0 0 0 0; transition: background 0.2s; }
     .top-bar button:hover, .tab-btn.active, .tab-btn:hover, input[type="submit"]:hover { background: #e65100; }
-    .pending-mandals {
-      color: #e53935;
-      font-size: 0.98rem;
-      margin-left: 18px;
-    }
-    /* Tab Buttons */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      margin: 10px 0 8px 0;
-      justify-content: center;
-    }
-    .tab-btn {
-      padding: 7px 20px;
-      border-radius: 8px 8px 0 0;
-      border-bottom: 2px solid transparent;
-      background: #ffe0b2;
-      color: #8d4700;
-      font-weight: 600;
-      font-size: 1.02rem;
-    }
-    .tab-btn.active {
-      background: #ff9800;
-      color: #fff;
-      border-bottom: 2px solid #ff9800;
-    }
+    .pending-mandals { color: #e53935; font-size: 0.98rem; margin-left: 18px; }
+    .tabs { display: flex; gap: 4px; margin: 10px 0 8px 0; justify-content: center; }
+    .tab-btn { padding: 7px 20px; border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent; background: #ffe0b2; color: #8d4700; font-weight: 600; font-size: 1.02rem; }
+    .tab-btn.active { background: #ff9800; color: #fff; border-bottom: 2px solid #ff9800; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    /* Table styling */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 1.2rem;
-      background: #fff;
-      box-shadow: 0 1px 8px #ffa72611;
-      font-size: 0.99rem;
-    }
-    th, td {
-      border: 1px solid #ffa72655;
-      padding: 6px 7px;
-      text-align: left;
-    }
-    th {
-      background: #ffb74d;
-      color: #442300;
-      font-weight: bold;
-    }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1.2rem; background: #fff; box-shadow: 0 1px 8px #ffa72611; font-size: 0.99rem; }
+    th, td { border: 1px solid #ffa72655; padding: 6px 7px; text-align: left; }
+    th { background: #ffb74d; color: #442300; font-weight: bold; }
     tr:nth-child(even) { background: #fff3e0; }
-    /* Actions (edit/delete) */
-    .action-btn {
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 1.11rem;
-      margin: 0 1px;
-      background: #ff9800;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: background 0.18s;
-      min-width: 34px;
-    }
+    .action-btn { padding: 4px 10px; border-radius: 6px; font-size: 1.11rem; margin: 0 1px; background: #ff9800; color: #fff; border: none; cursor: pointer; transition: background 0.18s; min-width: 34px; }
     .action-btn.delete { background: #e53935; }
     .action-btn.delete:hover { background: #b71c1c; }
     .action-btn:hover { background: #e65100; }
-    /* Event Name List inline styling */
-    .event-name-inline-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin: 6px 0;
-      font-size: 0.99rem;
-      align-items: center;
-    }
-    .event-inline-item {
-      background: #fff;
-      border-radius: 5px;
-      padding: 4px 7px 4px 10px;
-      display: flex;
-      align-items: center;
-      border: 1px solid #ffa72699;
-      gap: 5px;
-    }
-    /* Report Photo Grid */
-    .report-photos-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 38px);
-      grid-auto-rows: 38px;
-      gap: 3px;
-      max-width: 124px;
-    }
-    .report-photos-grid img {
-      width: 36px;
-      height: 36px;
-      object-fit: cover;
-      border-radius: 5px;
-      border: 1.5px solid #ff9800;
-      cursor: zoom-in;
-      transition: box-shadow 0.18s;
-      background: #fff7e0;
-    }
-    /* Photo zoom modal */
-    #imgZoomModal {
-      display: none; position: fixed; z-index: 2000;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.82); align-items: center; justify-content: center;
-    }
-    #imgZoomModal img {
-      max-width: 95vw; max-height: 93vh;
-      border-radius: 14px; border: 4px solid #fff;
-      box-shadow: 0 0 12px #ff980099;
-      background: #fff;
-    }
+    .event-name-inline-list { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; font-size: 0.99rem; align-items: center; }
+    .event-inline-item { background: #fff; border-radius: 5px; padding: 4px 7px 4px 10px; display: flex; align-items: center; border: 1px solid #ffa72699; gap: 5px; }
+    .report-photos-grid { display: grid; grid-template-columns: repeat(3, 38px); grid-auto-rows: 38px; gap: 3px; max-width: 124px; }
+    .report-photos-grid img { width: 36px; height: 36px; object-fit: cover; border-radius: 5px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
+    #imgZoomModal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; }
+    #imgZoomModal img { max-width: 95vw; max-height: 93vh; border-radius: 14px; border: 4px solid #fff; box-shadow: 0 0 12px #ff980099; background: #fff; }
     @media (max-width: 650px) {
       .container { max-width: 99vw; padding: 4vw 1vw 4vw 1vw;}
       .top-bar { flex-direction: column; align-items: stretch; gap: 7px;}
@@ -188,8 +47,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
+  <!-- html2canvas for JPG export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 </head>
 <body>
   <div class="container">
@@ -210,30 +69,28 @@
             <option value="combined-excel">संयुक्त Excel</option>
             <option value="combined-csv">संयुक्त CSV</option>
             <option value="combined-pdf">संयुक्त PDF</option>
+            <option value="combined-jpg">संयुक्त JPG</option>
           </optgroup>
           <optgroup label="कार्यक्रम">
             <option value="events-excel">कार्यक्रम Excel</option>
             <option value="events-csv">कार्यक्रम CSV</option>
             <option value="events-pdf">कार्यक्रम PDF</option>
+            <option value="events-jpg">कार्यक्रम JPG</option>
           </optgroup>
           <optgroup label="संयोजक">
             <option value="coordinators-excel">संयोजक Excel</option>
             <option value="coordinators-csv">संयोजक CSV</option>
             <option value="coordinators-pdf">संयोजक PDF</option>
+            <option value="coordinators-jpg">संयोजक JPG</option>
           </optgroup>
-          <option value="reports-jpg">रिपोर्ट JPG</option>
-<option value="events-jpg">कार्यक्रम JPG</option>
-<option value="coordinators-jpg">संयोजक JPG</option>
-<option value="combined-jpg">संयुक्त JPG</option>
-
           <optgroup label="रिपोर्ट">
             <option value="reports-excel">रिपोर्ट Excel</option>
             <option value="reports-csv">रिपोर्ट CSV</option>
             <option value="reports-pdf">रिपोर्ट PDF</option>
+            <option value="reports-jpg">रिपोर्ट JPG</option>
           </optgroup>
         </select>
         <button onclick="handleExport()">डाउनलोड</button>
-        <!-- Event Name Add Form inline -->
         <input type="text" id="newEventName" placeholder="कार्यक्रम नाम" style="width:120px;">
         <button onclick="addEventName()">जोड़ें</button>
       </div>
@@ -302,7 +159,6 @@
       <div id="reportPagination"></div>
     </div>
   </div>
-  <!-- फोटो zoom modal -->
   <div id="imgZoomModal">
     <img id="imgZoomModalImg" src="">
   </div>
@@ -311,7 +167,6 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-    // -------- Firebase Config ----------
     const firebaseConfig = {
       apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
       authDomain: "mandaleventall.firebaseapp.com",
@@ -326,12 +181,9 @@
 
     const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
     const eventNameMap = {};
-
-    // Pagination
     let eventPage = 1, coordPage = 1, reportPage = 1;
     const PAGE_SIZE = 21;
 
-    // Event Name Add
     window.addEventName = async function() {
       const newEventName = document.getElementById('newEventName').value.trim();
       if (!newEventName) return alert('कार्यक्रम नाम लिखिए!');
@@ -341,20 +193,15 @@
       await loadAll();
     };
 
-    // Event Name List + Edit/Delete
     async function loadEventNames() {
-      // Inline List for controls
       const listInline = document.getElementById('eventNameListInline');
       listInline.innerHTML = '';
-      // Filters
       const filterEvent = document.getElementById('filterEvent');
       filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
-      // List
       const snap = await getDocs(collection(db, "eventNames"));
       for (const docSnap of snap.docs) {
         const data = docSnap.data();
         eventNameMap[docSnap.id] = data.name || 'Unknown';
-        // Inline List
         const span = document.createElement('span');
         span.className = "event-inline-item";
         span.innerHTML = `
@@ -363,8 +210,6 @@
           <button class="action-btn delete" style="font-size:1.1em;padding:2px 7px;" onclick="deleteEventName('${docSnap.id}')">❌</button>
         `;
         listInline.appendChild(span);
-
-        // Filter Dropdown
         const option = document.createElement('option');
         option.value = docSnap.id;
         option.textContent = data.name;
@@ -388,7 +233,6 @@
       }
     };
 
-    // Mandal Dropdown
     const filterMandal = document.getElementById('filterMandal');
     mandals.forEach(m => {
       const opt = document.createElement('option');
@@ -397,11 +241,9 @@
       filterMandal.appendChild(opt);
     });
 
-    // Filters
     document.getElementById('filterEvent').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
     document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
 
-    // ----------- Tabs Control -----------
     function switchTab(tabId) {
       ['eventsTab','coordinatorsTab','reportsTab'].forEach(id => {
         document.getElementById(id).classList.remove('active');
@@ -416,7 +258,6 @@
     }
     window.switchTab = switchTab;
 
-    // -------- Event List ----------
     async function loadEvents() {
       const eventList = document.getElementById('eventList');
       eventList.innerHTML = '';
@@ -481,7 +322,6 @@
       }
     };
 
-    // ------------ Coordinators List --------------
     async function loadCoordinators() {
       const coordinatorList = document.getElementById('coordinatorList');
       coordinatorList.innerHTML = '';
@@ -558,7 +398,6 @@
       }
     };
 
-    // ----------- Report List ----------
     async function loadReports() {
       const reportList = document.getElementById('reportList');
       reportList.innerHTML = '';
@@ -578,14 +417,11 @@
           filtered.push({id: docSnap.id, eventNameId, name, ...r});
         }
       }
-      // --- Pending Mandals (for current filters) ---
       const reportedMandals = new Set(filtered.map(r => r.mandal));
       let pendingMandals = mandals.filter(m => !reportedMandals.has(m));
-      // If mandal filter applied, don't show pending
       if (document.getElementById('filterMandal').value) pendingMandals = [];
       document.getElementById('pendingMandals').innerText = pendingMandals.length ? `रिपोर्ट नहीं: ${pendingMandals.join(", ")}` : '';
 
-      // Pagination
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       if (reportPage > totalPages) reportPage = totalPages;
       const pageReports = filtered.slice((reportPage-1)*PAGE_SIZE, reportPage*PAGE_SIZE);
@@ -593,7 +429,6 @@
       for (const r of pageReports) {
         let photosHTML = "";
         if (Array.isArray(r.photos)) {
-          // Show in grid (3 columns, 2 rows max)
           let photosToShow = r.photos.slice(0,6);
           photosHTML = `<div class="report-photos-grid">` +
             photosToShow.map(url =>
@@ -653,7 +488,6 @@
       }
     };
 
-    // फोटो Zoom
     window.zoomImage = function(e, url) {
       e.preventDefault();
       document.getElementById('imgZoomModalImg').src = url;
@@ -664,7 +498,6 @@
       document.getElementById('imgZoomModalImg').src = '';
     };
 
-    // Main loader
     async function loadAll() {
       await loadEventNames();
       await loadEvents();
@@ -673,7 +506,6 @@
     }
     loadAll();
   </script>
-  <!-- Export/Download Functions -->
   <script>
     window.exportEvents = function(type) {
       const table = document.querySelector('#eventsTab table');
@@ -774,21 +606,19 @@
       }
     };
     window.handleExport = function() {
-  const value = document.getElementById('exportDropdown').value;
-  if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
-  if (value.endsWith("-jpg")) {
-    let selector = "";
-    if (value.startsWith("reports-")) selector = "#reportsTab";
-    else if (value.startsWith("events-")) selector = "#eventsTab";
-    else if (value.startsWith("coordinators-")) selector = "#coordinatorsTab";
-    else selector = ".container"; // combined: whole dashboard
-    exportSectionAsJPG(selector, "Dashboard-" + Date.now());
-    return;
-  }
-
-
       const value = document.getElementById('exportDropdown').value;
       if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
+      // JPG Download
+      if (value.endsWith("-jpg")) {
+        let selector = "";
+        if (value.startsWith("reports-")) selector = "#reportsTab";
+        else if (value.startsWith("events-")) selector = "#eventsTab";
+        else if (value.startsWith("coordinators-")) selector = "#coordinatorsTab";
+        else selector = ".container";
+        exportSectionAsJPG(selector, "Dashboard-" + Date.now());
+        return;
+      }
+      // बाकी एक्सपोर्ट
       if (value.startsWith("combined-")) {
         const type = value.split("-")[1];
         exportCombinedTable(type);
@@ -803,6 +633,18 @@
         exportReports(type);
       }
     };
+    function exportSectionAsJPG(selector, fileName="Dashboard") {
+      const section = document.querySelector(selector);
+      if(!section) return alert("सेक्शन नहीं मिला!");
+      html2canvas(section, {backgroundColor:"#fff"}).then(canvas => {
+        let link = document.createElement("a");
+        link.href = canvas.toDataURL("image/jpeg", 1.0);
+        link.download = fileName+".jpg";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
   </script>
 </body>
 </html>
