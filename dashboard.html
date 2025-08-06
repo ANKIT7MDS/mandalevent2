@@ -188,6 +188,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 </head>
 <body>
   <div class="container">
@@ -219,6 +221,11 @@
             <option value="coordinators-csv">संयोजक CSV</option>
             <option value="coordinators-pdf">संयोजक PDF</option>
           </optgroup>
+          <option value="reports-jpg">रिपोर्ट JPG</option>
+<option value="events-jpg">कार्यक्रम JPG</option>
+<option value="coordinators-jpg">संयोजक JPG</option>
+<option value="combined-jpg">संयुक्त JPG</option>
+
           <optgroup label="रिपोर्ट">
             <option value="reports-excel">रिपोर्ट Excel</option>
             <option value="reports-csv">रिपोर्ट CSV</option>
@@ -767,6 +774,19 @@
       }
     };
     window.handleExport = function() {
+  const value = document.getElementById('exportDropdown').value;
+  if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
+  if (value.endsWith("-jpg")) {
+    let selector = "";
+    if (value.startsWith("reports-")) selector = "#reportsTab";
+    else if (value.startsWith("events-")) selector = "#eventsTab";
+    else if (value.startsWith("coordinators-")) selector = "#coordinatorsTab";
+    else selector = ".container"; // combined: whole dashboard
+    exportSectionAsJPG(selector, "Dashboard-" + Date.now());
+    return;
+  }
+
+
       const value = document.getElementById('exportDropdown').value;
       if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
       if (value.startsWith("combined-")) {
