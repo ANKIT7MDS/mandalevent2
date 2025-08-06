@@ -29,11 +29,9 @@
         .tv-controls .autoplay-btn.active {background:#44a62c;}
         .tv-controls .pdf-btn {background:#5e35b1;}
         .tv-controls .pdf-btn:hover {background:#4527a0;}
-        /* -------- Main Flex -------- */
         .slideshow-section {
-            display: flex; flex-direction: row; gap: 24px; margin-bottom: 12px;
-            align-items: flex-start;
-            min-height: 450px;
+            display: flex; flex-direction: row; gap: 28px; margin-bottom: 12px;
+            align-items: flex-start; min-height: 440px;
         }
         .slide-card {
             background:#f8fafc; border-radius:14px; box-shadow:0 2px 16px #ffe9d72a; padding:19px 22px 14px 18px; min-width:320px; flex:1 1 58%; max-width:700px;
@@ -42,51 +40,70 @@
         .slide-details-row { font-size:1.09rem; margin:4px 0;}
         .slide-details-row span {color:#77530e;font-weight:500;min-width:74px;display:inline-block;}
         .slide-description {font-size:1.07rem; margin:13px 0 2px 0; color:#212427; line-height:1.48;}
-        /* ---- Gallery RIGHT ---- */
-        .slide-gallery-card {
-            background:#fffaf3; border-radius:13px; box-shadow:0 2px 10px #ffe9d744;
-            padding:18px 1vw 16px 1vw; min-width: 280px; max-width: 380px; flex: 0 0 32%;
-        }
-        .gallery-title {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:9px;border-left:4px solid #ff9800;padding-left:10px;}
-        .gallery-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 13px 12px;}
-        .gallery-img-box {position:relative; border-radius:10px; overflow:hidden; aspect-ratio:4/3; background:#fff; min-width:0;}
-        .gallery-img-box img {width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:10px;display:block;background:#fff;cursor:pointer;position:absolute;left:0;top:0;touch-action:none;}
-        .view-btn,.edit-btn {position:absolute;bottom:8px;padding:4.5px 13px 4.5px 13px;font-size:1.01rem;font-weight:600;border:none;outline:none;cursor:pointer;border-radius:7px;box-shadow:0 1px 7px #ff98004a;transition:background 0.12s;}
-        .view-btn {right:10px;background:#ff9800;color:#fff;}
-        .edit-btn {right:83px;background:#1976d2;color:#fff;}
-        .edit-btn:hover {background:#0d47a1;} .view-btn:hover {background:#e65100;}
-        #imgZoomModal {display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.87);align-items:center;justify-content:center;}
-        #imgZoomModal img {max-width:97vw;max-height:93vh;border-radius:11px;border:2px solid #fff;background:#fff;box-shadow:0 0 10px #ff9800a7;}
-        #adjustViewModal {display:none;position:fixed;z-index:5000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
-        #adjustViewModal .modal-box {background:#fff;padding:8px 6px;border-radius:9px;box-shadow:0 2px 14px #ff980055;display:flex;flex-direction:column;align-items:center;width:98vw;max-width:400px;}
-        #adjustViewModal .drag-box {position:relative;width:98vw;max-width:340px;height:245px;overflow:hidden;border-radius:9px;background:#eee;}
-        #adjViewImg {position:absolute;left:0;top:0;cursor:grab;min-width:100%;min-height:100%;user-select:none;touch-action:none;}
-        #adjustViewModal .abtns {margin-top:12px;text-align:center;display:flex;gap:18px;}
-        #adjustViewModal button {padding: 8px 15px; border-radius:9px; border:none; background:#ff9800; color:#fff; font-size:1.08rem; font-weight:600; cursor:pointer;}
-        #adjustViewModal button:hover { background: #d27e13;}
-     @media (max-width:700px) {
-    .slide-gallery-card {
-        max-width: 99vw;
-        min-width: 0;
-        padding: 12px 2vw 16px 2vw;
-    }
-    .gallery-grid {
-        gap: 12px 9px;
-    }
-    .gallery-img-box {
-        height: 28vw;
-        min-height: 90px;
-        max-height: 160px;
-        aspect-ratio: 4/2.7;
-        border-radius:12px;
-    }
-    .gallery-img-box img {
-        border-radius:12px;
-    }
-}
 
+        /* -- PHOTO SLIDER -- */
+        .photo-slider-box {
+            background:#fffaf3; border-radius:16px; box-shadow:0 2px 10px #ffe9d744;
+            padding:18px 10px 20px 10px; min-width: 340px; max-width: 440px; flex: 0 0 32%;
+            display:flex;flex-direction:column;align-items:center;position:relative;
+        }
+        .slider-photo-frame {
+            position:relative; width:100%; aspect-ratio:4/2.6; min-height:220px; max-height:310px; overflow:hidden; border-radius:14px; background:#eee;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .slider-photo-frame img {
+            width:100%; height:100%; object-fit:cover; border-radius:14px; background:#fff; display:block;
+            transition:opacity 0.4s cubic-bezier(.65,.04,.35,1),transform 0.4s cubic-bezier(.65,.04,.35,1);
+        }
+        .slider-photo-frame .no-photo {
+            width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+            color:#bbb;font-size:2.2rem;font-weight:600;
+            background: repeating-linear-gradient(135deg,#eee 0 10px,#fff 10px 20px);
+        }
+        .slider-arrow {
+            position:absolute;top:50%;transform:translateY(-50%);
+            background:#ff9800bb;color:#fff;font-size:1.9rem;font-weight:700;border:none;border-radius:50%;
+            width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+            box-shadow:0 1px 12px #ff98004c;cursor:pointer;z-index:20;
+            transition:background 0.13s;
+        }
+        .slider-arrow:hover {background:#f37804;}
+        .slider-arrow.left {left:6px;}
+        .slider-arrow.right {right:6px;}
+        .slider-dots {
+            margin:10px 0 0 0;display:flex;gap:9px;justify-content:center;
+        }
+        .slider-dot {
+            width:13px;height:13px;border-radius:50%;background:#ddd;transition:background 0.19s;
+            border:2px solid #fff;cursor:pointer;
+        }
+        .slider-dot.active {background:#ff9800;}
+        .slider-title-bar {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:12px;border-left:4px solid #ff9800;padding-left:12px;align-self:flex-start;}
+        /* ----------- Responsive ----------- */
+        @media (max-width:1100px) {
+            .container-tv {max-width: 99vw;}
+            .slideshow-section {gap: 10px;}
+            .photo-slider-box {max-width: 320px;min-width:170px;}
+            .slide-card {max-width:calc(100vw - 340px);}
+        }
+        @media (max-width:900px) {
+            .slideshow-section {gap: 4vw;}
+            .photo-slider-box {max-width: 98vw;min-width:120px;padding:13px 1vw;}
+            .slide-card {max-width:calc(100vw - 170px);}
+            .slider-photo-frame {min-height:160px;}
+        }
+        @media (max-width:700px) {
+            .slideshow-section {flex-direction:column;}
+            .slide-card {max-width:99vw;}
+            .photo-slider-box {max-width:99vw;min-width:0;margin-top:14px;}
+            .slider-title-bar {padding-left:6px;}
+            .slider-photo-frame {aspect-ratio:4/3;min-height:115px;}
+            .slider-dot {width:11px;height:11px;}
+        }
+        @media (max-width:500px) {
+            .slider-photo-frame {min-height:70px;}
+        }
     </style>
-    <!-- PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
@@ -107,24 +124,12 @@
     </div>
 </div>
 <!-- फोटो Zoom Modal -->
-<div id="imgZoomModal">
+<div id="imgZoomModal" style="display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.87);align-items:center;justify-content:center;">
     <img id="imgZoomModalImg" src="">
-</div>
-<!-- फोटो Adjust View Modal -->
-<div id="adjustViewModal">
-    <div class="modal-box">
-        <div class="drag-box">
-            <img id="adjViewImg" src="">
-        </div>
-        <div class="abtns">
-            <button onclick="saveViewPos()">सेव</button>
-            <button onclick="closeAdjView()">कैंसिल</button>
-        </div>
-    </div>
 </div>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 const firebaseConfig = {
     apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
     authDomain: "mandaleventall.firebaseapp.com",
@@ -140,6 +145,7 @@ const db = getFirestore(app);
 let reports = [];
 let slideIndex = 0;
 let autoplay = false, autoplayInterval = null;
+let photoIdx = 0, photoPlay = false, photoTimer = null;
 
 async function loadReports() {
     const eventNamesSnap = await getDocs(collection(db, "eventNames"));
@@ -189,7 +195,60 @@ window.toggleAutoplay = function() {
         clearInterval(autoplayInterval);
     }
 }
-function showSlide(idx) {
+// ---- PHOTO SLIDER CODE ----
+function showPhotoSlider(photos) {
+    if (!Array.isArray(photos) || !photos.length) {
+        return `<div class="slider-photo-frame"><div class="no-photo">No Photo</div></div>`;
+    }
+    let curr = Math.max(0, Math.min(photoIdx, photos.length-1));
+    let img = `<img src="${photos[curr]}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${photos[curr]}')" style="opacity:1;">`;
+    // Arrow buttons (डेस्कटॉप पर, मोबाइल पर swipe या dot क्लिक)
+    let arrows = '';
+    if (photos.length>1 && window.innerWidth>700) {
+        arrows = `
+            <button class="slider-arrow left" onclick="photoPrev(event)">&larr;</button>
+            <button class="slider-arrow right" onclick="photoNext(event)">&rarr;</button>
+        `;
+    }
+    let dots = `<div class="slider-dots">`;
+    for(let i=0;i<photos.length;i++){
+        dots += `<div class="slider-dot${i===curr?' active':''}" onclick="photoGoto(${i})"></div>`;
+    }
+    dots += `</div>`;
+    return `<div class="slider-photo-frame">${arrows}${img}</div>${dots}`;
+}
+window.photoPrev = function(e){
+    e.stopPropagation();
+    if(!reports[slideIndex]) return;
+    let photos = Array.isArray(reports[slideIndex].photos)?reports[slideIndex].photos:[];
+    photoIdx = (photoIdx-1+photos.length)%photos.length;
+    showSlide(slideIndex,false);
+}
+window.photoNext = function(e){
+    e.stopPropagation();
+    if(!reports[slideIndex]) return;
+    let photos = Array.isArray(reports[slideIndex].photos)?reports[slideIndex].photos:[];
+    photoIdx = (photoIdx+1)%photos.length;
+    showSlide(slideIndex,false);
+}
+window.photoGoto = function(idx){
+    photoIdx = idx;
+    showSlide(slideIndex,false);
+}
+function startPhotoAutoPlay(photos) {
+    if(photoTimer) clearInterval(photoTimer);
+    if(!photos || photos.length<2) return;
+    photoPlay = true;
+    photoTimer = setInterval(()=>{
+        photoIdx = (photoIdx+1)%photos.length;
+        showSlide(slideIndex,false);
+    },2600);
+}
+function stopPhotoAutoPlay() {
+    if(photoTimer) clearInterval(photoTimer);
+    photoPlay = false;
+}
+function showSlide(idx, resetPhoto=true) {
     if (!reports.length) {
         document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.2rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
         document.getElementById('tv-pagination').innerText = "";
@@ -197,6 +256,8 @@ function showSlide(idx) {
     }
     slideIndex = idx;
     const r = reports[idx];
+    if(resetPhoto) photoIdx=0;
+    // लेफ्ट : Detail कार्ड
     let detailsHtml = `
     <div class="slide-card">
         <div class="slide-title">${r.eventName || 'कार्यक्रम'}</div>
@@ -212,28 +273,17 @@ function showSlide(idx) {
         ${r.hashtag ? `<div class="slide-details-row" style="margin-top:7px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
     </div>
     `;
-    let photos = (Array.isArray(r.photos) ? r.photos : []);
-    let showPhotos = [];
-    for(let i=0;i<4;i++){
-        showPhotos.push(photos[i] ? photos[i] : "https://dummyimage.com/600x450/eee/aaa&text=No+Photo");
-    }
-    let photoOffsets = Array.isArray(r.photoOffsets) ? r.photoOffsets : [];
-    let galleryHtml = `<div class="slide-gallery-card">
-        <div class="gallery-title">फोटो गैलरी</div>
-        <div class="gallery-grid">`;
-    showPhotos.forEach((url, pidx) => {
-        let pos = photoOffsets[pidx] || {x:0, y:0};
-        let style = `left:${pos.x||0}px; top:${pos.y||0}px;`;
-        galleryHtml += `
-        <div class="gallery-img-box">
-            <img src="${url}" alt="कार्यक्रम फोटो" style="${style}" onclick="zoomImage(event, '${url}')">
-            <button class="edit-btn" onclick="openAdjView(${idx},${pidx},'${url}')">सेट व्यू</button>
-            <button class="view-btn" onclick="zoomImage(event, '${url}')">देखें</button>
-        </div>`;
-    });
-    galleryHtml += `</div></div>`;
-    document.getElementById('tv-slideshow').innerHTML = detailsHtml + galleryHtml;
+    // राइट : फोटो स्लाइडर
+    let photos = Array.isArray(r.photos) ? r.photos : [];
+    let sliderHtml = `<div class="photo-slider-box">
+        <div class="slider-title-bar">फोटो गैलरी</div>
+        ${showPhotoSlider(photos)}
+    </div>`;
+    document.getElementById('tv-slideshow').innerHTML = detailsHtml + sliderHtml;
     document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
+    // Autoplay logic
+    stopPhotoAutoPlay();
+    if(photos.length>1 && window.innerWidth>700) startPhotoAutoPlay(photos);
 }
 window.zoomImage = function(e, url) {
     e.preventDefault();
@@ -244,91 +294,7 @@ document.getElementById('imgZoomModal').onclick = function() {
     this.style.display = 'none';
     document.getElementById('imgZoomModalImg').src = '';
 };
-let dragData = {isDrag:false, startX:0, startY:0, imgX:0, imgY:0, boxW:340, boxH:245};
-let adjIdx = null, adjPidx = null;
-window.openAdjView = function(idx, pidx, url) {
-    adjIdx = idx; adjPidx = pidx;
-    document.getElementById('adjViewImg').src = url;
-    let pos = ((reports[idx]||{}).photoOffsets||[])[pidx] || {x:0,y:0};
-    let img = document.getElementById('adjViewImg');
-    img.onload = function() {
-        img.style.left = (pos.x||0)+"px";
-        img.style.top = (pos.y||0)+"px";
-        dragData.imgX = parseInt(img.style.left)||0;
-        dragData.imgY = parseInt(img.style.top)||0;
-    }
-    setTimeout(() => {
-        dragData.imgX = pos.x||0; dragData.imgY = pos.y||0;
-        dragData.isDrag = false;
-    }, 120);
-    document.getElementById('adjustViewModal').style.display = 'flex';
-};
-document.getElementById('adjViewImg').addEventListener('touchstart', function(e){
-    dragData.isDrag = true;
-    let touch = e.touches[0];
-    dragData.startX = touch.clientX;
-    dragData.startY = touch.clientY;
-    dragData.imgX = parseInt(this.style.left)||0;
-    dragData.imgY = parseInt(this.style.top)||0;
-});
-document.getElementById('adjViewImg').addEventListener('mousedown', function(e){
-    dragData.isDrag = true;
-    dragData.startX = e.clientX;
-    dragData.startY = e.clientY;
-    dragData.imgX = parseInt(this.style.left)||0;
-    dragData.imgY = parseInt(this.style.top)||0;
-});
-window.addEventListener('mousemove', function(e){
-    if(!dragData.isDrag) return;
-    let dx = e.clientX - dragData.startX;
-    let dy = e.clientY - dragData.startY;
-    let img = document.getElementById('adjViewImg');
-    let boxW = dragData.boxW, boxH = dragData.boxH;
-    let imgRatio = img.naturalWidth/img.naturalHeight;
-    let scaleW = Math.max(boxW, boxH*imgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
-    let imgW = scaleW, imgH = scaleW/imgRatio;
-    if (imgH < boxH) { imgH = boxH; imgW = boxH*imgRatio; }
-    let minX = boxW-imgW, minY = boxH-imgH;
-    let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
-    let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
-    img.style.left = nx + "px";
-    img.style.top = ny + "px";
-});
-window.addEventListener('touchmove', function(e){
-    if(!dragData.isDrag) return;
-    let touch = e.touches[0];
-    let dx = touch.clientX - dragData.startX;
-    let dy = touch.clientY - dragData.startY;
-    let img = document.getElementById('adjViewImg');
-    let boxW = dragData.boxW, boxH = dragData.boxH;
-    let imgRatio = img.naturalWidth/img.naturalHeight;
-    let scaleW = Math.max(boxW, boxH*imgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
-    let imgW = scaleW, imgH = scaleW/imgRatio;
-    if (imgH < boxH) { imgH = boxH; imgW = boxH*imgRatio; }
-    let minX = boxW-imgW, minY = boxH-imgH;
-    let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
-    let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
-    img.style.left = nx + "px";
-    img.style.top = ny + "px";
-});
-window.addEventListener('mouseup', function(){ dragData.isDrag = false; });
-window.addEventListener('touchend', function(){ dragData.isDrag = false; });
-window.closeAdjView = function() {
-    document.getElementById('adjustViewModal').style.display = 'none';
-};
-window.saveViewPos = async function() {
-    let img = document.getElementById('adjViewImg');
-    let left = parseInt(img.style.left)||0;
-    let top = parseInt(img.style.top)||0;
-    let r = reports[adjIdx];
-    let photoOffsets = Array.isArray(r.photoOffsets)? r.photoOffsets : [];
-    photoOffsets[adjPidx] = {x:left, y:top};
-    await updateDoc(doc(db, `eventNames/${r.eventNameId}/reports`, r.id), { photoOffsets });
-    reports[adjIdx].photoOffsets = photoOffsets;
-    alert("सेट हो गया!");
-    closeAdjView();
-    showSlide(slideIndex);
-};
+// PDF (Same as before, use first photo)
 window.downloadPDF = function() {
     if (!reports[slideIndex]) return;
     let r = reports[slideIndex];
