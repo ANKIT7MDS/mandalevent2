@@ -4,253 +4,63 @@
     <meta charset="UTF-8">
     <title>मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Hindi Font -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             background: #f4f6fa;
-            font-family: 'Noto Sans Devanagari', 'Segoe UI', Arial, sans-serif;
-            color: #1c2942;
-            margin: 0;
-            padding: 0;
+            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+            color: #1c2942; margin: 0; padding: 0;
         }
         .container-tv {
-            max-width: 1200px;
-            margin: 18px auto 10px auto;
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 4px 30px #e6a74918;
-            padding: 10px 3vw 16px 3vw;
-            position: relative;
+            max-width: 1200px; margin: 12px auto 8px auto;
+            background: #fff; border-radius: 12px; box-shadow: 0 4px 24px #e6a74912;
+            padding: 8px 1vw 14px 1vw; position: relative;
         }
         .tv-title-bar {
-            display: flex;
-            align-items: center;
-            border-bottom: 3px solid #ff9800;
-            padding-bottom: 6px;
-            margin-bottom: 7px;
-            gap: 10px;
+            display: flex; align-items: center; border-bottom: 3px solid #ff9800;
+            padding-bottom: 6px; margin-bottom: 8px; gap: 10px;
         }
-        .tv-logo {
-            width: 43px; height: 43px; min-width: 43px;
-            background: linear-gradient(120deg, #ffe1b9 0%, #ffc46d 100%);
-            border: 3px solid #fff3e0;
-            border-radius: 50%;
-            box-shadow: 0 2px 10px #ff980022;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #e65100;
-            display: flex; align-items: center; justify-content: center;
-            letter-spacing: 1px;
-        }
-        .tv-title-main {
-            font-size: 1.09rem;
-            font-weight: 700;
-            color: #263b64;
-            white-space: normal;
-            word-break: break-word;
-            max-width: 74vw;
-        }
-        .tv-pagination {
-            margin-left:auto;
-            font-size: 0.97rem;
-            font-weight: 600;
-            color: #b78937;
-        }
-        .tv-controls {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin: 10px 0 3px 0;
-            flex-wrap: wrap;
-        }
-        .tv-controls button {
-            background: #ff9800;
-            color: #fff;
-            font-weight: 600;
-            border: none;
-            border-radius: 7px;
-            padding: 7px 13px;
-            font-size: 0.97rem;
-            cursor: pointer;
-            transition: background 0.14s;
-            letter-spacing: 1px;
-        }
-        .tv-controls .autoplay-btn {
-            background: #1976d2;
-            padding: 7px 11px;
-        }
-        .tv-controls .autoplay-btn.active {
-            background: #44a62c;
-        }
-        .tv-controls .pdf-btn {
-            background: #5e35b1;
-            padding: 7px 10px;
-        }
-        .tv-controls .pdf-btn:hover {
-            background: #4527a0;
-        }
-        .slideshow-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 7px;
-        }
-        .slide-card {
-            flex: 1 1 320px;
-            background: #f8fafc;
-            border-radius: 11px;
-            box-shadow: 0 2px 12px #ffe9d77e;
-            padding: 11px 6px 7px 11px;
-            min-width: 210px; max-width: 390px;
-        }
-        .slide-title {
-            font-size: 1.02rem;
-            font-weight: 700;
-            color: #d07011;
-            margin-bottom: 7px;
-        }
-        .slide-details { margin-bottom: 7px; }
-        .slide-details-row {
-            font-size: 0.96rem;
-            margin: 2px 0;
-        }
-        .slide-details-row span {
-            color: #77530e;
-            font-weight: 500;
-            min-width: 57px;
-            display: inline-block;
-        }
-        .slide-description {
-            font-size: 0.96rem;
-            margin: 7px 0 2px 0;
-            color: #212427;
-            line-height: 1.42;
-        }
-        .slide-gallery-card {
-            flex: 1 1 340px;
-            min-width: 160px;
-            background: #fffaf3;
-            border-radius: 11px;
-            box-shadow: 0 2px 12px #ffe9d744;
-            padding: 11px 5px 10px 7px;
-        }
-        .gallery-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #d07011;
-            margin-bottom: 5px;
-            border-left: 4px solid #ff9800;
-            padding-left: 7px;
-        }
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 7px;
-        }
-        .gallery-img-box {
-            position: relative;
-            border-radius: 9px;
-            overflow: hidden;
-            aspect-ratio: 4/3;
-            background: #fff;
-            min-width: 0;
-            min-height: 0;
-        }
-        .gallery-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center center;
-            border-radius: 9px;
-            display: block;
-            background: #fff;
-            cursor: pointer;
-            position: absolute;
-            left: 0; top: 0;
-            touch-action: none;
-        }
-        .view-btn, .edit-btn {
-            position: absolute;
-            bottom: 7px;
-            padding: 3.2px 8px 3.2px 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 1px 7px #ff98004a;
-            transition: background 0.16s;
-        }
-        .view-btn {
-            right: 6px;
-            background: #ff9800;
-            color: #fff;
-        }
-        .edit-btn {
-            right: 63px;
-            background: #1976d2;
-            color: #fff;
-        }
-        .edit-btn:hover { background: #0d47a1; }
-        .view-btn:hover { background: #e65100; }
-        #imgZoomModal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.87);
-            align-items: center;
-            justify-content: center;
-        }
-        #imgZoomModal img {
-            max-width: 97vw;
-            max-height: 93vh;
-            border-radius: 11px;
-            border: 2px solid #fff;
-            background: #fff;
-            box-shadow: 0 0 10px #ff9800a7;
-        }
-        #adjustViewModal {
-            display:none; position:fixed; z-index:5000; top:0;left:0;width:100vw;height:100vh;
-            background:rgba(0,0,0,0.7); align-items:center; justify-content:center;
-        }
-        #adjustViewModal .modal-box {
-            background:#fff; padding:8px 6px; border-radius:9px; box-shadow:0 2px 14px #ff980055;
-            display:flex; flex-direction:column; align-items:center;
-            width: 98vw; max-width: 350px;
-        }
-        #adjustViewModal .drag-box {
-            position:relative; width:98vw; max-width:300px; height:220px; overflow:hidden; border-radius:9px; background:#eee;
-        }
-        #adjViewImg {
-            position:absolute; left:0; top:0; cursor:grab; min-width:100%; min-height:100%;
-            user-select: none;
-            touch-action: none;
-        }
-        #adjustViewModal .abtns {
-            margin-top:9px; text-align:center; display:flex; gap:14px;
-        }
-        #adjustViewModal button {
-            padding: 5px 12px; border-radius:7px; border:none; background:#ff9800; color:#fff; font-size:0.97rem; font-weight:600; cursor:pointer;
-        }
+        .tv-logo { width: 38px; height: 38px; min-width: 38px; background: linear-gradient(120deg,#ffe1b9,#ffc46d); border:2.5px solid #fff3e0; border-radius:50%; font-weight:700; font-size:1.1rem; color:#e65100; display:flex;align-items:center;justify-content:center;}
+        .tv-title-main { font-size: 1.08rem; font-weight: 700; color: #263b64; white-space: normal; word-break: break-word; max-width: 72vw;}
+        .tv-pagination {margin-left:auto;font-size:0.98rem;font-weight:600;color:#b78937;}
+        .tv-controls {display:flex;justify-content:center;gap:7px;margin:10px 0 3px 0;flex-wrap:wrap;}
+        .tv-controls button {background:#ff9800;color:#fff;font-weight:600;border:none;border-radius:7px;padding:7px 12px;font-size:0.97rem;cursor:pointer;transition:background 0.12s;letter-spacing:1px;}
+        .tv-controls .autoplay-btn {background:#1976d2;}
+        .tv-controls .autoplay-btn.active {background:#44a62c;}
+        .tv-controls .pdf-btn {background:#5e35b1;}
+        .tv-controls .pdf-btn:hover {background:#4527a0;}
+        .slideshow-section { display: flex; flex-direction: column; gap: 8px;}
+        .slide-card { background:#f8fafc; border-radius:10px; box-shadow:0 2px 10px #ffe9d72a; padding:10px 5px 7px 10px; margin-bottom: 3px;}
+        .slide-title { font-size:1rem; font-weight:700; color:#d07011; margin-bottom:6px;}
+        .slide-details-row { font-size:0.94rem; margin:2px 0;}
+        .slide-details-row span {color:#77530e;font-weight:500;min-width:52px;display:inline-block;}
+        .slide-description {font-size:0.96rem; margin:7px 0 2px 0; color:#212427; line-height:1.42;}
+        .slide-gallery-card { background:#fffaf3; border-radius:10px; box-shadow:0 2px 8px #ffe9d744; padding:10px 2vw 8px 2vw;}
+        .gallery-title {font-size:0.97rem;font-weight:700;color:#d07011;margin-bottom:4px;border-left:4px solid #ff9800;padding-left:7px;}
+        .gallery-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 8px 7px;}
+        .gallery-img-box {position:relative; border-radius:8px; overflow:hidden; aspect-ratio:4/3; background:#fff; min-width:0;}
+        .gallery-img-box img {width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:8px;display:block;background:#fff;cursor:pointer;position:absolute;left:0;top:0;touch-action:none;}
+        .view-btn,.edit-btn {position:absolute;bottom:6px;padding:3px 8px 3px 8px;font-size:0.87rem;font-weight:600;border:none;outline:none;cursor:pointer;border-radius:5px;box-shadow:0 1px 7px #ff98004a;transition:background 0.12s;}
+        .view-btn {right:5px;background:#ff9800;color:#fff;}
+        .edit-btn {right:60px;background:#1976d2;color:#fff;}
+        .edit-btn:hover {background:#0d47a1;} .view-btn:hover {background:#e65100;}
+        #imgZoomModal {display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.87);align-items:center;justify-content:center;}
+        #imgZoomModal img {max-width:97vw;max-height:93vh;border-radius:11px;border:2px solid #fff;background:#fff;box-shadow:0 0 10px #ff9800a7;}
+        #adjustViewModal {display:none;position:fixed;z-index:5000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
+        #adjustViewModal .modal-box {background:#fff;padding:8px 6px;border-radius:9px;box-shadow:0 2px 14px #ff980055;display:flex;flex-direction:column;align-items:center;width:98vw;max-width:340px;}
+        #adjustViewModal .drag-box {position:relative;width:98vw;max-width:290px;height:200px;overflow:hidden;border-radius:9px;background:#eee;}
+        #adjViewImg {position:absolute;left:0;top:0;cursor:grab;min-width:100%;min-height:100%;user-select:none;touch-action:none;}
+        #adjustViewModal .abtns {margin-top:8px;text-align:center;display:flex;gap:12px;}
+        #adjustViewModal button {padding: 5px 10px; border-radius:7px; border:none; background:#ff9800; color:#fff; font-size:0.91rem; font-weight:600; cursor:pointer;}
         #adjustViewModal button:hover { background: #d27e13;}
-        @media (max-width: 700px) {
-            .container-tv { padding: 0 0 2vw 0;}
-            .slide-card, .slide-gallery-card { max-width: 100%; min-width: 0;}
-            .gallery-img-box img { height: 100%; }
-            .tv-title-main { font-size: 0.97rem;}
-            .slide-title { font-size: 0.98rem;}
-        }
-        @media (max-width: 540px) {
-            .slideshow-section { flex-direction: column; }
-            .slide-card, .slide-gallery-card { padding: 5px 1vw 7px 1vw;}
-            .gallery-grid { grid-template-columns: 1fr; }
-            .gallery-img-box { max-width: 97vw;}
-            .edit-btn { right: 63px;}
-            .tv-logo { width: 30px; height: 30px; min-width:30px; font-size:0.93rem;}
-            .tv-title-main { font-size: 0.91rem;}
-            .tv-controls button { font-size:0.88rem; padding:7px 9px;}
+        @media (max-width:600px) {
+            .container-tv {padding:0 0 2vw 0;}
+            .gallery-grid {grid-template-columns: 1fr 1fr;}
+            .gallery-img-box { max-width: 96vw;}
+            .tv-logo {width: 28px; height:28px; min-width:28px; font-size:0.81rem;}
+            .tv-title-main {font-size: 0.97rem;}
+            .tv-controls button {font-size:0.87rem;padding:7px 7px;}
         }
     </style>
     <!-- PDF -->
@@ -259,294 +69,289 @@
     <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
 </head>
 <body>
-    <div class="container-tv">
-        <div class="tv-title-bar">
-            <div class="tv-logo">BJ</div>
-            <div class="tv-title-main">मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</div>
-            <div class="tv-pagination" id="tv-pagination">1 / 1</div>
-        </div>
-        <div class="slideshow-section" id="tv-slideshow"></div>
-        <div class="tv-controls">
-            <button onclick="prevSlide()">पिछला</button>
-            <button onclick="nextSlide()">अगला</button>
-            <button class="autoplay-btn" id="autoplayBtn" onclick="toggleAutoplay()">ऑटो-प्ले</button>
-            <button class="pdf-btn" onclick="downloadPDF()">PDF</button>
-        </div>
+<div class="container-tv">
+    <div class="tv-title-bar">
+        <div class="tv-logo">BJ</div>
+        <div class="tv-title-main">मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</div>
+        <div class="tv-pagination" id="tv-pagination">1 / 1</div>
     </div>
-    <!-- फोटो Zoom Modal -->
-    <div id="imgZoomModal">
-        <img id="imgZoomModalImg" src="">
+    <div class="slideshow-section" id="tv-slideshow"></div>
+    <div class="tv-controls">
+        <button onclick="prevSlide()">&#8592; पिछला</button>
+        <button onclick="nextSlide()">अगला &#8594;</button>
+        <button class="autoplay-btn" id="autoplayBtn" onclick="toggleAutoplay()">टीवी-मोड</button>
+        <button class="pdf-btn" onclick="downloadPDF()">PDF</button>
     </div>
-    <!-- फोटो Adjust View Modal -->
-    <div id="adjustViewModal">
-      <div class="modal-box">
+</div>
+<!-- फोटो Zoom Modal -->
+<div id="imgZoomModal">
+    <img id="imgZoomModalImg" src="">
+</div>
+<!-- फोटो Adjust View Modal -->
+<div id="adjustViewModal">
+    <div class="modal-box">
         <div class="drag-box">
-          <img id="adjViewImg" src="">
+            <img id="adjViewImg" src="">
         </div>
         <div class="abtns">
-          <button onclick="saveViewPos()">सेव</button>
-          <button onclick="closeAdjView()">कैंसिल</button>
+            <button onclick="saveViewPos()">सेव</button>
+            <button onclick="closeAdjView()">कैंसिल</button>
         </div>
-      </div>
     </div>
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-        // Firebase config (अपना config डालें)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
-            authDomain: "mandaleventall.firebaseapp.com",
-            projectId: "mandaleventall",
-            storageBucket: "mandaleventall.firebasestorage.app",
-            messagingSenderId: "900190130114",
-            appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
-            measurementId: "G-2BBZZNRS88"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+</div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const firebaseConfig = {
+    apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+    authDomain: "mandaleventall.firebaseapp.com",
+    projectId: "mandaleventall",
+    storageBucket: "mandaleventall.firebasestorage.app",
+    messagingSenderId: "900190130114",
+    appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+    measurementId: "G-2BBZZNRS88"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        let reports = [];
-        let slideIndex = 0;
-        let autoplay = false, autoplayInterval = null;
+let reports = [];
+let slideIndex = 0;
+let autoplay = false, autoplayInterval = null;
 
-        async function loadReports() {
-            const eventNamesSnap = await getDocs(collection(db, "eventNames"));
-            const eventNames = {};
-            eventNamesSnap.forEach(docSnap => {
-                eventNames[docSnap.id] = docSnap.data().name || '';
-            });
-            let allReports = [];
-            for (const eventNameId of Object.keys(eventNames)) {
-                const reportSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
-                reportSnap.forEach(docSnap => {
-                    const r = docSnap.data();
-                    let photoOffsets = Array.isArray(r.photoOffsets) ? r.photoOffsets : [];
-                    allReports.push({
-                        ...r,
-                        id: docSnap.id,
-                        eventNameId,
-                        eventName: eventNames[eventNameId],
-                        photoOffsets
-                    });
-                });
-            }
-            allReports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-            reports = allReports;
-            showSlide(0);
-        }
-
-        window.prevSlide = function() {
-            if (!reports.length) return;
-            slideIndex = (slideIndex-1+reports.length) % reports.length;
-            showSlide(slideIndex);
-        }
-        window.nextSlide = function() {
-            if (!reports.length) return;
-            slideIndex = (slideIndex+1)%reports.length;
-            showSlide(slideIndex);
-        }
-        function toggleAutoplay() {
-            autoplay = !autoplay;
-            let btn = document.getElementById('autoplayBtn');
-            btn.classList.toggle('active', autoplay);
-            btn.textContent = autoplay ? "ऑटो-प्ले बंद करें" : "ऑटो-प्ले";
-            if (autoplay) {
-                autoplayInterval = setInterval(() => {
-                    nextSlide();
-                }, 4200);
-            } else {
-                clearInterval(autoplayInterval);
-            }
-        }
-
-        function showSlide(idx) {
-            if (!reports.length) {
-                document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.1rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
-                document.getElementById('tv-pagination').innerText = "";
-                return;
-            }
-            slideIndex = idx;
-            const r = reports[idx];
-            let detailsHtml = `
-            <div class="slide-card">
-                <div class="slide-title">${r.eventName || 'कार्यक्रम'}</div>
-                <div class="slide-details">
-                    <div class="slide-details-row"><span>तारीख:</span> ${r.date || '-'}</div>
-                    <div class="slide-details-row"><span>स्थान:</span> ${r.location || '-'}</div>
-                    <div class="slide-details-row"><span>मंडल:</span> ${r.mandal || '-'}</div>
-                    <div class="slide-details-row"><span>प्रकार:</span> ${r.type || (r.prakar||'कार्यक्रम')}</div>
-                    <div class="slide-details-row"><span>उपस्थिति:</span> ${r.attendance || '-'}</div>
-                    <div class="slide-details-row"><span>अतिथि:</span> ${r.guests || '-'}</div>
-                </div>
-                <div class="slide-description">${(r.details||'').replace(/\n/g,'<br>')}</div>
-                ${r.hashtag ? `<div class="slide-details-row" style="margin-top:4px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
-            </div>
-            `;
-            let photos = (Array.isArray(r.photos) ? r.photos : []).slice(0,4);
+async function loadReports() {
+    const eventNamesSnap = await getDocs(collection(db, "eventNames"));
+    const eventNames = {};
+    eventNamesSnap.forEach(docSnap => {
+        eventNames[docSnap.id] = docSnap.data().name || '';
+    });
+    let allReports = [];
+    for (const eventNameId of Object.keys(eventNames)) {
+        const reportSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
+        reportSnap.forEach(docSnap => {
+            const r = docSnap.data();
             let photoOffsets = Array.isArray(r.photoOffsets) ? r.photoOffsets : [];
-            let galleryHtml = `<div class="slide-gallery-card">
-                <div class="gallery-title">फोटो गैलरी</div>
-                <div class="gallery-grid">`;
-            if (photos.length) {
-                photos.forEach((url, pidx) => {
-                    let pos = photoOffsets[pidx] || {x:0, y:0};
-                    let style = `left:${pos.x||0}px; top:${pos.y||0}px;`;
-                    galleryHtml += `
-                    <div class="gallery-img-box">
-                        <img src="${url}" alt="कार्यक्रम फोटो" style="${style}" onclick="zoomImage(event, '${url}')">
-                        <button class="edit-btn" onclick="openAdjView(${idx},${pidx},'${url}')">सेट व्यू</button>
-                        <button class="view-btn" onclick="zoomImage(event, '${url}')">देखें</button>
-                    </div>`;
-                });
-            } else {
-                galleryHtml += `<div style="color:#b87f3a; font-size:1rem;">कोई फोटो उपलब्ध नहीं</div>`;
-            }
-            galleryHtml += `</div></div>`;
-            document.getElementById('tv-slideshow').innerHTML = detailsHtml + galleryHtml;
-            document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
-        }
-
-        // --- फोटो ZOOM ---
-        window.zoomImage = function(e, url) {
-            e.preventDefault();
-            document.getElementById('imgZoomModalImg').src = url;
-            document.getElementById('imgZoomModal').style.display = 'flex';
-        };
-        document.getElementById('imgZoomModal').onclick = function() {
-            this.style.display = 'none';
-            document.getElementById('imgZoomModalImg').src = '';
-        };
-
-        // --- एडजस्ट व्यू (DRAG+TOUCH) ---
-        let dragData = {isDrag:false, startX:0, startY:0, imgX:0, imgY:0, boxW:300, boxH:220};
-        let adjIdx = null, adjPidx = null;
-        window.openAdjView = function(idx, pidx, url) {
-            adjIdx = idx; adjPidx = pidx;
-            document.getElementById('adjViewImg').src = url;
-            let pos = ((reports[idx]||{}).photoOffsets||[])[pidx] || {x:0,y:0};
-            let img = document.getElementById('adjViewImg');
-            img.onload = function() {
-                img.style.left = (pos.x||0)+"px";
-                img.style.top = (pos.y||0)+"px";
-                dragData.imgX = parseInt(img.style.left)||0;
-                dragData.imgY = parseInt(img.style.top)||0;
-            }
-            setTimeout(() => {
-                dragData.imgX = pos.x||0; dragData.imgY = pos.y||0;
-                dragData.isDrag = false;
-            }, 120);
-            document.getElementById('adjustViewModal').style.display = 'flex';
-        };
-        document.getElementById('adjViewImg').addEventListener('touchstart', function(e){
-            dragData.isDrag = true;
-            let touch = e.touches[0];
-            dragData.startX = touch.clientX;
-            dragData.startY = touch.clientY;
-            dragData.imgX = parseInt(this.style.left)||0;
-            dragData.imgY = parseInt(this.style.top)||0;
-        });
-        document.getElementById('adjViewImg').addEventListener('mousedown', function(e){
-            dragData.isDrag = true;
-            dragData.startX = e.clientX;
-            dragData.startY = e.clientY;
-            dragData.imgX = parseInt(this.style.left)||0;
-            dragData.imgY = parseInt(this.style.top)||0;
-        });
-        window.addEventListener('mousemove', function(e){
-            if(!dragData.isDrag) return;
-            let dx = e.clientX - dragData.startX;
-            let dy = e.clientY - dragData.startY;
-            let img = document.getElementById('adjViewImg');
-            let boxW = dragData.boxW, boxH = dragData.boxH;
-            let imgRatio = img.naturalWidth/img.naturalHeight;
-            let scaleW = Math.max(boxW, boxH*imgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
-            let imgW = scaleW, imgH = scaleW/imgRatio;
-            if (imgH < boxH) { imgH = boxH; imgW = boxH*imgRatio; }
-            let minX = boxW-imgW, minY = boxH-imgH;
-            let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
-            let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
-            img.style.left = nx + "px";
-            img.style.top = ny + "px";
-        });
-        window.addEventListener('touchmove', function(e){
-            if(!dragData.isDrag) return;
-            let touch = e.touches[0];
-            let dx = touch.clientX - dragData.startX;
-            let dy = touch.clientY - dragData.startY;
-            let img = document.getElementById('adjViewImg');
-            let boxW = dragData.boxW, boxH = dragData.boxH;
-            let imgRatio = img.naturalWidth/img.naturalHeight;
-            let scaleW = Math.max(boxW, boxH*imgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
-            let imgW = scaleW, imgH = scaleW/imgRatio;
-            if (imgH < boxH) { imgH = boxH; imgW = boxH*imgRatio; }
-            let minX = boxW-imgW, minY = boxH-imgH;
-            let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
-            let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
-            img.style.left = nx + "px";
-            img.style.top = ny + "px";
-        });
-        window.addEventListener('mouseup', function(){ dragData.isDrag = false; });
-        window.addEventListener('touchend', function(){ dragData.isDrag = false; });
-        window.closeAdjView = function() {
-            document.getElementById('adjustViewModal').style.display = 'none';
-        };
-        window.saveViewPos = async function() {
-            let img = document.getElementById('adjViewImg');
-            let left = parseInt(img.style.left)||0;
-            let top = parseInt(img.style.top)||0;
-            let r = reports[adjIdx];
-            let photoOffsets = Array.isArray(r.photoOffsets)? r.photoOffsets : [];
-            photoOffsets[adjPidx] = {x:left, y:top};
-            await updateDoc(doc(db, `eventNames/${r.eventNameId}/reports`, r.id), { photoOffsets });
-            reports[adjIdx].photoOffsets = photoOffsets;
-            alert("सेट हो गया!");
-            closeAdjView();
-            showSlide(slideIndex);
-        };
-
-        // --- PDF Export (Hindi Font) ---
-        window.downloadPDF = function() {
-            if (!reports[slideIndex]) return;
-            let r = reports[slideIndex];
-            const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
-            doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
-            doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
-            doc.setFont("NotoSansDevanagari");
-            doc.setFontSize(16);
-            doc.text(r.eventName || 'कार्यक्रम', 45, 44, {lang:"hi"});
-            doc.setFontSize(12);
-            let y = 72;
-            let details = [
-                ["तारीख", r.date||'-'], ["स्थान", r.location||'-'], ["मंडल", r.mandal||'-'],
-                ["प्रकार", r.type||(r.prakar||'कार्यक्रम')], ["उपस्थिति", r.attendance||'-'],
-                ["अतिथि", r.guests||'-']
-            ];
-            doc.autoTable({
-                startY: y, head:[["फील्ड", "विवरण"]], body: details,
-                styles:{ font:"NotoSansDevanagari", fontSize:12 }
+            allReports.push({
+                ...r,
+                id: docSnap.id,
+                eventNameId,
+                eventName: eventNames[eventNameId],
+                photoOffsets
             });
-            y = doc.lastAutoTable.finalY + 15;
-            doc.text("कार्यक्रम विवरण:", 45, y, {lang:"hi"});
-            y+=17;
-            let desc = (r.details||'-').replace(/\n/g," ");
-            doc.text(desc, 55, y, {maxWidth:720,lang:"hi"});
-            let photos = (Array.isArray(r.photos)?r.photos:[]).slice(0,1);
-            let imgY = y+30;
-            if(photos.length){
-                let img = new Image();
-                img.crossOrigin = "anonymous";
-                img.onload = function() {
-                    doc.addImage(img, "JPEG", 60, imgY, 200, 140);
-                    doc.save((r.eventName||'report')+".pdf");
-                };
-                img.onerror = function() { doc.save((r.eventName||'report')+".pdf"); };
-                img.src = photos[0];
-            } else {
-                doc.save((r.eventName||'report')+".pdf");
-            }
-        };
+        });
+    }
+    allReports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    reports = allReports;
+    showSlide(0);
+}
+window.prevSlide = function() {
+    if (!reports.length) return;
+    slideIndex = (slideIndex-1+reports.length) % reports.length;
+    showSlide(slideIndex);
+}
+window.nextSlide = function() {
+    if (!reports.length) return;
+    slideIndex = (slideIndex+1)%reports.length;
+    showSlide(slideIndex);
+}
+function toggleAutoplay() {
+    autoplay = !autoplay;
+    let btn = document.getElementById('autoplayBtn');
+    btn.classList.toggle('active', autoplay);
+    btn.textContent = autoplay ? "टीवी-मोड बंद करें" : "टीवी-मोड";
+    if (autoplay) {
+        autoplayInterval = setInterval(() => {
+            nextSlide();
+        }, 4000);
+    } else {
+        clearInterval(autoplayInterval);
+    }
+}
+function showSlide(idx) {
+    if (!reports.length) {
+        document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.1rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
+        document.getElementById('tv-pagination').innerText = "";
+        return;
+    }
+    slideIndex = idx;
+    const r = reports[idx];
+    let detailsHtml = `
+    <div class="slide-card">
+        <div class="slide-title">${r.eventName || 'कार्यक्रम'}</div>
+        <div class="slide-details">
+            <div class="slide-details-row"><span>तारीख:</span> ${r.date || '-'}</div>
+            <div class="slide-details-row"><span>स्थान:</span> ${r.location || '-'}</div>
+            <div class="slide-details-row"><span>मंडल:</span> ${r.mandal || '-'}</div>
+            <div class="slide-details-row"><span>प्रकार:</span> ${r.type || (r.prakar||'कार्यक्रम')}</div>
+            <div class="slide-details-row"><span>उपस्थिति:</span> ${r.attendance || '-'}</div>
+            <div class="slide-details-row"><span>अतिथि:</span> ${r.guests || '-'}</div>
+        </div>
+        <div class="slide-description">${(r.details||'').replace(/\n/g,'<br>')}</div>
+        ${r.hashtag ? `<div class="slide-details-row" style="margin-top:4px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
+    </div>
+    `;
+    let photos = (Array.isArray(r.photos) ? r.photos : []);
+    // हमेशा 4 फोटो: अगर 1 ही हो तो भी 4 ब्लैंक फोटो दिखाओ!
+    let showPhotos = [];
+    for(let i=0;i<4;i++){
+        showPhotos.push(photos[i] ? photos[i] : "https://dummyimage.com/600x450/eee/aaa&text=No+Photo");
+    }
+    let photoOffsets = Array.isArray(r.photoOffsets) ? r.photoOffsets : [];
+    let galleryHtml = `<div class="slide-gallery-card">
+        <div class="gallery-title">फोटो गैलरी</div>
+        <div class="gallery-grid">`;
+    showPhotos.forEach((url, pidx) => {
+        let pos = photoOffsets[pidx] || {x:0, y:0};
+        let style = `left:${pos.x||0}px; top:${pos.y||0}px;`;
+        galleryHtml += `
+        <div class="gallery-img-box">
+            <img src="${url}" alt="कार्यक्रम फोटो" style="${style}" onclick="zoomImage(event, '${url}')">
+            <button class="edit-btn" onclick="openAdjView(${idx},${pidx},'${url}')">सेट व्यू</button>
+            <button class="view-btn" onclick="zoomImage(event, '${url}')">देखें</button>
+        </div>`;
+    });
+    galleryHtml += `</div></div>`;
+    document.getElementById('tv-slideshow').innerHTML = detailsHtml + galleryHtml;
+    document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
+}
+window.zoomImage = function(e, url) {
+    e.preventDefault();
+    document.getElementById('imgZoomModalImg').src = url;
+    document.getElementById('imgZoomModal').style.display = 'flex';
+};
+document.getElementById('imgZoomModal').onclick = function() {
+    this.style.display = 'none';
+    document.getElementById('imgZoomModalImg').src = '';
+};
+// एडजस्ट व्यू (DRAG+TOUCH)
+let dragData = {isDrag:false, startX:0, startY:0, imgX:0, imgY:0, boxW:290, boxH:200};
+let adjIdx = null, adjPidx = null;
+window.openAdjView = function(idx, pidx, url) {
+    adjIdx = idx; adjPidx = pidx;
+    document.getElementById('adjViewImg').src = url;
+    let pos = ((reports[idx]||{}).photoOffsets||[])[pidx] || {x:0,y:0};
+    let img = document.getElementById('adjViewImg');
+    img.onload = function() {
+        img.style.left = (pos.x||0)+"px";
+        img.style.top = (pos.y||0)+"px";
+        dragData.imgX = parseInt(img.style.left)||0;
+        dragData.imgY = parseInt(img.style.top)||0;
+    }
+    setTimeout(() => {
+        dragData.imgX = pos.x||0; dragData.imgY = pos.y||0;
+        dragData.isDrag = false;
+    }, 120);
+    document.getElementById('adjustViewModal').style.display = 'flex';
+};
+document.getElementById('adjViewImg').addEventListener('touchstart', function(e){
+    dragData.isDrag = true;
+    let touch = e.touches[0];
+    dragData.startX = touch.clientX;
+    dragData.startY = touch.clientY;
+    dragData.imgX = parseInt(this.style.left)||0;
+    dragData.imgY = parseInt(this.style.top)||0;
+});
+document.getElementById('adjViewImg').addEventListener('mousedown', function(e){
+    dragData.isDrag = true;
+    dragData.startX = e.clientX;
+    dragData.startY = e.clientY;
+    dragData.imgX = parseInt(this.style.left)||0;
+    dragData.imgY = parseInt(this.style.top)||0;
+});
+window
+.addEventListener('mousemove', function(e){
+if(!dragData.isDrag) return;
+let dx = e.clientX - dragData.startX;
+let dy = e.clientY - dragData.startY;
+let img = document.getElementById('adjViewImg');
+let boxW = dragData.boxW, boxH = dragData.boxH;
+let imgRatio = img.naturalWidth/img.naturalHeight;
+let scaleW = Math.max(boxW, boxHimgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
+let imgW = scaleW, imgH = scaleW/imgRatio;
+if (imgH < boxH) { imgH = boxH; imgW = boxHimgRatio; }
+let minX = boxW-imgW, minY = boxH-imgH;
+let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
+let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
+img.style.left = nx + "px";
+img.style.top = ny + "px";
+});
+window.addEventListener('touchmove', function(e){
+if(!dragData.isDrag) return;
+let touch = e.touches[0];
+let dx = touch.clientX - dragData.startX;
+let dy = touch.clientY - dragData.startY;
+let img = document.getElementById('adjViewImg');
+let boxW = dragData.boxW, boxH = dragData.boxH;
+let imgRatio = img.naturalWidth/img.naturalHeight;
+let scaleW = Math.max(boxW, boxHimgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
+let imgW = scaleW, imgH = scaleW/imgRatio;
+if (imgH < boxH) { imgH = boxH; imgW = boxHimgRatio; }
+let minX = boxW-imgW, minY = boxH-imgH;
+let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
+let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
+img.style.left = nx + "px";
+img.style.top = ny + "px";
+});
+window.addEventListener('mouseup', function(){ dragData.isDrag = false; });
+window.addEventListener('touchend', function(){ dragData.isDrag = false; });
+window.closeAdjView = function() {
+document.getElementById('adjustViewModal').style.display = 'none';
+};
+window.saveViewPos = async function() {
+let img = document.getElementById('adjViewImg');
+let left = parseInt(img.style.left)||0;
+let top = parseInt(img.style.top)||0;
+let r = reports[adjIdx];
+let photoOffsets = Array.isArray(r.photoOffsets)? r.photoOffsets : [];
+photoOffsets[adjPidx] = {x:left, y:top};
+await updateDoc(doc(db, eventNames/${r.eventNameId}/reports, r.id), { photoOffsets });
+reports[adjIdx].photoOffsets = photoOffsets;
+alert("सेट हो गया!");
+closeAdjView();
+showSlide(slideIndex);
+};
+// PDF Export (Hindi Font)
+window.downloadPDF = function() {
+if (!reports[slideIndex]) return;
+let r = reports[slideIndex];
+const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+doc.setFont("NotoSansDevanagari");
+doc.setFontSize(16);
+doc.text(r.eventName || 'कार्यक्रम', 45, 44, {lang:"hi"});
+doc.setFontSize(12);
+let y = 72;
+let details = [
+["तारीख", r.date||'-'], ["स्थान", r.location||'-'], ["मंडल", r.mandal||'-'],
+["प्रकार", r.type||(r.prakar||'कार्यक्रम')], ["उपस्थिति", r.attendance||'-'],
+["अतिथि", r.guests||'-']
+];
+doc.autoTable({
+startY: y, head:[["फील्ड", "विवरण"]], body: details,
+styles:{ font:"NotoSansDevanagari", fontSize:12 }
+});
+y = doc.lastAutoTable.finalY + 15;
+doc.text("कार्यक्रम विवरण:", 45, y, {lang:"hi"});
+y+=17;
+let desc = (r.details||'-').replace(/\n/g," ");
+doc.text(desc, 55, y, {maxWidth:720,lang:"hi"});
+let photos = (Array.isArray(r.photos)?r.photos:[]).slice(0,1);
+let imgY = y+30;
+if(photos.length){
+let img = new Image();
+img.crossOrigin = "anonymous";
+img.onload = function() {
+doc.addImage(img, "JPEG", 60, imgY, 200, 140);
+doc.save((r.eventName||'report')+".pdf");
+};
+img.onerror = function() { doc.save((r.eventName||'report')+".pdf"); };
+img.src = photos[0];
+} else {
+doc.save((r.eventName||'report')+".pdf");
+}
+};
 
-        loadReports();
-    </script>
-</body>
-</html>
+loadReports();
+</script>
+
+</body> </html> 
