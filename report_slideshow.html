@@ -41,12 +41,19 @@
         .slide-details-row span {color:#77530e;font-weight:500;min-width:74px;display:inline-block;}
         .slide-description {font-size:1.07rem; margin:13px 0 2px 0; color:#212427; line-height:1.48;}
 
-        /* -- PHOTO SLIDER -- */
+        /* -- PHOTO SLIDER/GRID -- */
         .photo-slider-box {
             background:#fffaf3; border-radius:16px; box-shadow:0 2px 10px #ffe9d744;
             padding:18px 10px 20px 10px; min-width: 340px; max-width: 440px; flex: 0 0 32%;
             display:flex;flex-direction:column;align-items:center;position:relative;
         }
+        .slider-title-bar {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:12px;border-left:4px solid #ff9800;padding-left:12px;align-self:flex-start;}
+        .gallery-switcher {display: flex; gap: 10px; justify-content: flex-end; margin: 10px 6px 0 0;}
+        .gallery-switch-btn {background: #eee; color: #555; font-weight: 600; border: none; border-radius: 8px; padding: 6px 16px; font-size: 1rem; cursor: pointer; transition: background 0.18s;}
+        .gallery-switch-btn.active { background: #ff9800; color: #fff;}
+        @media (max-width:700px) {.gallery-switcher {display:none;}}
+
+        /* -- slider -- */
         .slider-photo-frame {
             position:relative; width:100%; aspect-ratio:4/2.6; min-height:220px; max-height:310px; overflow:hidden; border-radius:14px; background:#eee;
             display: flex; align-items: center; justify-content: center;
@@ -70,28 +77,13 @@
         .slider-arrow:hover {background:#f37804;}
         .slider-arrow.left {left:6px;}
         .slider-arrow.right {right:6px;}
-        .slider-dots {
-            margin:10px 0 0 0;display:flex;gap:9px;justify-content:center;
-        }
-        .slider-dot {
-            width:13px;height:13px;border-radius:50%;background:#ddd;transition:background 0.19s;
-            border:2px solid #fff;cursor:pointer;
-        }
+        .slider-dots {margin:10px 0 0 0;display:flex;gap:9px;justify-content:center;}
+        .slider-dot {width:13px;height:13px;border-radius:50%;background:#ddd;transition:background 0.19s; border:2px solid #fff;cursor:pointer;}
         .slider-dot.active {background:#ff9800;}
-        .slider-title-bar {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:12px;border-left:4px solid #ff9800;padding-left:12px;align-self:flex-start;}
-        /* ----------- Responsive ----------- */
-        @media (max-width:1100px) {
-            .container-tv {max-width: 99vw;}
-            .slideshow-section {gap: 10px;}
-            .photo-slider-box {max-width: 320px;min-width:170px;}
-            .slide-card {max-width:calc(100vw - 340px);}
-        }
-        @media (max-width:900px) {
-            .slideshow-section {gap: 4vw;}
-            .photo-slider-box {max-width: 98vw;min-width:120px;padding:13px 1vw;}
-            .slide-card {max-width:calc(100vw - 170px);}
-            .slider-photo-frame {min-height:160px;}
-        }
+        /* -- grid -- */
+        .gallery-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 13px 12px;}
+        .gallery-img-box {position:relative; border-radius:10px; overflow:hidden; aspect-ratio:4/3; background:#fff; min-width:0; height: 140px; min-height: 90px; max-height: 200px;}
+        .gallery-img-box img {width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:10px;display:block;background:#fff;cursor:pointer;position:absolute;left:0;top:0;touch-action:none;}
         @media (max-width:700px) {
             .slideshow-section {flex-direction:column;}
             .slide-card {max-width:99vw;}
@@ -99,9 +91,7 @@
             .slider-title-bar {padding-left:6px;}
             .slider-photo-frame {aspect-ratio:4/3;min-height:115px;}
             .slider-dot {width:11px;height:11px;}
-        }
-        @media (max-width:500px) {
-            .slider-photo-frame {min-height:70px;}
+            .gallery-grid .gallery-img-box {height: 25vw; min-height: 85px;}
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -146,6 +136,7 @@ let reports = [];
 let slideIndex = 0;
 let autoplay = false, autoplayInterval = null;
 let photoIdx = 0, photoPlay = false, photoTimer = null;
+let galleryView = "slide"; // desktop: "slide" | "grid", mobile: always "grid"
 
 async function loadReports() {
     const eventNamesSnap = await getDocs(collection(db, "eventNames"));
@@ -195,16 +186,43 @@ window.toggleAutoplay = function() {
         clearInterval(autoplayInterval);
     }
 }
-// ---- PHOTO SLIDER CODE ----
-function showPhotoSlider(photos) {
-    if (!Array.isArray(photos) || !photos.length) {
-        return `<div class="slider-photo-frame"><div class="no-photo">No Photo</div></div>`;
+
+// -------- गैलरी व्यू टॉगल --------
+function showGallerySwitcher(photos) {
+    if(window.innerWidth <= 700) return '';
+    let slideBtn = `<button class="gallery-switch-btn${galleryView=='slide'?' active':''}" onclick="setGalleryView('slide')">स्लाइड व्यू</button>`;
+    let gridBtn = `<button class="gallery-switch-btn${galleryView=='grid'?' active':''}" onclick="setGalleryView('grid')">ग्रिड व्यू</button>`;
+    if(photos.length<2) return ''; // switcher की जरूरत नहीं
+    return `<div class="gallery-switcher">${slideBtn}${gridBtn}</div>`;
+}
+window.setGalleryView = function(mode) {
+    galleryView = mode;
+    showSlide(slideIndex, false);
+}
+
+// फुल slide और grid दोनों implement:
+function showGallery(photos, eventIdx) {
+    // --- mobile: हमेशा grid ---
+    if(window.innerWidth <= 700 || galleryView === "grid") {
+        let showPhotos = [];
+        for(let i=0;i<4;i++) showPhotos.push(photos[i] ? photos[i] : "https://dummyimage.com/600x450/eee/aaa&text=No+Photo");
+        let gridHtml = `<div class="gallery-grid">`;
+        showPhotos.forEach((url, pidx) => {
+            gridHtml += `
+            <div class="gallery-img-box">
+                <img src="${url}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${url}')">
+            </div>`;
+        });
+        gridHtml += `</div>`;
+        return gridHtml;
     }
+    // --- desktop: slide view ---
     let curr = Math.max(0, Math.min(photoIdx, photos.length-1));
-    let img = `<img src="${photos[curr]}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${photos[curr]}')" style="opacity:1;">`;
-    // Arrow buttons (डेस्कटॉप पर, मोबाइल पर swipe या dot क्लिक)
+    let img = photos[curr] ? 
+        `<img src="${photos[curr]}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${photos[curr]}')" style="opacity:1;">`
+        : `<div class="no-photo">No Photo</div>`;
     let arrows = '';
-    if (photos.length>1 && window.innerWidth>700) {
+    if (photos.length>1) {
         arrows = `
             <button class="slider-arrow left" onclick="photoPrev(event)">&larr;</button>
             <button class="slider-arrow right" onclick="photoNext(event)">&rarr;</button>
@@ -217,6 +235,8 @@ function showPhotoSlider(photos) {
     dots += `</div>`;
     return `<div class="slider-photo-frame">${arrows}${img}</div>${dots}`;
 }
+
+// फोटो स्लाइडर कंट्रोल्स
 window.photoPrev = function(e){
     e.stopPropagation();
     if(!reports[slideIndex]) return;
@@ -257,7 +277,6 @@ function showSlide(idx, resetPhoto=true) {
     slideIndex = idx;
     const r = reports[idx];
     if(resetPhoto) photoIdx=0;
-    // लेफ्ट : Detail कार्ड
     let detailsHtml = `
     <div class="slide-card">
         <div class="slide-title">${r.eventName || 'कार्यक्रम'}</div>
@@ -273,18 +292,32 @@ function showSlide(idx, resetPhoto=true) {
         ${r.hashtag ? `<div class="slide-details-row" style="margin-top:7px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
     </div>
     `;
-    // राइट : फोटो स्लाइडर
     let photos = Array.isArray(r.photos) ? r.photos : [];
-    let sliderHtml = `<div class="photo-slider-box">
+    let switcher = showGallerySwitcher(photos);
+    let gallery = `<div class="photo-slider-box">
         <div class="slider-title-bar">फोटो गैलरी</div>
-        ${showPhotoSlider(photos)}
+        ${switcher}
+        ${showGallery(photos, idx)}
     </div>`;
-    document.getElementById('tv-slideshow').innerHTML = detailsHtml + sliderHtml;
+    document.getElementById('tv-slideshow').innerHTML = detailsHtml + gallery;
     document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
     // Autoplay logic
-    stopPhotoAutoPlay();
-    if(photos.length>1 && window.innerWidth>700) startPhotoAutoPlay(photos);
+    if(window.innerWidth>700 && galleryView==="slide" && photos.length>1){
+        stopPhotoAutoPlay();
+        startPhotoAutoPlay(photos);
+    } else {
+        stopPhotoAutoPlay();
+    }
 }
+// responsive: window size change पर view बदलो
+window.addEventListener('resize', ()=>{
+    if(window.innerWidth <= 700 && galleryView!=="grid"){
+        galleryView="grid"; showSlide(slideIndex, false);
+    }
+    if(window.innerWidth > 700 && galleryView!=="slide"){
+        galleryView="slide"; showSlide(slideIndex, false);
+    }
+});
 window.zoomImage = function(e, url) {
     e.preventDefault();
     document.getElementById('imgZoomModalImg').src = url;
