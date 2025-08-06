@@ -23,8 +23,14 @@
         .tv-logo { width: 46px; height: 46px; min-width: 46px; background: linear-gradient(120deg,#ffe1b9,#ffc46d); border:2.5px solid #fff3e0; border-radius:50%; font-weight:700; font-size:1.25rem; color:#e65100; display:flex;align-items:center;justify-content:center;}
         .tv-title-main { font-size: 1.28rem; font-weight: 700; color: #263b64; white-space: normal; word-break: break-word; max-width: 82vw;}
         .tv-pagination {margin-left:auto;font-size:1.07rem;font-weight:600;color:#b78937;}
-        .tv-controls {display:flex;justify-content:center;gap:13px;margin:20px 0 3px 0;flex-wrap:wrap;}
-        .tv-controls button {background:#ff9800;color:#fff;font-weight:600;border:none;border-radius:9px;padding:12px 24px;font-size:1.18rem;cursor:pointer;transition:background 0.12s;letter-spacing:1px;}
+        .tv-controls {
+            display: flex;justify-content:center;gap:8px;margin:18px 0 0 0;flex-wrap:wrap;
+        }
+        .tv-controls button {
+            background:#ff9800;color:#fff;font-weight:600;border:none;
+            border-radius:7px;padding:7px 18px;font-size:1rem;cursor:pointer;
+            transition:background 0.12s;letter-spacing:.5px;
+        }
         .tv-controls .autoplay-btn {background:#1976d2;}
         .tv-controls .autoplay-btn.active {background:#44a62c;}
         .tv-controls .pdf-btn {background:#5e35b1;}
@@ -40,19 +46,24 @@
         .slide-details-row { font-size:1.09rem; margin:4px 0;}
         .slide-details-row span {color:#77530e;font-weight:500;min-width:74px;display:inline-block;}
         .slide-description {font-size:1.07rem; margin:13px 0 2px 0; color:#212427; line-height:1.48;}
-
         /* -- PHOTO SLIDER/GRID -- */
         .photo-slider-box {
             background:#fffaf3; border-radius:16px; box-shadow:0 2px 10px #ffe9d744;
-            padding:18px 10px 20px 10px; min-width: 340px; max-width: 440px; flex: 0 0 32%;
+            padding:18px 10px 12px 10px; min-width: 340px; max-width: 440px; flex: 0 0 32%;
             display:flex;flex-direction:column;align-items:center;position:relative;
         }
-        .slider-title-bar {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:12px;border-left:4px solid #ff9800;padding-left:12px;align-self:flex-start;}
-        .gallery-switcher {display: flex; gap: 10px; justify-content: flex-end; margin: 10px 6px 0 0;}
-        .gallery-switch-btn {background: #eee; color: #555; font-weight: 600; border: none; border-radius: 8px; padding: 6px 16px; font-size: 1rem; cursor: pointer; transition: background 0.18s;}
+        .slider-title-bar {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:10px;border-left:4px solid #ff9800;padding-left:12px;align-self:flex-start;}
+        .gallery-switcher {
+            display: flex; gap: 10px; justify-content: center; 
+            margin: 9px 0 5px 0; width: 100%;
+        }
+        .gallery-switch-btn {
+            background: #eee; color: #555; font-weight: 600; border: none;
+            border-radius: 7px; padding: 4px 15px; font-size: 1rem; cursor: pointer; 
+            transition: background 0.18s; min-width: 90px;
+        }
         .gallery-switch-btn.active { background: #ff9800; color: #fff;}
         @media (max-width:700px) {.gallery-switcher {display:none;}}
-
         /* -- slider -- */
         .slider-photo-frame {
             position:relative; width:100%; aspect-ratio:4/2.6; min-height:220px; max-height:310px; overflow:hidden; border-radius:14px; background:#eee;
@@ -186,7 +197,6 @@ window.toggleAutoplay = function() {
         clearInterval(autoplayInterval);
     }
 }
-
 // -------- गैलरी व्यू टॉगल --------
 function showGallerySwitcher(photos) {
     if(window.innerWidth <= 700) return '';
@@ -199,7 +209,6 @@ window.setGalleryView = function(mode) {
     galleryView = mode;
     showSlide(slideIndex, false);
 }
-
 // फुल slide और grid दोनों implement:
 function showGallery(photos, eventIdx) {
     // --- mobile: हमेशा grid ---
@@ -235,7 +244,6 @@ function showGallery(photos, eventIdx) {
     dots += `</div>`;
     return `<div class="slider-photo-frame">${arrows}${img}</div>${dots}`;
 }
-
 // फोटो स्लाइडर कंट्रोल्स
 window.photoPrev = function(e){
     e.stopPropagation();
@@ -293,11 +301,10 @@ function showSlide(idx, resetPhoto=true) {
     </div>
     `;
     let photos = Array.isArray(r.photos) ? r.photos : [];
-    let switcher = showGallerySwitcher(photos);
     let gallery = `<div class="photo-slider-box">
         <div class="slider-title-bar">फोटो गैलरी</div>
-        ${switcher}
         ${showGallery(photos, idx)}
+        ${showGallerySwitcher(photos)}
     </div>`;
     document.getElementById('tv-slideshow').innerHTML = detailsHtml + gallery;
     document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
