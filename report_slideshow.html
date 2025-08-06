@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <!-- Hindi Font -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -190,7 +189,6 @@ function showSlide(idx) {
     </div>
     `;
     let photos = (Array.isArray(r.photos) ? r.photos : []);
-    // हमेशा 4 फोटो: अगर 1 ही हो तो भी 4 ब्लैंक फोटो दिखाओ!
     let showPhotos = [];
     for(let i=0;i<4;i++){
         showPhotos.push(photos[i] ? photos[i] : "https://dummyimage.com/600x450/eee/aaa&text=No+Photo");
@@ -222,7 +220,6 @@ document.getElementById('imgZoomModal').onclick = function() {
     this.style.display = 'none';
     document.getElementById('imgZoomModalImg').src = '';
 };
-// एडजस्ट व्यू (DRAG+TOUCH)
 let dragData = {isDrag:false, startX:0, startY:0, imgX:0, imgY:0, boxW:290, boxH:200};
 let adjIdx = null, adjPidx = null;
 window.openAdjView = function(idx, pidx, url) {
@@ -257,101 +254,98 @@ document.getElementById('adjViewImg').addEventListener('mousedown', function(e){
     dragData.imgX = parseInt(this.style.left)||0;
     dragData.imgY = parseInt(this.style.top)||0;
 });
-window
-.addEventListener('mousemove', function(e){
-if(!dragData.isDrag) return;
-let dx = e.clientX - dragData.startX;
-let dy = e.clientY - dragData.startY;
-let img = document.getElementById('adjViewImg');
-let boxW = dragData.boxW, boxH = dragData.boxH;
-let imgRatio = img.naturalWidth/img.naturalHeight;
-let scaleW = Math.max(boxW, boxHimgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
-let imgW = scaleW, imgH = scaleW/imgRatio;
-if (imgH < boxH) { imgH = boxH; imgW = boxHimgRatio; }
-let minX = boxW-imgW, minY = boxH-imgH;
-let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
-let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
-img.style.left = nx + "px";
-img.style.top = ny + "px";
+window.addEventListener('mousemove', function(e){
+    if(!dragData.isDrag) return;
+    let dx = e.clientX - dragData.startX;
+    let dy = e.clientY - dragData.startY;
+    let img = document.getElementById('adjViewImg');
+    let boxW = dragData.boxW, boxH = dragData.boxH;
+    let imgRatio = img.naturalWidth/img.naturalHeight;
+    let scaleW = Math.max(boxW, boxH*imgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
+    let imgW = scaleW, imgH = scaleW/imgRatio;
+    if (imgH < boxH) { imgH = boxH; imgW = boxH*imgRatio; }
+    let minX = boxW-imgW, minY = boxH-imgH;
+    let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
+    let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
+    img.style.left = nx + "px";
+    img.style.top = ny + "px";
 });
 window.addEventListener('touchmove', function(e){
-if(!dragData.isDrag) return;
-let touch = e.touches[0];
-let dx = touch.clientX - dragData.startX;
-let dy = touch.clientY - dragData.startY;
-let img = document.getElementById('adjViewImg');
-let boxW = dragData.boxW, boxH = dragData.boxH;
-let imgRatio = img.naturalWidth/img.naturalHeight;
-let scaleW = Math.max(boxW, boxHimgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
-let imgW = scaleW, imgH = scaleW/imgRatio;
-if (imgH < boxH) { imgH = boxH; imgW = boxHimgRatio; }
-let minX = boxW-imgW, minY = boxH-imgH;
-let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
-let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
-img.style.left = nx + "px";
-img.style.top = ny + "px";
+    if(!dragData.isDrag) return;
+    let touch = e.touches[0];
+    let dx = touch.clientX - dragData.startX;
+    let dy = touch.clientY - dragData.startY;
+    let img = document.getElementById('adjViewImg');
+    let boxW = dragData.boxW, boxH = dragData.boxH;
+    let imgRatio = img.naturalWidth/img.naturalHeight;
+    let scaleW = Math.max(boxW, boxH*imgRatio), scaleH = Math.max(boxH, boxW/imgRatio);
+    let imgW = scaleW, imgH = scaleW/imgRatio;
+    if (imgH < boxH) { imgH = boxH; imgW = boxH*imgRatio; }
+    let minX = boxW-imgW, minY = boxH-imgH;
+    let nx = Math.min(0, Math.max(minX, dragData.imgX + dx));
+    let ny = Math.min(0, Math.max(minY, dragData.imgY + dy));
+    img.style.left = nx + "px";
+    img.style.top = ny + "px";
 });
 window.addEventListener('mouseup', function(){ dragData.isDrag = false; });
 window.addEventListener('touchend', function(){ dragData.isDrag = false; });
 window.closeAdjView = function() {
-document.getElementById('adjustViewModal').style.display = 'none';
+    document.getElementById('adjustViewModal').style.display = 'none';
 };
 window.saveViewPos = async function() {
-let img = document.getElementById('adjViewImg');
-let left = parseInt(img.style.left)||0;
-let top = parseInt(img.style.top)||0;
-let r = reports[adjIdx];
-let photoOffsets = Array.isArray(r.photoOffsets)? r.photoOffsets : [];
-photoOffsets[adjPidx] = {x:left, y:top};
-await updateDoc(doc(db, eventNames/${r.eventNameId}/reports, r.id), { photoOffsets });
-reports[adjIdx].photoOffsets = photoOffsets;
-alert("सेट हो गया!");
-closeAdjView();
-showSlide(slideIndex);
+    let img = document.getElementById('adjViewImg');
+    let left = parseInt(img.style.left)||0;
+    let top = parseInt(img.style.top)||0;
+    let r = reports[adjIdx];
+    let photoOffsets = Array.isArray(r.photoOffsets)? r.photoOffsets : [];
+    photoOffsets[adjPidx] = {x:left, y:top};
+    await updateDoc(doc(db, `eventNames/${r.eventNameId}/reports`, r.id), { photoOffsets });
+    reports[adjIdx].photoOffsets = photoOffsets;
+    alert("सेट हो गया!");
+    closeAdjView();
+    showSlide(slideIndex);
 };
-// PDF Export (Hindi Font)
 window.downloadPDF = function() {
-if (!reports[slideIndex]) return;
-let r = reports[slideIndex];
-const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
-doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
-doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
-doc.setFont("NotoSansDevanagari");
-doc.setFontSize(16);
-doc.text(r.eventName || 'कार्यक्रम', 45, 44, {lang:"hi"});
-doc.setFontSize(12);
-let y = 72;
-let details = [
-["तारीख", r.date||'-'], ["स्थान", r.location||'-'], ["मंडल", r.mandal||'-'],
-["प्रकार", r.type||(r.prakar||'कार्यक्रम')], ["उपस्थिति", r.attendance||'-'],
-["अतिथि", r.guests||'-']
-];
-doc.autoTable({
-startY: y, head:[["फील्ड", "विवरण"]], body: details,
-styles:{ font:"NotoSansDevanagari", fontSize:12 }
-});
-y = doc.lastAutoTable.finalY + 15;
-doc.text("कार्यक्रम विवरण:", 45, y, {lang:"hi"});
-y+=17;
-let desc = (r.details||'-').replace(/\n/g," ");
-doc.text(desc, 55, y, {maxWidth:720,lang:"hi"});
-let photos = (Array.isArray(r.photos)?r.photos:[]).slice(0,1);
-let imgY = y+30;
-if(photos.length){
-let img = new Image();
-img.crossOrigin = "anonymous";
-img.onload = function() {
-doc.addImage(img, "JPEG", 60, imgY, 200, 140);
-doc.save((r.eventName||'report')+".pdf");
+    if (!reports[slideIndex]) return;
+    let r = reports[slideIndex];
+    const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+    doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+    doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+    doc.setFont("NotoSansDevanagari");
+    doc.setFontSize(16);
+    doc.text(r.eventName || 'कार्यक्रम', 45, 44, {lang:"hi"});
+    doc.setFontSize(12);
+    let y = 72;
+    let details = [
+        ["तारीख", r.date||'-'], ["स्थान", r.location||'-'], ["मंडल", r.mandal||'-'],
+        ["प्रकार", r.type||(r.prakar||'कार्यक्रम')], ["उपस्थिति", r.attendance||'-'],
+        ["अतिथि", r.guests||'-']
+    ];
+    doc.autoTable({
+        startY: y, head:[["फील्ड", "विवरण"]], body: details,
+        styles:{ font:"NotoSansDevanagari", fontSize:12 }
+    });
+    y = doc.lastAutoTable.finalY + 15;
+    doc.text("कार्यक्रम विवरण:", 45, y, {lang:"hi"});
+    y+=17;
+    let desc = (r.details||'-').replace(/\n/g," ");
+    doc.text(desc, 55, y, {maxWidth:720,lang:"hi"});
+    let photos = (Array.isArray(r.photos)?r.photos:[]).slice(0,1);
+    let imgY = y+30;
+    if(photos.length){
+        let img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = function() {
+            doc.addImage(img, "JPEG", 60, imgY, 200, 140);
+            doc.save((r.eventName||'report')+".pdf");
+        };
+        img.onerror = function() { doc.save((r.eventName||'report')+".pdf"); };
+        img.src = photos[0];
+    } else {
+        doc.save((r.eventName||'report')+".pdf");
+    }
 };
-img.onerror = function() { doc.save((r.eventName||'report')+".pdf"); };
-img.src = photos[0];
-} else {
-doc.save((r.eventName||'report')+".pdf");
-}
-};
-
 loadReports();
 </script>
-
-</body> </html> 
+</body>
+</html>
