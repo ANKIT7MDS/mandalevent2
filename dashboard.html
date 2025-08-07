@@ -5,6 +5,33 @@
   <title>डैशबोर्ड</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    .report-photos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-auto-rows: 48px;
+      gap: 4px;
+      max-width: 148px;
+    }
+    .report-photos-grid img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1.5px solid #ff9800;
+      cursor: zoom-in;
+      transition: box-shadow 0.18s;
+      background: #fff7e0;
+    }
+  </style>
+</head>
+<body>
+ <!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>डैशबोर्ड</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <style>
     body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
     .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px 18px 10px; }
     h1 { color: #e65100; text-align: center; margin-bottom: 12px; font-size: 2.1rem; }
@@ -644,6 +671,76 @@
         link.click();
         document.body.removeChild(link);
       });
+    }
+  </script>
+</body>
+</html>
+
+  <script>
+    const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
+    const TELEGRAM_CHAT_ID = "733804072";
+
+    async function sendTelegramAlert(message) {
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+        });
+      } catch (err) {
+        console.error("टेलीग्राम अलर्ट नहीं भेजा जा सका:", err);
+      }
+    }
+
+    const previousReportedMandals = new Set();
+
+    async function loadReports() {
+      const reportList = document.getElementById('reportList');
+      reportList.innerHTML = '';
+
+      const filterEventId = document.getElementById('filterEvent').value;
+      const filterMandalVal = document.getElementById('filterMandal').value;
+      let filtered = [];
+
+      const eventNames = await getDocs(collection(db, "eventNames"));
+      for (const eventNameDoc of eventNames.docs) {
+        const eventNameId = eventNameDoc.id;
+        if (filterEventId && eventNameId !== filterEventId) continue;
+        const name = eventNameDoc.data().name || '';
+        const reports = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
+        for (const docSnap of reports.docs) {
+          const r = docSnap.data();
+          if (filterMandalVal && r.mandal !== filterMandalVal) continue;
+          filtered.push({ id: docSnap.id, eventNameId, name, ...r });
+        }
+      }
+
+      const currentMandals = new Set(filtered.map(r => r.mandal));
+      const allMandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+      const remainingMandals = allMandals.filter(m => !currentMandals.has(m));
+
+      for (const mandal of currentMandals) {
+        if (!previousReportedMandals.has(mandal)) {
+          previousReportedMandals.add(mandal);
+          const msg = `✅ ${mandal} मंडल की रिपोर्ट प्राप्त हुई।\n🔴 शेष ${remainingMandals.length} मंडल: ${remainingMandals.join(", ")}`;
+          sendTelegramAlert(msg);
+        }
+      }
+
+      for (const r of filtered) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${r.name}</td>
+          <td>${r.mandal || '-'}</td>
+          <td>${r.location || '-'}</td>
+          <td>${r.date || '-'}</td>
+          <td>${r.attendance || '-'}</td>
+          <td>${r.guests || '-'}</td>
+          <td>${r.details || '-'}</td>
+          <td>${Array.isArray(r.photos) ? '<div class="report-photos-grid">' + r.photos.slice(0, 6).map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('') + '</div>' : ''}</td>
+          <td>...</td>`;
+        reportList.appendChild(row);
+      }
     }
   </script>
 </body>
