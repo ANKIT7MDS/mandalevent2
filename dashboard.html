@@ -460,7 +460,10 @@
           <td>${r.mandal || '-'}</td>
           <td>${r.location || '-'}</td>
           <td>${r.date || '-'}</td>
-          <td>${r.attendance || '-'}</td>
+          <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','attendance', this.innerText)">
+  ${r.attendance || '-'}
+</td>
+
           <td>${r.guests || '-'}</td>
           <td>${r.details || '-'}</td>
           <td>${photosHTML}</td>
