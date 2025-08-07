@@ -5,6 +5,138 @@
   <title>डैशबोर्ड</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    body {
+      background: #fff9f3;
+      color: #222;
+      font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      background: #fff6ea;
+      border-radius: 14px;
+      box-shadow: 0 2px 16px #ff980020;
+      padding: 18px 10px 18px 10px;
+    }
+    h1 {
+      color: #e65100;
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 2.1rem;
+    }
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .top-bar .left,
+    .top-bar .right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .top-bar select,
+    .top-bar button,
+    .top-bar input[type="text"] {
+      font-size: 1rem;
+      padding: 5px 9px;
+      border-radius: 5px;
+      border: 1.2px solid #ffa726a9;
+      background: #fffaf5;
+      color: #442300;
+    }
+    .top-bar button,
+    .tab-btn,
+    input[type="submit"] {
+      background: #ff9800;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      padding: 7px 14px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .top-bar button:hover,
+    .tab-btn.active,
+    .tab-btn:hover,
+    input[type="submit"]:hover {
+      background: #e65100;
+    }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin: 10px 0 8px 0;
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 7px 20px;
+      border-radius: 8px 8px 0 0;
+      border-bottom: 2px solid transparent;
+      background: #ffe0b2;
+      color: #8d4700;
+      font-weight: 600;
+      font-size: 1.02rem;
+    }
+    .tab-btn.active {
+      background: #ff9800;
+      color: #fff;
+      border-bottom: 2px solid #ff9800;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.2rem;
+      background: #fff;
+      box-shadow: 0 1px 8px #ffa72611;
+      font-size: 0.99rem;
+    }
+    th, td {
+      border: 1px solid #ffa72655;
+      padding: 6px 7px;
+      text-align: left;
+    }
+    th {
+      background: #ffb74d;
+      color: #442300;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background: #fff3e0;
+    }
+    .action-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 1.11rem;
+      margin: 0 1px;
+      background: #ff9800;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.18s;
+      min-width: 34px;
+    }
+    .action-btn.delete {
+      background: #e53935;
+    }
+    .action-btn.delete:hover {
+      background: #b71c1c;
+    }
+    .action-btn:hover {
+      background: #e65100;
+    }
     .report-photos-grid {
       display: grid;
       grid-template-columns: repeat(3, 48px);
@@ -22,141 +154,53 @@
       transition: box-shadow 0.18s;
       background: #fff7e0;
     }
-
-    body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
-    .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px 18px 10px; }
-    h1 { color: #e65100; text-align: center; margin-bottom: 12px; font-size: 2.1rem; }
-    .top-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .top-bar .left, .top-bar .right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .top-bar select, .top-bar button, .top-bar input[type="text"] { font-size: 1rem; padding: 5px 9px; border-radius: 5px; border: 1.2px solid #ffa726a9; background: #fffaf5; color: #442300; }
-    .top-bar button, .tab-btn, input[type="submit"] { background: #ff9800; color: #fff; font-weight: 600; border: none; cursor: pointer; padding: 7px 14px; border-radius: 6px; margin: 0 0 0 0; transition: background 0.2s; }
-    .top-bar button:hover, .tab-btn.active, .tab-btn:hover, input[type="submit"]:hover { background: #e65100; }
-    .pending-mandals { color: #e53935; font-size: 0.98rem; margin-left: 18px; }
-    .tabs { display: flex; gap: 4px; margin: 10px 0 8px 0; justify-content: center; }
-    .tab-btn { padding: 7px 20px; border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent; background: #ffe0b2; color: #8d4700; font-weight: 600; font-size: 1.02rem; }
-    .tab-btn.active { background: #ff9800; color: #fff; border-bottom: 2px solid #ff9800; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 1.2rem; background: #fff; box-shadow: 0 1px 8px #ffa72611; font-size: 0.99rem; }
-    th, td { border: 1px solid #ffa72655; padding: 6px 7px; text-align: left; }
-    th { background: #ffb74d; color: #442300; font-weight: bold; }
-    tr:nth-child(even) { background: #fff3e0; }
-    .action-btn { padding: 4px 10px; border-radius: 6px; font-size: 1.11rem; margin: 0 1px; background: #ff9800; color: #fff; border: none; cursor: pointer; transition: background 0.18s; min-width: 34px; }
-    .action-btn.delete { background: #e53935; }
-    .action-btn.delete:hover { background: #b71c1c; }
-    .action-btn:hover { background: #e65100; }
-    .event-name-inline-list { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; font-size: 0.99rem; align-items: center; }
-    .event-inline-item { background: #fff; border-radius: 5px; padding: 4px 7px 4px 10px; display: flex; align-items: center; border: 1px solid #ffa72699; gap: 5px; }
-    .report-photos-grid { display: grid; grid-template-columns: repeat(3, 38px); grid-auto-rows: 38px; gap: 3px; max-width: 124px; }
-    .report-photos-grid img { width: 36px; height: 36px; object-fit: cover; border-radius: 5px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
-    #imgZoomModal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; }
-    #imgZoomModal img { max-width: 95vw; max-height: 93vh; border-radius: 14px; border: 4px solid #fff; box-shadow: 0 0 12px #ff980099; background: #fff; }
-    @media (max-width: 650px) {
-      .container { max-width: 99vw; padding: 4vw 1vw 4vw 1vw;}
-      .top-bar { flex-direction: column; align-items: stretch; gap: 7px;}
-      .tabs { flex-direction: column; gap: 1px;}
-      table, th, td { font-size: 0.94rem; }
-      .report-photos-grid { grid-template-columns: repeat(3, 28px); grid-auto-rows: 28px; max-width: 84px;}
-      .report-photos-grid img { width: 26px; height: 26px;}
+    #imgZoomModal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.82);
+      align-items: center;
+      justify-content: center;
+    }
+    #imgZoomModal img {
+      max-width: 95vw;
+      max-height: 93vh;
+      border-radius: 14px;
+      border: 4px solid #fff;
+      box-shadow: 0 0 12px #ff980099;
+      background: #fff;
     }
   </style>
-  <!-- Export libs -->
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
-  <!-- html2canvas for JPG export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
   <div class="container">
     <h1>डैशबोर्ड</h1>
-    <!-- Top Controls (All in One Line) -->
+
+    <!-- Filters & Controls -->
     <div class="top-bar">
       <div class="left">
         <label for="filterEvent">कार्यक्रम:</label>
         <select id="filterEvent"><option value="">सभी कार्यक्रम</option></select>
         <label for="filterMandal">मंडल:</label>
         <select id="filterMandal"><option value="">सभी मंडल</option></select>
-        <span id="pendingMandals" class="pending-mandals"></span>
+        <span id="pendingMandals" style="color: red;"></span>
       </div>
       <div class="right">
-        <select id="exportDropdown" style="min-width:170px">
-          <option value="">डेटा एक्सपोर्ट...</option>
-          <optgroup label="संयुक्त (Combined)">
-            <option value="combined-excel">संयुक्त Excel</option>
-            <option value="combined-csv">संयुक्त CSV</option>
-            <option value="combined-pdf">संयुक्त PDF</option>
-            <option value="combined-jpg">संयुक्त JPG</option>
-          </optgroup>
-          <optgroup label="कार्यक्रम">
-            <option value="events-excel">कार्यक्रम Excel</option>
-            <option value="events-csv">कार्यक्रम CSV</option>
-            <option value="events-pdf">कार्यक्रम PDF</option>
-            <option value="events-jpg">कार्यक्रम JPG</option>
-          </optgroup>
-          <optgroup label="संयोजक">
-            <option value="coordinators-excel">संयोजक Excel</option>
-            <option value="coordinators-csv">संयोजक CSV</option>
-            <option value="coordinators-pdf">संयोजक PDF</option>
-            <option value="coordinators-jpg">संयोजक JPG</option>
-          </optgroup>
-          <optgroup label="रिपोर्ट">
-            <option value="reports-excel">रिपोर्ट Excel</option>
-            <option value="reports-csv">रिपोर्ट CSV</option>
-            <option value="reports-pdf">रिपोर्ट PDF</option>
-            <option value="reports-jpg">रिपोर्ट JPG</option>
-          </optgroup>
-        </select>
-        <button onclick="handleExport()">डाउनलोड</button>
         <input type="text" id="newEventName" placeholder="कार्यक्रम नाम" style="width:120px;">
         <button onclick="addEventName()">जोड़ें</button>
       </div>
     </div>
-    <!-- Event name inline list -->
-    <div class="event-name-inline-list" id="eventNameListInline"></div>
+
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn" id="eventTabBtn" onclick="switchTab('eventsTab')">कार्यक्रम सूची</button>
-      <button class="tab-btn" id="coordinatorTabBtn" onclick="switchTab('coordinatorsTab')">संयोजक सूची</button>
-      <button class="tab-btn active" id="reportTabBtn" onclick="switchTab('reportsTab')">रिपोर्ट सूची</button>
+      <button class="tab-btn active" onclick="switchTab('reportsTab')">रिपोर्ट सूची</button>
     </div>
-    <!-- Tabs Content -->
-    <div class="tab-content" id="eventsTab">
-      <table>
-        <thead>
-          <tr>
-            <th>कार्यक्रम</th>
-            <th>मंडल</th>
-            <th>तारीख</th>
-            <th>समय</th>
-            <th>स्थान</th>
-            <th>एक्शन</th>
-          </tr>
-        </thead>
-        <tbody id="eventList"></tbody>
-      </table>
-      <div id="eventPagination"></div>
-    </div>
-    <div class="tab-content" id="coordinatorsTab">
-      <table>
-        <thead>
-          <tr>
-            <th>कार्यक्रम</th>
-            <th>मंडल</th>
-            <th>संयोजक</th>
-            <th>मोबाइल</th>
-            <th>सह-संयोजक 1</th>
-            <th>मोबाइल 1</th>
-            <th>सह-संयोजक 2</th>
-            <th>मोबाइल 2</th>
-            <th>एक्शन</th>
-          </tr>
-        </thead>
-        <tbody id="coordinatorList"></tbody>
-      </table>
-      <div id="coordPagination"></div>
-    </div>
+
+    <!-- Tab Contents -->
     <div class="tab-content active" id="reportsTab">
       <table>
         <thead>
@@ -174,16 +218,18 @@
         </thead>
         <tbody id="reportList"></tbody>
       </table>
-      <div id="reportPagination"></div>
     </div>
   </div>
+
+  <!-- Image Modal -->
   <div id="imgZoomModal">
     <img id="imgZoomModalImg" src="">
   </div>
-  <!-- Firebase JS -->
+
+  <!-- Firebase & Telegram Scripts -->
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
@@ -194,482 +240,13 @@
       appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
       measurementId: "G-2BBZZNRS88"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
-    const eventNameMap = {};
-    let eventPage = 1, coordPage = 1, reportPage = 1;
-    const PAGE_SIZE = 21;
-
-    window.addEventName = async function() {
-      const newEventName = document.getElementById('newEventName').value.trim();
-      if (!newEventName) return alert('कार्यक्रम नाम लिखिए!');
-      await addDoc(collection(db, "eventNames"), { name: newEventName });
-      document.getElementById('newEventName').value = '';
-      await loadEventNames();
-      await loadAll();
-    };
-
-    async function loadEventNames() {
-      const listInline = document.getElementById('eventNameListInline');
-      listInline.innerHTML = '';
-      const filterEvent = document.getElementById('filterEvent');
-      filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
-      const snap = await getDocs(collection(db, "eventNames"));
-      for (const docSnap of snap.docs) {
-        const data = docSnap.data();
-        eventNameMap[docSnap.id] = data.name || 'Unknown';
-        const span = document.createElement('span');
-        span.className = "event-inline-item";
-        span.innerHTML = `
-          <span>${data.name}</span>
-          <button class="action-btn" style="font-size:1.1em;padding:2px 7px;" onclick="editEventNamePrompt('${docSnap.id}')">✏️</button>
-          <button class="action-btn delete" style="font-size:1.1em;padding:2px 7px;" onclick="deleteEventName('${docSnap.id}')">❌</button>
-        `;
-        listInline.appendChild(span);
-        const option = document.createElement('option');
-        option.value = docSnap.id;
-        option.textContent = data.name;
-        filterEvent.appendChild(option);
-      }
-    }
-    window.editEventNamePrompt = async function(eventNameId) {
-      const current = eventNameMap[eventNameId] || '';
-      const updated = prompt("नया कार्यक्रम नाम लिखें:", current);
-      if (updated && updated.trim() && updated !== current) {
-        await updateDoc(doc(db, "eventNames", eventNameId), { name: updated.trim() });
-        await loadEventNames();
-        await loadAll();
-      }
-    };
-    window.deleteEventName = async function(eventNameId) {
-      if (confirm("इस कार्यक्रम नाम को हटाने से सम्बंधित सभी संयोजक और रिपोर्ट भी हट जायेंगे!\nपक्का?")) {
-        await deleteDoc(doc(db, "eventNames", eventNameId));
-        await loadEventNames();
-        await loadAll();
-      }
-    };
-
-    const filterMandal = document.getElementById('filterMandal');
-    mandals.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m;
-      opt.textContent = m;
-      filterMandal.appendChild(opt);
-    });
-
-    document.getElementById('filterEvent').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
-    document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
-
-    function switchTab(tabId) {
-      ['eventsTab','coordinatorsTab','reportsTab'].forEach(id => {
-        document.getElementById(id).classList.remove('active');
-      });
-      ['eventTabBtn','coordinatorTabBtn','reportTabBtn'].forEach(id=>{
-        document.getElementById(id).classList.remove('active');
-      });
-      document.getElementById(tabId).classList.add('active');
-      if(tabId==='eventsTab') document.getElementById('eventTabBtn').classList.add('active');
-      else if(tabId==='coordinatorsTab') document.getElementById('coordinatorTabBtn').classList.add('active');
-      else document.getElementById('reportTabBtn').classList.add('active');
-    }
-    window.switchTab = switchTab;
-
-    async function loadEvents() {
-      const eventList = document.getElementById('eventList');
-      eventList.innerHTML = '';
-      document.getElementById('eventPagination').innerHTML = '';
-      const filterEventId = document.getElementById('filterEvent').value;
-      const filterMandalVal = document.getElementById('filterMandal').value;
-      const events = await getDocs(collection(db, "events"));
-      let filtered = [];
-      for (const docSnap of events.docs) {
-        const event = docSnap.data();
-        if (filterEventId && event.eventNameId !== filterEventId) continue;
-        if (filterMandalVal && event.mandal !== filterMandalVal) continue;
-        filtered.push({id: docSnap.id, ...event});
-      }
-      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-      if (eventPage > totalPages) eventPage = totalPages;
-      const pageEvents = filtered.slice((eventPage-1)*PAGE_SIZE, eventPage*PAGE_SIZE);
-      for (const event of pageEvents) {
-        let eventName = eventNameMap[event.eventNameId] || 'Unknown';
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${eventName}</td>
-          <td>${event.mandal || '-'}</td>
-          <td>${event.date || '-'}</td>
-          <td>${event.time || '-'}</td>
-          <td>${event.location || '-'}</td>
-          <td>
-            <button class="action-btn" onclick="editEvent('${event.id}')">✏️</button>
-            <button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button>
-          </td>
-        `;
-        eventList.appendChild(row);
-      }
-      document.getElementById('eventPagination').innerHTML = `
-        <div class="pagination-controls" style="text-align:center">
-          <button onclick="changeEventPage(-1)" ${eventPage==1?'disabled':''}>पिछला</button>
-          ${eventPage}/${totalPages}
-          <button onclick="changeEventPage(1)" ${eventPage==totalPages?'disabled':''}>अगला</button>
-        </div>`;
-    }
-    window.changeEventPage = function(diff) {
-      eventPage += diff;
-      loadEvents();
-    };
-    window.editEvent = async function(id) {
-      const docSnap = await getDoc(doc(db, "events", id));
-      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-      const event = docSnap.data();
-      const mandal = prompt("मंडल:", event.mandal || "");
-      const date = prompt("तारीख:", event.date || "");
-      const time = prompt("समय:", event.time || "");
-      const location = prompt("स्थान:", event.location || "");
-      if (mandal !== null && date !== null && time !== null && location !== null) {
-        await updateDoc(doc(db, "events", id), { mandal, date, time, location });
-        await loadEvents();
-      }
-    };
-    window.deleteEvent = async function(id) {
-      if (confirm("पक्का डिलीट करना है?")) {
-        await deleteDoc(doc(db, "events", id));
-        await loadEvents();
-      }
-    };
-
-    async function loadCoordinators() {
-      const coordinatorList = document.getElementById('coordinatorList');
-      coordinatorList.innerHTML = '';
-      document.getElementById('coordPagination').innerHTML = '';
-      const filterEventId = document.getElementById('filterEvent').value;
-      const filterMandalVal = document.getElementById('filterMandal').value;
-      let filtered = [];
-      const eventNames = await getDocs(collection(db, "eventNames"));
-      for (const eventNameDoc of eventNames.docs) {
-        const eventNameId = eventNameDoc.id;
-        if (filterEventId && eventNameId !== filterEventId) continue;
-        const name = eventNameDoc.data().name || '';
-        const coords = await getDocs(collection(db, `eventNames/${eventNameId}/coordinators`));
-        for (const docSnap of coords.docs) {
-          const c = docSnap.data();
-          if (filterMandalVal && c.mandal !== filterMandalVal) continue;
-          filtered.push({id: docSnap.id, eventNameId, name, ...c});
-        }
-      }
-      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-      if (coordPage > totalPages) coordPage = totalPages;
-      const pageCoords = filtered.slice((coordPage-1)*PAGE_SIZE, coordPage*PAGE_SIZE);
-      for (const c of pageCoords) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${c.name || ''}</td>
-          <td>${c.mandal || '-'}</td>
-          <td>${c.name || '-'}</td>
-          <td>${c.mobile || '-'}</td>
-          <td>${c.coCoordName1 || '-'}</td>
-          <td>${c.coCoordMobile1 || '-'}</td>
-          <td>${c.coCoordName2 || '-'}</td>
-          <td>${c.coCoordMobile2 || '-'}</td>
-          <td>
-            <button class="action-btn" onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button>
-            <button class="action-btn delete" onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button>
-          </td>
-        `;
-        coordinatorList.appendChild(row);
-      }
-      document.getElementById('coordPagination').innerHTML = `
-        <div class="pagination-controls" style="text-align:center">
-          <button onclick="changeCoordPage(-1)" ${coordPage==1?'disabled':''}>पिछला</button>
-          ${coordPage}/${totalPages}
-          <button onclick="changeCoordPage(1)" ${coordPage==totalPages?'disabled':''}>अगला</button>
-        </div>`;
-    }
-    window.changeCoordPage = function(diff) {
-      coordPage += diff;
-      loadCoordinators();
-    };
-    window.editCoordinator = async function(eventNameId, coordId) {
-      const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
-      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-      const c = docSnap.data();
-      const mandal = prompt("मंडल:", c.mandal || "");
-      const name = prompt("संयोजक:", c.name || "");
-      const mobile = prompt("मोबाइल:", c.mobile || "");
-      const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || "");
-      const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || "");
-      const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || "");
-      const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || "");
-      if (mandal !== null && name !== null) {
-        await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), {
-          mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2
-        });
-        await loadCoordinators();
-      }
-    };
-    window.deleteCoordinator = async function(eventNameId, coordId) {
-      if (confirm("पक्का डिलीट करना है?")) {
-        await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
-        await loadCoordinators();
-      }
-    };
-
-    async function loadReports() {
-      const reportList = document.getElementById('reportList');
-      reportList.innerHTML = '';
-      document.getElementById('reportPagination').innerHTML = '';
-      const filterEventId = document.getElementById('filterEvent').value;
-      const filterMandalVal = document.getElementById('filterMandal').value;
-      let filtered = [];
-      const eventNames = await getDocs(collection(db, "eventNames"));
-      for (const eventNameDoc of eventNames.docs) {
-        const eventNameId = eventNameDoc.id;
-        if (filterEventId && eventNameId !== filterEventId) continue;
-        const name = eventNameDoc.data().name || '';
-        const reports = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
-        for (const docSnap of reports.docs) {
-          const r = docSnap.data();
-          if (filterMandalVal && r.mandal !== filterMandalVal) continue;
-          filtered.push({id: docSnap.id, eventNameId, name, ...r});
-        }
-      }
-      const reportedMandals = new Set(filtered.map(r => r.mandal));
-      let pendingMandals = mandals.filter(m => !reportedMandals.has(m));
-      if (document.getElementById('filterMandal').value) pendingMandals = [];
-      document.getElementById('pendingMandals').innerText = pendingMandals.length ? `रिपोर्ट नहीं: ${pendingMandals.join(", ")}` : '';
-
-      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-      if (reportPage > totalPages) reportPage = totalPages;
-      const pageReports = filtered.slice((reportPage-1)*PAGE_SIZE, reportPage*PAGE_SIZE);
-
-      for (const r of pageReports) {
-        let photosHTML = "";
-        if (Array.isArray(r.photos)) {
-          let photosToShow = r.photos.slice(0,6);
-          photosHTML = `<div class="report-photos-grid">` +
-            photosToShow.map(url =>
-              `<img src="${url}" onclick="zoomImage(event, '${url}')">`
-            ).join('') +
-            `</div>`;
-        }
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${r.name}</td>
-          <td>${r.mandal || '-'}</td>
-          <td>${r.location || '-'}</td>
-          <td>${r.date || '-'}</td>
-          <td>${r.attendance || '-'}</td>
-          <td>${r.guests || '-'}</td>
-          <td>${r.details || '-'}</td>
-          <td>${photosHTML}</td>
-          <td>
-            <button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button>
-            <button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button>
-          </td>
-        `;
-        reportList.appendChild(row);
-      }
-      document.getElementById('reportPagination').innerHTML = `
-        <div class="pagination-controls" style="text-align:center">
-          <button onclick="changeReportPage(-1)" ${reportPage==1?'disabled':''}>पिछला</button>
-          ${reportPage}/${totalPages}
-          <button onclick="changeReportPage(1)" ${reportPage==totalPages?'disabled':''}>अगला</button>
-        </div>`;
-    }
-    window.changeReportPage = function(diff) {
-      reportPage += diff;
-      loadReports();
-    };
-    window.editReport = async function(eventNameId, reportId) {
-      const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
-      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-      const r = docSnap.data();
-      const mandal = prompt("मंडल:", r.mandal || "");
-      const location = prompt("स्थान:", r.location || "");
-      const date = prompt("तारीख:", r.date || "");
-      const attendance = prompt("उपस्थिति:", r.attendance || "");
-      const guests = prompt("विशिष्ट अतिथि:", r.guests || "");
-      const details = prompt("विवरण:", r.details || "");
-      if (mandal !== null && location !== null) {
-        await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), {
-          mandal, location, date, attendance, guests, details
-        });
-        await loadReports();
-      }
-    };
-    window.deleteReport = async function(eventNameId, reportId) {
-      if (confirm("पक्का डिलीट करना है?")) {
-        await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
-        await loadReports();
-      }
-    };
-
-    window.zoomImage = function(e, url) {
-      e.preventDefault();
-      document.getElementById('imgZoomModalImg').src = url;
-      document.getElementById('imgZoomModal').style.display = 'flex';
-    };
-    document.getElementById('imgZoomModal').onclick = function() {
-      this.style.display = 'none';
-      document.getElementById('imgZoomModalImg').src = '';
-    };
-
-    async function loadAll() {
-      await loadEventNames();
-      await loadEvents();
-      await loadCoordinators();
-      await loadReports();
-    }
-    loadAll();
-  </script>
-  <script>
-    window.exportEvents = function(type) {
-      const table = document.querySelector('#eventsTab table');
-      exportTableData(table, type, "कार्यक्रम सूची");
-    };
-    window.exportCoordinators = function(type) {
-      const table = document.querySelector('#coordinatorsTab table');
-      exportTableData(table, type, "संयोजक सूची");
-    };
-    window.exportReports = function(type) {
-      const table = document.querySelector('#reportsTab table');
-      exportTableData(table, type, "रिपोर्ट सूची");
-    };
-    function exportTableData(table, type, title) {
-      const rows = Array.from(table.querySelectorAll('tr'));
-      const data = rows.map(row => Array.from(row.children).map(cell => cell.innerText));
-      if (!data.length) return alert("डेटा उपलब्ध नहीं है!");
-      if (type === 'csv' || type === 'excel') {
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, title);
-        if (type === 'csv') XLSX.writeFile(wb, `${title}.csv`);
-        else XLSX.writeFile(wb, `${title}.xlsx`);
-      }
-      if (type === 'pdf') {
-        const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
-        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
-        doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
-        doc.setFont("NotoSansDevanagari");
-        doc.setFontSize(14);
-        doc.text(title, 40, 40, {lang: "hi"});
-        doc.autoTable({
-          startY: 60,
-          head: [data[0]],
-          body: data.slice(1),
-          styles: { font: "NotoSansDevanagari", fontSize: 12 },
-          headStyles: {fillColor:[255,152,0]},
-          bodyStyles: {textColor:30}
-        });
-        doc.save(`${title}.pdf`);
-      }
-    }
-    window.exportCombinedTable = function(type="excel") {
-      const masterHeader = [
-        "डेटा स्रोत", "कार्यक्रम नाम", "मंडल", "तारीख", "समय", "स्थान",
-        "संयोजक", "मोबाइल", "सह-संयोजक1", "मोबाइल1", "सह-संयोजक2", "मोबाइल2",
-        "उपस्थिति", "विशिष्ट अतिथि", "विवरण"
-      ];
-      let allRows = [masterHeader];
-      document.querySelectorAll("#eventList tr").forEach(tr => {
-        const tds = [...tr.querySelectorAll("td")];
-        if(tds.length) allRows.push([
-          "कार्यक्रम सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[2]?.innerText||"", tds[3]?.innerText||"", tds[4]?.innerText||"",
-          "", "", "", "", "", "", "", "", ""
-        ]);
-      });
-      document.querySelectorAll("#coordinatorList tr").forEach(tr => {
-        const tds = [...tr.querySelectorAll("td")];
-        if(tds.length) allRows.push([
-          "संयोजक सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", "", "", "",
-          tds[2]?.innerText||"", tds[3]?.innerText||"",
-          tds[4]?.innerText||"", tds[5]?.innerText||"",
-          tds[6]?.innerText||"", tds[7]?.innerText||"",
-          "", ""
-        ]);
-      });
-      document.querySelectorAll("#reportList tr").forEach(tr => {
-        const tds = [...tr.querySelectorAll("td")];
-        if(tds.length) allRows.push([
-          "रिपोर्ट सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[3]?.innerText||"", "", tds[2]?.innerText||"",
-          "", "", "", "", "", "",
-          tds[4]?.innerText||"", tds[5]?.innerText||"", tds[6]?.innerText||""
-        ]);
-      });
-      if(type==="csv" || type==="excel") {
-        const ws = XLSX.utils.aoa_to_sheet(allRows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "AllData");
-        if(type==="csv") XLSX.writeFile(wb, "AllData.csv");
-        else XLSX.writeFile(wb, "AllData.xlsx");
-      }
-      else if(type==="pdf") {
-        const doc = new jspdf.jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
-        doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
-        doc.setFont("NotoSansDevanagari");
-        doc.setFontSize(14);
-        doc.text("मंडल संयुक्त डेटा एक्सपोर्ट", 40, 40, {lang: "hi"});
-        doc.autoTable({
-          startY: 60,
-          head: [masterHeader],
-          body: allRows.slice(1),
-          styles: { font: "NotoSansDevanagari", fontSize: 10 },
-          headStyles: {fillColor:[255,152,0]},
-          bodyStyles: {textColor:30}
-        });
-        doc.save("AllData.pdf");
-      }
-    };
-    window.handleExport = function() {
-      const value = document.getElementById('exportDropdown').value;
-      if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
-      // JPG Download
-      if (value.endsWith("-jpg")) {
-        let selector = "";
-        if (value.startsWith("reports-")) selector = "#reportsTab";
-        else if (value.startsWith("events-")) selector = "#eventsTab";
-        else if (value.startsWith("coordinators-")) selector = "#coordinatorsTab";
-        else selector = ".container";
-        exportSectionAsJPG(selector, "Dashboard-" + Date.now());
-        return;
-      }
-      // बाकी एक्सपोर्ट
-      if (value.startsWith("combined-")) {
-        const type = value.split("-")[1];
-        exportCombinedTable(type);
-      } else if (value.startsWith("events-")) {
-        const type = value.split("-")[1];
-        exportEvents(type);
-      } else if (value.startsWith("coordinators-")) {
-        const type = value.split("-")[1];
-        exportCoordinators(type);
-      } else if (value.startsWith("reports-")) {
-        const type = value.split("-")[1];
-        exportReports(type);
-      }
-    };
-    function exportSectionAsJPG(selector, fileName="Dashboard") {
-      const section = document.querySelector(selector);
-      if(!section) return alert("सेक्शन नहीं मिला!");
-      html2canvas(section, {backgroundColor:"#fff"}).then(canvas => {
-        let link = document.createElement("a");
-        link.href = canvas.toDataURL("image/jpeg", 1.0);
-        link.download = fileName+".jpg";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      });
-    }
-  </script>
-</body>
-</html>
-
-  <script>
     const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
     const TELEGRAM_CHAT_ID = "733804072";
+    const previousReportedMandals = new Set();
 
     async function sendTelegramAlert(message) {
       try {
@@ -683,17 +260,17 @@
       }
     }
 
-    const previousReportedMandals = new Set();
-
     async function loadReports() {
       const reportList = document.getElementById('reportList');
       reportList.innerHTML = '';
 
+      const allMandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
       const filterEventId = document.getElementById('filterEvent').value;
       const filterMandalVal = document.getElementById('filterMandal').value;
-      let filtered = [];
 
+      let filtered = [];
       const eventNames = await getDocs(collection(db, "eventNames"));
+
       for (const eventNameDoc of eventNames.docs) {
         const eventNameId = eventNameDoc.id;
         if (filterEventId && eventNameId !== filterEventId) continue;
@@ -707,7 +284,6 @@
       }
 
       const currentMandals = new Set(filtered.map(r => r.mandal));
-      const allMandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
       const remainingMandals = allMandals.filter(m => !currentMandals.has(m));
 
       for (const mandal of currentMandals) {
@@ -732,7 +308,37 @@
           <td>...</td>`;
         reportList.appendChild(row);
       }
+
+      document.getElementById('pendingMandals').innerText = remainingMandals.length ? `रिपोर्ट नहीं: ${remainingMandals.join(", ")}` : '';
     }
+
+    window.zoomImage = function(e, url) {
+      e.preventDefault();
+      document.getElementById('imgZoomModalImg').src = url;
+      document.getElementById('imgZoomModal').style.display = 'flex';
+    };
+    document.getElementById('imgZoomModal').onclick = function() {
+      this.style.display = 'none';
+      document.getElementById('imgZoomModalImg').src = '';
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    async function addEventName() {
+      const name = document.getElementById('newEventName').value.trim();
+      if (!name) return alert("कार्यक्रम नाम लिखिए!");
+      alert("यह फीचर डेमो में सक्रिय नहीं है।");
+    }
+
+    document.getElementById('filterEvent').addEventListener('change', loadReports);
+    document.getElementById('filterMandal').addEventListener('change', loadReports);
+
+    loadReports();
+  </script>
   </script>
 </body>
 </html>
