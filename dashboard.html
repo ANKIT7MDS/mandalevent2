@@ -13,8 +13,8 @@
       max-width: 148px;
     }
     .report-photos-grid img {
-      width: 48px;
-      height: 48px;
+      width: 64px;
+      height: 64px;
       object-fit: cover;
       border-radius: 5px;
       border: 1.5px solid #ff9800;
@@ -206,10 +206,11 @@
       const newEventName = document.getElementById('newEventName').value.trim();
       if (!newEventName) return alert('कार्यक्रम नाम लिखिए!');
       await addDoc(collection(db, "eventNames"), { name: newEventName });
-      document.getElementById('newEventName').value = '';
-      await loadEventNames();
-      await loadAll();
-    };
+document.getElementById('newEventName').value = '';
+setTimeout(async () => {
+  await loadEventNames();
+  await loadAll();
+}, 500);
 
     async function loadEventNames() {
       const listInline = document.getElementById('eventNameListInline');
@@ -460,7 +461,10 @@
           <td>${r.mandal || '-'}</td>
           <td>${r.location || '-'}</td>
           <td>${r.date || '-'}</td>
-          <td>${r.attendance || '-'}</td>
+          <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','attendance', this.innerText)">
+  ${r.attendance || '-'}
+</td>
+
           <td>${r.guests || '-'}</td>
           <td>${r.details || '-'}</td>
           <td>${photosHTML}</td>
@@ -660,7 +664,12 @@
         link.download = fileName+".jpg";
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
+        document.body.removeChild(link);window.updateReportCell = async function(eventNameId, reportId, field, value) {
+  const ref = doc(db, `eventNames/${eventNameId}/reports`, reportId);
+  await updateDoc(ref, { [field]: value });
+  console.log(`Updated ${field} = ${value}`);
+};
+
       });
     }
   </script>
