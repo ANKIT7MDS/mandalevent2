@@ -296,30 +296,17 @@
       for (const event of pageEvents) {
         let eventName = eventNameMap[event.eventNameId] || 'Unknown';
         const row = document.createElement('tr');
-       row.innerHTML = `
-  <td>${r.name}</td>
-  <td>${r.mandal || '-'}</td>
-  <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','location', this.innerText)">
-    ${r.location || '-'}
-  </td>
-  <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','date', this.innerText)">
-    ${r.date || '-'}
-  </td>
-  <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','attendance', this.innerText)">
-    ${r.attendance || '-'}
-  </td>
-  <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','guests', this.innerText)">
-    ${r.guests || '-'}
-  </td>
-  <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','details', this.innerText)">
-    ${r.details || '-'}
-  </td>
-  <td>${photosHTML}</td>
-  <td>
-    <button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button>
-  </td>
-`;
-
+        row.innerHTML = `
+          <td>${eventName}</td>
+          <td>${event.mandal || '-'}</td>
+          <td>${event.date || '-'}</td>
+          <td>${event.time || '-'}</td>
+          <td>${event.location || '-'}</td>
+          <td>
+            <button class="action-btn" onclick="editEvent('${event.id}')">✏️</button>
+            <button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button>
+          </td>
+        `;
         eventList.appendChild(row);
       }
       document.getElementById('eventPagination').innerHTML = `
@@ -473,10 +460,7 @@
           <td>${r.mandal || '-'}</td>
           <td>${r.location || '-'}</td>
           <td>${r.date || '-'}</td>
-          <td contenteditable="true" onblur="updateReportCell('${r.eventNameId}','${r.id}','attendance', this.innerText)">
-  ${r.attendance || '-'}
-</td>
-
+          <td>${r.attendance || '-'}</td>
           <td>${r.guests || '-'}</td>
           <td>${r.details || '-'}</td>
           <td>${photosHTML}</td>
