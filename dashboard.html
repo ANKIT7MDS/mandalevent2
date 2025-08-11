@@ -2,27 +2,9 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <title>डैशबोर्ड</title>
+  <title>डैशबोर्ड (फिक्स्ड)</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    .report-photos-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 48px);
-      grid-auto-rows: 48px;
-      gap: 4px;
-      max-width: 148px;
-    }
-    .report-photos-grid img {
-      width: 48px;
-      height: 48px;
-      object-fit: cover;
-      border-radius: 5px;
-      border: 1.5px solid #ff9800;
-      cursor: zoom-in;
-      transition: box-shadow 0.18s;
-      background: #fff7e0;
-    }
-
     body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
     .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px 18px 10px; }
     h1 { color: #e65100; text-align: center; margin-bottom: 12px; font-size: 2.1rem; }
@@ -47,8 +29,9 @@
     .action-btn:hover { background: #e65100; }
     .event-name-inline-list { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; font-size: 0.99rem; align-items: center; }
     .event-inline-item { background: #fff; border-radius: 5px; padding: 4px 7px 4px 10px; display: flex; align-items: center; border: 1px solid #ffa72699; gap: 5px; }
-    .report-photos-grid { display: grid; grid-template-columns: repeat(3, 38px); grid-auto-rows: 38px; gap: 3px; max-width: 124px; }
-    .report-photos-grid img { width: 36px; height: 36px; object-fit: cover; border-radius: 5px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
+    /* ----- फोटो ग्रिड: एकल परिभाषा (बड़े आइकॉन) ----- */
+    .report-photos-grid { display: grid; grid-template-columns: repeat(3, 60px); grid-auto-rows: 60px; gap: 6px; max-width: 200px; }
+    .report-photos-grid img { width: 58px; height: 58px; object-fit: cover; border-radius: 6px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
     #imgZoomModal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; }
     #imgZoomModal img { max-width: 95vw; max-height: 93vh; border-radius: 14px; border: 4px solid #fff; box-shadow: 0 0 12px #ff980099; background: #fff; }
     @media (max-width: 650px) {
@@ -56,8 +39,8 @@
       .top-bar { flex-direction: column; align-items: stretch; gap: 7px;}
       .tabs { flex-direction: column; gap: 1px;}
       table, th, td { font-size: 0.94rem; }
-      .report-photos-grid { grid-template-columns: repeat(3, 28px); grid-auto-rows: 28px; max-width: 84px;}
-      .report-photos-grid img { width: 26px; height: 26px;}
+      .report-photos-grid { grid-template-columns: repeat(3, 40px); grid-auto-rows: 40px; max-width: 130px; }
+      .report-photos-grid img { width: 38px; height: 38px; }
     }
   </style>
   <!-- Export libs -->
@@ -180,7 +163,8 @@
   <div id="imgZoomModal">
     <img id="imgZoomModalImg" src="">
   </div>
-  <!-- Firebase JS -->
+
+  <!-- Firebase + App JS -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -197,29 +181,42 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+    const mandals = ["भेंसोदा", "భానपुरा".replace("భా","भा"), "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
     const eventNameMap = {};
     let eventPage = 1, coordPage = 1, reportPage = 1;
     const PAGE_SIZE = 21;
 
-    window.addEventName = async function() {
-      const newEventName = document.getElementById('newEventName').value.trim();
-      if (!newEventName) return alert('कार्यक्रम नाम लिखिए!');
-      await addDoc(collection(db, "eventNames"), { name: newEventName });
-      document.getElementById('newEventName').value = '';
-      await loadEventNames();
-      await loadAll();
-    };
+    /* --- Telegram alert config --- */
+    const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
+    const TELEGRAM_CHAT_ID = "733804072";
+    async function sendTelegramAlert(message) {
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+        });
+      } catch (err) {
+        console.error("टेलीग्राम अलर्ट नहीं भेजा जा सका:", err);
+      }
+    }
+    // अलर्ट स्पैम से बचने के लिये पिछली स्थिति याद रखें
+    let lastPendingKey = "";
 
-    async function loadEventNames() {
+    /* ---------- कार्यक्रम नाम लोड + ड्रॉपडाउन में सेलेक्शन सुरक्षित ---------- */
+    async function loadEventNames({ preserveSelection = true } = {}) {
       const listInline = document.getElementById('eventNameListInline');
-      listInline.innerHTML = '';
       const filterEvent = document.getElementById('filterEvent');
+      const previousValue = preserveSelection ? filterEvent.value : "";
+
+      listInline.innerHTML = '';
       filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
+
       const snap = await getDocs(collection(db, "eventNames"));
       for (const docSnap of snap.docs) {
         const data = docSnap.data();
         eventNameMap[docSnap.id] = data.name || 'Unknown';
+
         const span = document.createElement('span');
         span.className = "event-inline-item";
         span.innerHTML = `
@@ -228,26 +225,36 @@
           <button class="action-btn delete" style="font-size:1.1em;padding:2px 7px;" onclick="deleteEventName('${docSnap.id}')">❌</button>
         `;
         listInline.appendChild(span);
+
         const option = document.createElement('option');
         option.value = docSnap.id;
         option.textContent = data.name;
         filterEvent.appendChild(option);
       }
+      if (preserveSelection) filterEvent.value = previousValue;
     }
+    window.addEventName = async function() {
+      const newEventName = document.getElementById('newEventName').value.trim();
+      if (!newEventName) return alert('कार्यक्रम नाम लिखिए!');
+      await addDoc(collection(db, "eventNames"), { name: newEventName });
+      document.getElementById('newEventName').value = '';
+      await loadEventNames({ preserveSelection: true });
+      await loadListsOnly();
+    };
     window.editEventNamePrompt = async function(eventNameId) {
       const current = eventNameMap[eventNameId] || '';
       const updated = prompt("नया कार्यक्रम नाम लिखें:", current);
       if (updated && updated.trim() && updated !== current) {
         await updateDoc(doc(db, "eventNames", eventNameId), { name: updated.trim() });
-        await loadEventNames();
-        await loadAll();
+        await loadEventNames({ preserveSelection: true });
+        await loadListsOnly();
       }
     };
     window.deleteEventName = async function(eventNameId) {
       if (confirm("इस कार्यक्रम नाम को हटाने से सम्बंधित सभी संयोजक और रिपोर्ट भी हट जायेंगे!\nपक्का?")) {
         await deleteDoc(doc(db, "eventNames", eventNameId));
-        await loadEventNames();
-        await loadAll();
+        await loadEventNames({ preserveSelection: true });
+        await loadListsOnly();
       }
     };
 
@@ -259,16 +266,13 @@
       filterMandal.appendChild(opt);
     });
 
-    document.getElementById('filterEvent').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
-    document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadAll();});
+    // फ़िल्टर बदलने पर अब लिस्टें ही रीलोड होंगी; ड्रॉपडाउन रीसेट नहीं होगा
+    document.getElementById('filterEvent').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
+    document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
 
     function switchTab(tabId) {
-      ['eventsTab','coordinatorsTab','reportsTab'].forEach(id => {
-        document.getElementById(id).classList.remove('active');
-      });
-      ['eventTabBtn','coordinatorTabBtn','reportTabBtn'].forEach(id=>{
-        document.getElementById(id).classList.remove('active');
-      });
+      ['eventsTab','coordinatorsTab','reportsTab'].forEach(id => document.getElementById(id).classList.remove('active'));
+      ['eventTabBtn','coordinatorTabBtn','reportTabBtn'].forEach(id=>document.getElementById(id).classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       if(tabId==='eventsTab') document.getElementById('eventTabBtn').classList.add('active');
       else if(tabId==='coordinatorsTab') document.getElementById('coordinatorTabBtn').classList.add('active');
@@ -305,8 +309,7 @@
           <td>
             <button class="action-btn" onclick="editEvent('${event.id}')">✏️</button>
             <button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button>
-          </td>
-        `;
+          </td>`;
         eventList.appendChild(row);
       }
       document.getElementById('eventPagination').innerHTML = `
@@ -316,10 +319,7 @@
           <button onclick="changeEventPage(1)" ${eventPage==totalPages?'disabled':''}>अगला</button>
         </div>`;
     }
-    window.changeEventPage = function(diff) {
-      eventPage += diff;
-      loadEvents();
-    };
+    window.changeEventPage = function(diff) { eventPage += diff; loadEvents(); };
     window.editEvent = async function(id) {
       const docSnap = await getDoc(doc(db, "events", id));
       if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
@@ -376,8 +376,7 @@
           <td>
             <button class="action-btn" onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button>
             <button class="action-btn delete" onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button>
-          </td>
-        `;
+          </td>`;
         coordinatorList.appendChild(row);
       }
       document.getElementById('coordPagination').innerHTML = `
@@ -387,10 +386,7 @@
           <button onclick="changeCoordPage(1)" ${coordPage==totalPages?'disabled':''}>अगला</button>
         </div>`;
     }
-    window.changeCoordPage = function(diff) {
-      coordPage += diff;
-      loadCoordinators();
-    };
+    window.changeCoordPage = function(diff) { coordPage += diff; loadCoordinators(); };
     window.editCoordinator = async function(eventNameId, coordId) {
       const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
       if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
@@ -435,10 +431,21 @@
           filtered.push({id: docSnap.id, eventNameId, name, ...r});
         }
       }
+      // पेंडिंग मंडल (UI + टेलीग्राम)
       const reportedMandals = new Set(filtered.map(r => r.mandal));
       let pendingMandals = mandals.filter(m => !reportedMandals.has(m));
       if (document.getElementById('filterMandal').value) pendingMandals = [];
-      document.getElementById('pendingMandals').innerText = pendingMandals.length ? `रिपोर्ट नहीं: ${pendingMandals.join(", ")}` : '';
+      const pendingText = pendingMandals.length ? `रिपोर्ट नहीं: ${pendingMandals.join(", ")}` : 'सभी मंडलों से रिपोर्ट प्राप्त।';
+      document.getElementById('pendingMandals').innerText = pendingMandals.length ? pendingText : '';
+
+      const currentKey = pendingMandals.join("|");
+      if (currentKey !== lastPendingKey) {
+        lastPendingKey = currentKey;
+        await sendTelegramAlert(pendingMandals.length
+          ? `🔔 शेष (${pendingMandals.length}) मंडल जिनकी रिपोर्ट नहीं आई: ${pendingMandals.join(", ")}`
+          : "✅ सभी मंडलों की रिपोर्ट प्राप्त हो गई।"
+        );
+      }
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       if (reportPage > totalPages) reportPage = totalPages;
@@ -449,9 +456,7 @@
         if (Array.isArray(r.photos)) {
           let photosToShow = r.photos.slice(0,6);
           photosHTML = `<div class="report-photos-grid">` +
-            photosToShow.map(url =>
-              `<img src="${url}" onclick="zoomImage(event, '${url}')">`
-            ).join('') +
+            photosToShow.map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('') +
             `</div>`;
         }
         const row = document.createElement('tr');
@@ -467,8 +472,7 @@
           <td>
             <button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button>
             <button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button>
-          </td>
-        `;
+          </td>`;
         reportList.appendChild(row);
       }
       document.getElementById('reportPagination').innerHTML = `
@@ -478,10 +482,7 @@
           <button onclick="changeReportPage(1)" ${reportPage==totalPages?'disabled':''}>अगला</button>
         </div>`;
     }
-    window.changeReportPage = function(diff) {
-      reportPage += diff;
-      loadReports();
-    };
+    window.changeReportPage = function(diff) { reportPage += diff; loadReports(); };
     window.editReport = async function(eventNameId, reportId) {
       const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
       if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
@@ -516,14 +517,16 @@
       document.getElementById('imgZoomModalImg').src = '';
     };
 
-    async function loadAll() {
-      await loadEventNames();
-      await loadEvents();
-      await loadCoordinators();
-      await loadReports();
+    async function loadListsOnly() {
+      await Promise.all([loadEvents(), loadCoordinators(), loadReports()]);
     }
-    loadAll();
+    async function loadAll({ refreshEventNames = true } = {}) {
+      if (refreshEventNames) await loadEventNames({ preserveSelection: true });
+      await loadListsOnly();
+    }
+    loadAll({ refreshEventNames: true });
   </script>
+
   <script>
     window.exportEvents = function(type) {
       const table = document.querySelector('#eventsTab table');
@@ -662,76 +665,6 @@
         link.click();
         document.body.removeChild(link);
       });
-    }
-  </script>
-</body>
-</html>
-
-  <script>
-    const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
-    const TELEGRAM_CHAT_ID = "733804072";
-
-    async function sendTelegramAlert(message) {
-      try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
-        });
-      } catch (err) {
-        console.error("टेलीग्राम अलर्ट नहीं भेजा जा सका:", err);
-      }
-    }
-
-    const previousReportedMandals = new Set();
-
-    async function loadReports() {
-      const reportList = document.getElementById('reportList');
-      reportList.innerHTML = '';
-
-      const filterEventId = document.getElementById('filterEvent').value;
-      const filterMandalVal = document.getElementById('filterMandal').value;
-      let filtered = [];
-
-      const eventNames = await getDocs(collection(db, "eventNames"));
-      for (const eventNameDoc of eventNames.docs) {
-        const eventNameId = eventNameDoc.id;
-        if (filterEventId && eventNameId !== filterEventId) continue;
-        const name = eventNameDoc.data().name || '';
-        const reports = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
-        for (const docSnap of reports.docs) {
-          const r = docSnap.data();
-          if (filterMandalVal && r.mandal !== filterMandalVal) continue;
-          filtered.push({ id: docSnap.id, eventNameId, name, ...r });
-        }
-      }
-
-      const currentMandals = new Set(filtered.map(r => r.mandal));
-      const allMandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
-      const remainingMandals = allMandals.filter(m => !currentMandals.has(m));
-
-      for (const mandal of currentMandals) {
-        if (!previousReportedMandals.has(mandal)) {
-          previousReportedMandals.add(mandal);
-          const msg = `✅ ${mandal} मंडल की रिपोर्ट प्राप्त हुई।\n🔴 शेष ${remainingMandals.length} मंडल: ${remainingMandals.join(", ")}`;
-          sendTelegramAlert(msg);
-        }
-      }
-
-      for (const r of filtered) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${r.name}</td>
-          <td>${r.mandal || '-'}</td>
-          <td>${r.location || '-'}</td>
-          <td>${r.date || '-'}</td>
-          <td>${r.attendance || '-'}</td>
-          <td>${r.guests || '-'}</td>
-          <td>${r.details || '-'}</td>
-          <td>${Array.isArray(r.photos) ? '<div class="report-photos-grid">' + r.photos.slice(0, 6).map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('') + '</div>' : ''}</td>
-          <td>...</td>`;
-        reportList.appendChild(row);
-      }
     }
   </script>
 </body>
