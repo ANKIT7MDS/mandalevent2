@@ -1,137 +1,128 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <title>मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            background: #f4f6fa;
-            font-family: 'Noto Sans Devanagari', Arial, sans-serif;
-            color: #1c2942; margin: 0; padding: 0;
-        }
-        .container-tv {
-            max-width: 1380px; margin: 12px auto 8px auto;
-            background: #fff; border-radius: 18px; box-shadow: 0 4px 24px #e6a74912;
-            padding: 12px 2vw 20px 2vw; position: relative;
-        }
-        .tv-title-bar {
-            display: flex; align-items: center; border-bottom: 3px solid #ff9800;
-            padding-bottom: 6px; margin-bottom: 10px; gap: 12px;
-        }
-        .tv-logo { width: 46px; height: 46px; min-width: 46px; background: linear-gradient(120deg,#ffe1b9,#ffc46d); border:2.5px solid #fff3e0; border-radius:50%; font-weight:700; font-size:1.25rem; color:#e65100; display:flex;align-items:center;justify-content:center;}
-        .tv-title-main { font-size: 1.28rem; font-weight: 700; color: #263b64; white-space: normal; word-break: break-word; max-width: 82vw;}
-        .tv-pagination {margin-left:auto;font-size:1.07rem;font-weight:600;color:#b78937;}
-        .tv-controls {
-            display: flex;justify-content:center;gap:8px;margin:18px 0 0 0;flex-wrap:wrap;
-        }
-        .tv-controls button {
-            background:#ff9800;color:#fff;font-weight:600;border:none;
-            border-radius:7px;padding:7px 18px;font-size:1rem;cursor:pointer;
-            transition:background 0.12s;letter-spacing:.5px;
-        }
-        .tv-controls .autoplay-btn {background:#1976d2;}
-        .tv-controls .autoplay-btn.active {background:#44a62c;}
-        .tv-controls .pdf-btn {background:#5e35b1;}
-        .tv-controls .pdf-btn:hover {background:#4527a0;}
-        .slideshow-section {
-            display: flex; flex-direction: row; gap: 28px; margin-bottom: 12px;
-            align-items: flex-start; min-height: 440px;
-        }
-        .slide-card {
-            background:#f8fafc; border-radius:14px; box-shadow:0 2px 16px #ffe9d72a; padding:19px 22px 14px 18px; min-width:320px; flex:1 1 58%; max-width:700px;
-        }
-        .slide-title { font-size:1.18rem; font-weight:700; color:#d07011; margin-bottom:9px;}
-        .slide-details-row { font-size:1.09rem; margin:4px 0;}
-        .slide-details-row span {color:#77530e;font-weight:500;min-width:74px;display:inline-block;}
-        .slide-description {font-size:1.07rem; margin:13px 0 2px 0; color:#212427; line-height:1.48;}
-        /* -- PHOTO SLIDER/GRID -- */
-        .photo-slider-box {
-            background:#fffaf3; border-radius:16px; box-shadow:0 2px 10px #ffe9d744;
-            padding:18px 10px 12px 10px; min-width: 340px; max-width: 440px; flex: 0 0 32%;
-            display:flex;flex-direction:column;align-items:center;position:relative;
-        }
-        .slider-title-bar {font-size:1.08rem;font-weight:700;color:#d07011;margin-bottom:10px;border-left:4px solid #ff9800;padding-left:12px;align-self:flex-start;}
-        .gallery-switcher {
-            display: flex; gap: 10px; justify-content: center; 
-            margin: 9px 0 5px 0; width: 100%;
-        }
-        .gallery-switch-btn {
-            background: #eee; color: #555; font-weight: 600; border: none;
-            border-radius: 7px; padding: 4px 15px; font-size: 1rem; cursor: pointer; 
-            transition: background 0.18s; min-width: 90px;
-        }
-        .gallery-switch-btn.active { background: #ff9800; color: #fff;}
-        @media (max-width:700px) {.gallery-switcher {display:none;}}
-        /* -- slider -- */
-        .slider-photo-frame {
-            position:relative; width:100%; aspect-ratio:4/2.6; min-height:220px; max-height:310px; overflow:hidden; border-radius:14px; background:#eee;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .slider-photo-frame img {
-            width:100%; height:100%; object-fit:cover; border-radius:14px; background:#fff; display:block;
-            transition:opacity 0.4s cubic-bezier(.65,.04,.35,1),transform 0.4s cubic-bezier(.65,.04,.35,1);
-        }
-        .slider-photo-frame .no-photo {
-            width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-            color:#bbb;font-size:2.2rem;font-weight:600;
-            background: repeating-linear-gradient(135deg,#eee 0 10px,#fff 10px 20px);
-        }
-        .slider-arrow {
-            position:absolute;top:50%;transform:translateY(-50%);
-            background:#ff9800bb;color:#fff;font-size:1.9rem;font-weight:700;border:none;border-radius:50%;
-            width:38px;height:38px;display:flex;align-items:center;justify-content:center;
-            box-shadow:0 1px 12px #ff98004c;cursor:pointer;z-index:20;
-            transition:background 0.13s;
-        }
-        .slider-arrow:hover {background:#f37804;}
-        .slider-arrow.left {left:6px;}
-        .slider-arrow.right {right:6px;}
-        .slider-dots {margin:10px 0 0 0;display:flex;gap:9px;justify-content:center;}
-        .slider-dot {width:13px;height:13px;border-radius:50%;background:#ddd;transition:background 0.19s; border:2px solid #fff;cursor:pointer;}
-        .slider-dot.active {background:#ff9800;}
-        /* -- grid -- */
-        .gallery-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 13px 12px;}
-        .gallery-img-box {position:relative; border-radius:10px; overflow:hidden; aspect-ratio:4/3; background:#fff; min-width:0; height: 140px; min-height: 90px; max-height: 200px;}
-        .gallery-img-box img {width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:10px;display:block;background:#fff;cursor:pointer;position:absolute;left:0;top:0;touch-action:none;}
-        @media (max-width:700px) {
-            .slideshow-section {flex-direction:column;}
-            .slide-card {max-width:99vw;}
-            .photo-slider-box {max-width:99vw;min-width:0;margin-top:14px;}
-            .slider-title-bar {padding-left:6px;}
-            .slider-photo-frame {aspect-ratio:4/3;min-height:115px;}
-            .slider-dot {width:11px;height:11px;}
-            .gallery-grid .gallery-img-box {height: 25vw; min-height: 85px;}
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
+  <meta charset="UTF-8">
+  <title>कार्यक्रम रिपोर्ट — स्लाइड/ग्रिड व्यू</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#ff9800;
+      --ink:#1c2942;
+      --panel:#fffaf3;
+      --muted:#7a6b57;
+      --bg:#f5f7fb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans Devanagari', Arial, sans-serif;}
+    .wrap{max-width:1400px;margin:14px auto;background:#fff;border-radius:18px;box-shadow:0 8px 28px #1c294208;padding:14px 14px 18px 14px}
+    .topbar{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:3px solid var(--brand);
+      padding:8px 4px 12px 4px;margin-bottom:12px;
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{
+      width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(120deg,#ffe1b9,#ffc46d);color:#e65100;border:2px solid #fff3e0;font-weight:700
+    }
+    .title{font-size:1.2rem;font-weight:700}
+    .spacer{flex:1}
+    .select,.btn{font-size:1rem;border:1.2px solid #ffd59d;background:#fffaf5;color:#5a3200;border-radius:8px;padding:7px 12px}
+    .btn{background:var(--brand);color:#fff;border:none;cursor:pointer;font-weight:700}
+    .btn.alt{background:#1976d2}
+    .btn.ghost{background:#5e35b1}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .counter{font-weight:700;color:#b78937}
+    .view-switch{display:flex;gap:6px;align-items:center}
+    .seg{display:flex;border:1px solid #ffd59d;border-radius:8px;overflow:hidden}
+    .seg button{padding:7px 12px;border:0;background:#fffaf5;color:#6a4b20;font-weight:700;cursor:pointer}
+    .seg button.active{background:var(--brand);color:#fff}
+    /* --- Layout: photo bigger, text smaller --- */
+    .rows{display:flex;gap:18px;align-items:flex-start;min-height:450px}
+    .text-col{flex:0 0 40%;min-width:320px;background:#f9fbff;border-radius:14px;padding:14px 16px;box-shadow:0 2px 16px #ffe9d72a}
+    .text-title{font-size:1.05rem;font-weight:700;color:#d07011;margin:0 0 6px}
+    .text-row{font-size:.96rem;margin:3px 0}
+    .text-row span{color:#77530e;font-weight:600;display:inline-block;min-width:72px}
+    .desc{font-size:.94rem;line-height:1.48;margin-top:10px;color:#222}
+    .hash{margin-top:8px;color:#4a7dc0;font-size:.95rem}
+    .photo-col{flex:1;background:var(--panel);border-radius:16px;padding:14px;box-shadow:0 2px 12px #ffe9d744}
+    .section-title{font-size:1.02rem;font-weight:700;color:#d07011;border-left:4px solid var(--brand);padding-left:10px;margin:2px 0 12px}
+    /* --- Slider --- */
+    .frame{position:relative;width:100%;aspect-ratio:16/9;min-height:320px;max-height:520px;overflow:hidden;border-radius:14px;background:#eee;display:flex;align-items:center;justify-content:center}
+    .frame img{width:100%;height:100%;object-fit:cover;display:block;border-radius:14px}
+    .arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:#ff9800dd;color:#fff;font-size:1.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px #0001}
+    .arrow.left{left:8px}.arrow.right{right:8px}
+    .dots{display:flex;gap:9px;justify-content:center;margin-top:10px}
+    .dot{width:13px;height:13px;border-radius:50%;background:#ddd;border:2px solid #fff;cursor:pointer}
+    .dot.active{background:var(--brand)}
+    /* --- Grid (bigger tiles) --- */
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid .tile{position:relative;overflow:hidden;border-radius:12px;background:#fff;aspect-ratio:4/3;min-height:220px;max-height:360px}
+    .grid .tile img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;cursor:pointer}
+    /* --- Footer controls --- */
+    .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+    /* --- Mobile --- */
+    @media (max-width:800px){
+      .rows{flex-direction:column}
+      .text-col{order:2;flex:1}
+      .photo-col{order:1}
+      .frame{aspect-ratio:4/3;min-height:220px}
+      .grid .tile{min-height:150px}
+    }
+  </style>
+  <!-- PDF libs with Hindi font support -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
 </head>
 <body>
-<div class="container-tv">
-    <div class="tv-title-bar">
-        <div class="tv-logo">BJ</div>
-        <div class="tv-title-main">मंडल में सम्पन्न हुए विभिन्न संगठनात्मक कार्यक्रम</div>
-        <div class="tv-pagination" id="tv-pagination">1 / 1</div>
+  <div class="wrap">
+    <!-- Topbar with filters and view -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">BJ</div>
+        <div class="title">मंडल कार्यक्रम रिपोर्ट (स्लाइड/ग्रिड)</div>
+      </div>
+      <div class="spacer"></div>
+      <select class="select" id="eventFilter">
+        <option value="">सभी कार्यक्रम</option>
+      </select>
+      <div class="view-switch">
+        <span style="font-weight:700;color:#6a4b20">फोटो व्यू:</span>
+        <div class="seg">
+          <button id="segSlide" class="active" onclick="setGalleryView('slide')">स्लाइड</button>
+          <button id="segGrid" onclick="setGalleryView('grid')">ग्रिड</button>
+        </div>
+      </div>
+      <span class="counter" id="counter">0 / 0</span>
+      <button class="btn" onclick="prevSlide()">&#8592; पिछला</button>
+      <button class="btn" onclick="nextSlide()">अगला &#8594;</button>
+      <button class="btn alt" id="tvBtn" onclick="toggleAutoplay()">टीवी-मोड</button>
+      <button class="btn ghost" onclick="downloadPDF()">PDF</button>
     </div>
-    <div class="slideshow-section" id="tv-slideshow"></div>
-    <div class="tv-controls">
-        <button onclick="prevSlide()">&#8592; पिछला</button>
-        <button onclick="nextSlide()">अगला &#8594;</button>
-        <button class="autoplay-btn" id="autoplayBtn" onclick="toggleAutoplay()">टीवी-मोड</button>
-        <button class="pdf-btn" onclick="downloadPDF()">PDF</button>
+
+    <div class="rows" id="rows">
+      <!-- content injected -->
     </div>
-</div>
-<!-- फोटो Zoom Modal -->
-<div id="imgZoomModal" style="display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.87);align-items:center;justify-content:center;">
-    <img id="imgZoomModalImg" src="">
-</div>
+
+    <div class="controls">
+      <button class="btn" onclick="prevSlide()">&#8592; पिछला</button>
+      <button class="btn" onclick="nextSlide()">अगला &#8594;</button>
+      <button class="btn alt" id="tvBtn2" onclick="toggleAutoplay()">टीवी-मोड</button>
+      <button class="btn ghost" onclick="downloadPDF()">PDF</button>
+    </div>
+  </div>
+
+  <!-- Zoom modal -->
+  <div id="zoom" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:999;align-items:center;justify-content:center">
+    <img id="zoomImg" src="" style="max-width:96vw;max-height:92vh;border-radius:16px;border:4px solid #fff;box-shadow:0 4px 20px #0008">
+  </div>
+
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-const firebaseConfig = {
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  const firebaseConfig = {
     apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
     authDomain: "mandaleventall.firebaseapp.com",
     projectId: "mandaleventall",
@@ -139,243 +130,217 @@ const firebaseConfig = {
     messagingSenderId: "900190130114",
     appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
     measurementId: "G-2BBZZNRS88"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-let reports = [];
-let slideIndex = 0;
-let autoplay = false, autoplayInterval = null;
-let photoIdx = 0, photoPlay = false, photoTimer = null;
-let galleryView = "slide"; // desktop: "slide" | "grid", mobile: always "grid"
+  // State
+  let allReports = [];
+  let reports = [];
+  let slideIndex = 0;
+  let galleryView = 'slide';
+  let autoplay = false, timer = null;
+  let photoIndex = 0, photoTimer = null;
 
-async function loadReports() {
-    const eventNamesSnap = await getDocs(collection(db, "eventNames"));
-    const eventNames = {};
-    eventNamesSnap.forEach(docSnap => {
-        eventNames[docSnap.id] = docSnap.data().name || '';
+  // --- UI helpers ---
+  function qs(sel){ return document.querySelector(sel); }
+  function el(tag,attrs={},children=''){ const e=document.createElement(tag); Object.assign(e,attrs); if(typeof children==='string') e.innerHTML=children; else children.forEach(c=>e.appendChild(c)); return e; }
+  function setCounter(){ qs('#counter').textContent = reports.length ? (slideIndex+1)+' / '+reports.length : '0 / 0'; }
+  function setSeg(){ qs('#segSlide').classList.toggle('active', galleryView==='slide'); qs('#segGrid').classList.toggle('active', galleryView==='grid'); }
+
+  // --- Zoom ---
+  window.zoom = (src)=>{ qs('#zoomImg').src = src; qs('#zoom').style.display='flex'; };
+  qs('#zoom').addEventListener('click', ()=>{ qs('#zoom').style.display='none'; qs('#zoomImg').src=''; });
+
+  // --- Data load ---
+  async function loadEventNames() {
+    const snap = await getDocs(collection(db,'eventNames'));
+    const select = qs('#eventFilter');
+    select.innerHTML = '<option value="">सभी कार्यक्रम</option>';
+    let map = {};
+    snap.forEach(d=>{ map[d.id]=d.data().name||''; });
+    Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1],'hi')).forEach(([id,name])=>{
+      const opt = document.createElement('option'); opt.value=id; opt.textContent=name; select.appendChild(opt);
     });
-    let allReports = [];
-    for (const eventNameId of Object.keys(eventNames)) {
-        const reportSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
-        reportSnap.forEach(docSnap => {
-            const r = docSnap.data();
-            let photoOffsets = Array.isArray(r.photoOffsets) ? r.photoOffsets : [];
-            allReports.push({
-                ...r,
-                id: docSnap.id,
-                eventNameId,
-                eventName: eventNames[eventNameId],
-                photoOffsets
-            });
-        });
+    return map;
+  }
+
+  async function loadReports(eventId='') {
+    const eventSnap = await getDocs(collection(db,'eventNames'));
+    const events = {};
+    eventSnap.forEach(doc=>events[doc.id]=doc.data().name||'');
+
+    let tmp = [];
+    for (const id of Object.keys(events)) {
+      if (eventId && id !== eventId) continue;
+      const repSnap = await getDocs(collection(db,`eventNames/${id}/reports`));
+      repSnap.forEach(doc=>{
+        const r = doc.data();
+        tmp.push({ id: doc.id, eventNameId: id, eventName: events[id], ...r });
+      });
     }
-    allReports.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    reports = allReports;
-    showSlide(0);
-}
-window.prevSlide = function() {
-    if (!reports.length) return;
-    slideIndex = (slideIndex-1+reports.length) % reports.length;
-    showSlide(slideIndex);
-}
-window.nextSlide = function() {
-    if (!reports.length) return;
-    slideIndex = (slideIndex+1)%reports.length;
-    showSlide(slideIndex);
-}
-window.toggleAutoplay = function() {
-    autoplay = !autoplay;
-    let btn = document.getElementById('autoplayBtn');
-    btn.classList.toggle('active', autoplay);
-    btn.textContent = autoplay ? "टीवी-मोड बंद करें" : "टीवी-मोड";
-    if (autoplay) {
-        autoplayInterval = setInterval(() => {
-            nextSlide();
-        }, 4000);
-    } else {
-        clearInterval(autoplayInterval);
-    }
-}
-// -------- गैलरी व्यू टॉगल --------
-function showGallerySwitcher(photos) {
-    if(window.innerWidth <= 700) return '';
-    let slideBtn = `<button class="gallery-switch-btn${galleryView=='slide'?' active':''}" onclick="setGalleryView('slide')">स्लाइड व्यू</button>`;
-    let gridBtn = `<button class="gallery-switch-btn${galleryView=='grid'?' active':''}" onclick="setGalleryView('grid')">ग्रिड व्यू</button>`;
-    if(photos.length<2) return ''; // switcher की जरूरत नहीं
-    return `<div class="gallery-switcher">${slideBtn}${gridBtn}</div>`;
-}
-window.setGalleryView = function(mode) {
-    galleryView = mode;
-    showSlide(slideIndex, false);
-}
-// फुल slide और grid दोनों implement:
-function showGallery(photos, eventIdx) {
-    // --- mobile: हमेशा grid ---
-    if(window.innerWidth <= 700 || galleryView === "grid") {
-        let showPhotos = [];
-        for(let i=0;i<4;i++) showPhotos.push(photos[i] ? photos[i] : "https://dummyimage.com/600x450/eee/aaa&text=No+Photo");
-        let gridHtml = `<div class="gallery-grid">`;
-        showPhotos.forEach((url, pidx) => {
-            gridHtml += `
-            <div class="gallery-img-box">
-                <img src="${url}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${url}')">
-            </div>`;
-        });
-        gridHtml += `</div>`;
-        return gridHtml;
-    }
-    // --- desktop: slide view ---
-    let curr = Math.max(0, Math.min(photoIdx, photos.length-1));
-    let img = photos[curr] ? 
-        `<img src="${photos[curr]}" alt="कार्यक्रम फोटो" onclick="zoomImage(event, '${photos[curr]}')" style="opacity:1;">`
-        : `<div class="no-photo">No Photo</div>`;
-    let arrows = '';
-    if (photos.length>1) {
-        arrows = `
-            <button class="slider-arrow left" onclick="photoPrev(event)">&larr;</button>
-            <button class="slider-arrow right" onclick="photoNext(event)">&rarr;</button>
-        `;
-    }
-    let dots = `<div class="slider-dots">`;
-    for(let i=0;i<photos.length;i++){
-        dots += `<div class="slider-dot${i===curr?' active':''}" onclick="photoGoto(${i})"></div>`;
-    }
-    dots += `</div>`;
-    return `<div class="slider-photo-frame">${arrows}${img}</div>${dots}`;
-}
-// फोटो स्लाइडर कंट्रोल्स
-window.photoPrev = function(e){
-    e.stopPropagation();
-    if(!reports[slideIndex]) return;
-    let photos = Array.isArray(reports[slideIndex].photos)?reports[slideIndex].photos:[];
-    photoIdx = (photoIdx-1+photos.length)%photos.length;
-    showSlide(slideIndex,false);
-}
-window.photoNext = function(e){
-    e.stopPropagation();
-    if(!reports[slideIndex]) return;
-    let photos = Array.isArray(reports[slideIndex].photos)?reports[slideIndex].photos:[];
-    photoIdx = (photoIdx+1)%photos.length;
-    showSlide(slideIndex,false);
-}
-window.photoGoto = function(idx){
-    photoIdx = idx;
-    showSlide(slideIndex,false);
-}
-function startPhotoAutoPlay(photos) {
-    if(photoTimer) clearInterval(photoTimer);
-    if(!photos || photos.length<2) return;
-    photoPlay = true;
-    photoTimer = setInterval(()=>{
-        photoIdx = (photoIdx+1)%photos.length;
-        showSlide(slideIndex,false);
-    },2600);
-}
-function stopPhotoAutoPlay() {
-    if(photoTimer) clearInterval(photoTimer);
-    photoPlay = false;
-}
-function showSlide(idx, resetPhoto=true) {
+    tmp.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    allReports = tmp;
+    reports = tmp;
+    slideIndex = 0;
+    render();
+  }
+
+  // --- Rendering ---
+  function render(){
+    const rows = qs('#rows');
     if (!reports.length) {
-        document.getElementById('tv-slideshow').innerHTML = `<div style="color:#d07a1a;font-size:1.2rem;">कोई रिपोर्ट डेटा उपलब्ध नहीं है।</div>`;
-        document.getElementById('tv-pagination').innerText = "";
-        return;
+      rows.innerHTML = '<div style="padding:20px;color:#d07a1a;font-weight:700">कोई रिपोर्ट उपलब्ध नहीं</div>';
+      setCounter();
+      return;
     }
-    slideIndex = idx;
-    const r = reports[idx];
-    if(resetPhoto) photoIdx=0;
-    let detailsHtml = `
-    <div class="slide-card">
-        <div class="slide-title">${r.eventName || 'कार्यक्रम'}</div>
-        <div class="slide-details">
-            <div class="slide-details-row"><span>तारीख:</span> ${r.date || '-'}</div>
-            <div class="slide-details-row"><span>स्थान:</span> ${r.location || '-'}</div>
-            <div class="slide-details-row"><span>मंडल:</span> ${r.mandal || '-'}</div>
-            <div class="slide-details-row"><span>प्रकार:</span> ${r.type || (r.prakar||'कार्यक्रम')}</div>
-            <div class="slide-details-row"><span>उपस्थिति:</span> ${r.attendance || '-'}</div>
-            <div class="slide-details-row"><span>अतिथि:</span> ${r.guests || '-'}</div>
-        </div>
-        <div class="slide-description">${(r.details||'').replace(/\n/g,'<br>')}</div>
-        ${r.hashtag ? `<div class="slide-details-row" style="margin-top:7px;color:#4a7dc0;">#${r.hashtag}</div>` : ''}
-    </div>
-    `;
-    let photos = Array.isArray(r.photos) ? r.photos : [];
-    let gallery = `<div class="photo-slider-box">
-        <div class="slider-title-bar">फोटो गैलरी</div>
-        ${showGallery(photos, idx)}
-        ${showGallerySwitcher(photos)}
-    </div>`;
-    document.getElementById('tv-slideshow').innerHTML = detailsHtml + gallery;
-    document.getElementById('tv-pagination').innerText = `${idx+1} / ${reports.length}`;
-    // Autoplay logic
-    if(window.innerWidth>700 && galleryView==="slide" && photos.length>1){
-        stopPhotoAutoPlay();
-        startPhotoAutoPlay(photos);
+    const r = reports[slideIndex];
+    const textCol = `
+      <div class="text-col">
+        <div class="text-title">${r.eventName||'कार्यक्रम'}</div>
+        <div class="text-row"><span>तारीख:</span> ${r.date||'-'}</div>
+        <div class="text-row"><span>स्थान:</span> ${r.location||'-'}</div>
+        <div class="text-row"><span>मंडल:</span> ${r.mandal||'-'}</div>
+        <div class="text-row"><span>प्रकार:</span> ${r.type || r.prakar || 'कार्यक्रम'}</div>
+        <div class="text-row"><span>उपस्थिति:</span> ${r.attendance||'-'}</div>
+        <div class="text-row"><span>अतिथि:</span> ${r.guests||'-'}</div>
+        <div class="desc">${(r.details||'').replace(/\\n/g,'<br>')}</div>
+        ${r.hashtag ? '<div class="hash">#'+r.hashtag+'</div>':''}
+      </div>`;
+
+    const photos = Array.isArray(r.photos) ? r.photos : [];
+    let photoHtml = '';
+    if (galleryView==='slide') {
+      const idx = Math.min(photoIndex, Math.max(photos.length-1,0));
+      const img = photos[idx] ? `<img src="${photos[idx]}" alt="Photo" onclick="zoom('${photos[idx]}')">` : `<div style="font-weight:700;color:#aaa">No Photo</div>`;
+      let dots = '';
+      if (photos.length>1) {
+        dots = '<div class="dots">'+ photos.map((_,i)=>`<div class="dot ${i===idx?'active':''}" onclick="photoGoto(${i})"></div>`).join('') + '</div>';
+      }
+      photoHtml = `
+        <div class="photo-col">
+          <div class="section-title">फोटो गैलरी</div>
+          <div class="frame">
+            ${photos.length>1?'<button class="arrow left" onclick="photoPrev()">&larr;</button>':''}
+            ${img}
+            ${photos.length>1?'<button class="arrow right" onclick="photoNext()">&rarr;</button>':''}
+          </div>
+          ${dots}
+        </div>`;
     } else {
-        stopPhotoAutoPlay();
+      const grid = photos.slice(0,4).map(u=>`
+        <div class="tile"><img src="${u}" alt="" onclick="zoom('${u}')"></div>
+      `).join('');
+      photoHtml = `
+        <div class="photo-col">
+          <div class="section-title">फोटो गैलरी</div>
+          <div class="grid">${grid || '<div style="padding:18px;color:#aaa;font-weight:700">No Photo</div>'}</div>
+        </div>`;
     }
-}
-// responsive: window size change पर view बदलो
-window.addEventListener('resize', ()=>{
-    if(window.innerWidth <= 700 && galleryView!=="grid"){
-        galleryView="grid"; showSlide(slideIndex, false);
+    rows.innerHTML = textCol + photoHtml;
+    setCounter();
+    autoplayTick(); // keep photo autoplay in slide mode
+  }
+
+  // --- Slide navigation ---
+  window.prevSlide = ()=>{ if(!reports.length) return; slideIndex=(slideIndex-1+reports.length)%reports.length; photoIndex=0; render(); };
+  window.nextSlide = ()=>{ if(!reports.length) return; slideIndex=(slideIndex+1)%reports.length; photoIndex=0; render(); };
+  window.setGalleryView = (mode)=>{ galleryView = mode; setSeg(); render(); };
+
+  // --- Photo slider ---
+  window.photoPrev = ()=>{ const r=reports[slideIndex]; const p=r&&Array.isArray(r.photos)?r.photos:[]; if(p.length){ photoIndex=(photoIndex-1+p.length)%p.length; render(); } };
+  window.photoNext = ()=>{ const r=reports[slideIndex]; const p=r&&Array.isArray(r.photos)?r.photos:[]; if(p.length){ photoIndex=(photoIndex+1)%p.length; render(); } };
+  window.photoGoto = (i)=>{ photoIndex=i; render(); };
+
+  function autoplayTick(){
+    if (galleryView==='slide') {
+      clearInterval(photoTimer);
+      const r=reports[slideIndex]; const p=r&&Array.isArray(r.photos)?r.photos:[];
+      if (p.length>1) {
+        photoTimer = setInterval(()=>{ photoIndex=(photoIndex+1)%p.length; render(); }, 3000);
+      }
+    } else {
+      clearInterval(photoTimer);
     }
-    if(window.innerWidth > 700 && galleryView!=="slide"){
-        galleryView="slide"; showSlide(slideIndex, false);
+  }
+
+  // --- TV mode ---
+  window.toggleAutoplay = ()=>{
+    autoplay = !autoplay;
+    document.querySelectorAll('#tvBtn,#tvBtn2').forEach(b=>{
+      b.textContent = autoplay ? 'टीवी-मोड बंद करें' : 'टीवी-मोड';
+      b.classList.toggle('alt', autoplay);
+    });
+    if (autoplay) {
+      timer = setInterval(()=>{ nextSlide(); }, 4500);
+    } else {
+      clearInterval(timer);
     }
-});
-window.zoomImage = function(e, url) {
-    e.preventDefault();
-    document.getElementById('imgZoomModalImg').src = url;
-    document.getElementById('imgZoomModal').style.display = 'flex';
-};
-document.getElementById('imgZoomModal').onclick = function() {
-    this.style.display = 'none';
-    document.getElementById('imgZoomModalImg').src = '';
-};
-// PDF (Same as before, use first photo)
-window.downloadPDF = function() {
-    if (!reports[slideIndex]) return;
-    let r = reports[slideIndex];
-    const doc = new jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+  };
+
+  // --- PDF Download with Hindi font ---
+  window.downloadPDF = ()=>{
+    if (!reports.length) return;
+    const r = reports[slideIndex];
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
+    // हिंदी फ़ॉन्ट
     doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
     doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
     doc.setFont("NotoSansDevanagari");
-    doc.setFontSize(19);
-    doc.text(r.eventName || 'कार्यक्रम', 45, 44, {lang:"hi"});
-    doc.setFontSize(13);
-    let y = 72;
-    let details = [
-        ["तारीख", r.date||'-'], ["स्थान", r.location||'-'], ["मंडल", r.mandal||'-'],
-        ["प्रकार", r.type||(r.prakar||'कार्यक्रम')], ["उपस्थिति", r.attendance||'-'],
-        ["अतिथि", r.guests||'-']
+    doc.setFontSize(18);
+    doc.text(r.eventName || 'कार्यक्रम', 44, 42, {lang:'hi'});
+    doc.setFontSize(12);
+    const details = [
+      ["तारीख", r.date||'-'],
+      ["स्थान", r.location||'-'],
+      ["मंडल", r.mandal||'-'],
+      ["प्रकार", r.type || r.prakar || 'कार्यक्रम'],
+      ["उपस्थिति", r.attendance||'-'],
+      ["अतिथि", r.guests||'-']
     ];
     doc.autoTable({
-        startY: y, head:[["फील्ड", "विवरण"]], body: details,
-        styles:{ font:"NotoSansDevanagari", fontSize:13 }
+      startY: 60,
+      head: [["फील्ड","विवरण"]],
+      body: details,
+      styles: { font:"NotoSansDevanagari", fontSize: 12 },
+      headStyles: { fillColor: [255,152,0] }
     });
-    y = doc.lastAutoTable.finalY + 18;
-    doc.text("कार्यक्रम विवरण:", 45, y, {lang:"hi"});
-    y+=19;
-    let desc = (r.details||'-').replace(/\n/g," ");
-    doc.text(desc, 55, y, {maxWidth:720,lang:"hi"});
-    let photos = (Array.isArray(r.photos)?r.photos:[]).slice(0,1);
-    let imgY = y+33;
-    if(photos.length){
-        let img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = function() {
-            doc.addImage(img, "JPEG", 60, imgY, 260, 180);
-            doc.save((r.eventName||'report')+".pdf");
-        };
-        img.onerror = function() { doc.save((r.eventName||'report')+".pdf"); };
-        img.src = photos[0];
+    let y = doc.lastAutoTable ? doc.lastAutoTable.finalY + 16 : 120;
+    doc.setFontSize(13);
+    doc.text("कार्यक्रम विवरण:", 44, y, {lang:'hi'});
+    y += 18;
+    const description = (r.details||'-').replace(/\\n/g,' ');
+    doc.setFontSize(12);
+    doc.text(description, 54, y, {maxWidth: 720, lang:'hi'});
+
+    // Try add first image; if it fails, still save
+    const photos = Array.isArray(r.photos) ? r.photos : [];
+    if (photos.length) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = ()=>{
+        doc.addImage(img, 'JPEG', 540, 70, 240, 160);
+        doc.save((r.eventName||'report')+'.pdf');
+      };
+      img.onerror = ()=> doc.save((r.eventName||'report')+'.pdf');
+      img.src = photos[0];
     } else {
-        doc.save((r.eventName||'report')+".pdf");
+      doc.save((r.eventName||'report')+'.pdf');
     }
-};
-loadReports();
+  };
+
+  // --- Filters ---
+  qs('#eventFilter').addEventListener('change', (e)=>{
+    loadReports(e.target.value);
+  });
+
+  // Init
+  await loadEventNames();
+  await loadReports('');
+
+  // default seg based on width
+  if (window.innerWidth < 800) { setGalleryView('grid'); } else { setGalleryView('slide'); }
 </script>
 </body>
 </html>
