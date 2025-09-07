@@ -27,8 +27,7 @@
     .action-btn.delete { background: #e53935; }
     .action-btn.delete:hover { background: #b71c1c; }
     .action-btn:hover { background: #e65100; }
-    .event-name-inline-list { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; font-size: 0.99rem; align-items: center; }
-    .event-inline-item { background: #fff; border-radius: 5px; padding: 4px 7px 4px 10px; display: flex; align-items: center; border: 1px solid #ffa72699; gap: 5px; }
+    
     /* ----- फोटो ग्रिड: एकल परिभाषा (बड़े आइकॉन) ----- */
     .report-photos-grid { display: grid; grid-template-columns: repeat(3, 74px); grid-auto-rows: 74px; gap: 6px; max-width: 200px; }
     .report-photos-grid img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
@@ -59,6 +58,12 @@
       <div class="left">
         <label for="filterEvent">कार्यक्रम:</label>
         <select id="filterEvent"><option value="">सभी कार्यक्रम</option></select>
+        <!-- Yahan Badlav Kiya Gaya Hai -->
+        <div id="eventActions" style="display: none; gap: 4px;">
+            <button class="action-btn" id="editEventBtn" title="कार्यक्रम का नाम बदलें" style="font-size:1.1em;padding:2px 8px;">✏️</button>
+            <button class="action-btn delete" id="deleteEventBtn" title="कार्यक्रम हटाएं" style="font-size:1.1em;padding:2px 8px;">❌</button>
+        </div>
+        <!-- Badlav Khatam -->
         <label for="filterMandal">मंडल:</label>
         <select id="filterMandal"><option value="">सभी मंडल</option></select>
         <span id="pendingMandals" class="pending-mandals"></span>
@@ -96,8 +101,7 @@
         <button onclick="addEventName()">जोड़ें</button>
       </div>
     </div>
-    <!-- Event name inline list -->
-    <div class="event-name-inline-list" id="eventNameListInline"></div>
+    <!-- Event name inline list ko hata diya gaya hai -->
     <!-- Tabs -->
     <div class="tabs">
       <button class="tab-btn" id="eventTabBtn" onclick="switchTab('eventsTab')">कार्यक्रम सूची</button>
@@ -205,26 +209,15 @@
 
     /* ---------- कार्यक्रम नाम लोड + ड्रॉपडाउन में सेलेक्शन सुरक्षित ---------- */
     async function loadEventNames({ preserveSelection = true } = {}) {
-      const listInline = document.getElementById('eventNameListInline');
       const filterEvent = document.getElementById('filterEvent');
       const previousValue = preserveSelection ? filterEvent.value : "";
 
-      listInline.innerHTML = '';
       filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
 
       const snap = await getDocs(collection(db, "eventNames"));
       for (const docSnap of snap.docs) {
         const data = docSnap.data();
         eventNameMap[docSnap.id] = data.name || 'Unknown';
-
-        const span = document.createElement('span');
-        span.className = "event-inline-item";
-        span.innerHTML = `
-          <span>${data.name}</span>
-          <button class="action-btn" style="font-size:1.1em;padding:2px 7px;" onclick="editEventNamePrompt('${docSnap.id}')">✏️</button>
-          <button class="action-btn delete" style="font-size:1.1em;padding:2px 7px;" onclick="deleteEventName('${docSnap.id}')">❌</button>
-        `;
-        listInline.appendChild(span);
 
         const option = document.createElement('option');
         option.value = docSnap.id;
@@ -253,7 +246,9 @@
     window.deleteEventName = async function(eventNameId) {
       if (confirm("इस कार्यक्रम नाम को हटाने से सम्बंधित सभी संयोजक और रिपोर्ट भी हट जायेंगे!\nपक्का?")) {
         await deleteDoc(doc(db, "eventNames", eventNameId));
-        await loadEventNames({ preserveSelection: true });
+        document.getElementById('filterEvent').value = ''; // Dropdown ko reset karein
+        document.getElementById('eventActions').style.display = 'none'; // Buttons hide karein
+        await loadEventNames({ preserveSelection: false });
         await loadListsOnly();
       }
     };
@@ -267,7 +262,20 @@
     });
 
     // फ़िल्टर बदलने पर अब लिस्टें ही रीलोड होंगी; ड्रॉपडाउन रीसेट नहीं होगा
-    document.getElementById('filterEvent').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
+    document.getElementById('filterEvent').addEventListener('change', function(){
+      const selectedEventId = this.value;
+      const eventActionsDiv = document.getElementById('eventActions');
+
+      if (selectedEventId) {
+        eventActionsDiv.style.display = 'flex';
+        document.getElementById('editEventBtn').onclick = () => editEventNamePrompt(selectedEventId);
+        document.getElementById('deleteEventBtn').onclick = () => deleteEventName(selectedEventId);
+      } else {
+        eventActionsDiv.style.display = 'none';
+      }
+
+      eventPage=1;coordPage=1;reportPage=1;loadListsOnly();
+    });
     document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
 
     function switchTab(tabId) {
@@ -669,3 +677,4 @@
   </script>
 </body>
 </html>
+
