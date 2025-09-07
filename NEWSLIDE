@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>उन्नत कार्यक्रम रिपोर्ट — स्लाइड/ग्रिड व्यू</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#ff9800; --ink:#1c2942; --panel:#fffaf3; --muted:#7a6b57; --bg:#f5f7fb;
+      --success: #2e7d32; --error: #c62828;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans Devanagari', Arial, sans-serif;}
+    .wrap{max-width:1400px;margin:14px auto;background:#fff;border-radius:18px;box-shadow:0 8px 28px #1c294208;padding:14px 14px 18px 14px}
+    .topbar{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:3px solid var(--brand);
+      padding:8px 4px 12px 4px;margin-bottom:12px;
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(120deg,#ffe1b9,#ffc46d);color:#e65100;border:2px solid #fff3e0;font-weight:700}
+    .title{font-size:1.2rem;font-weight:700}
+    .spacer{flex:1}
+    .select, .search-input, .btn{font-size:1rem;border:1.2px solid #ffd59d;background:#fffaf5;color:#5a3200;border-radius:8px;padding:7px 12px; font-family: inherit;}
+    .search-input{min-width:180px;}
+    .btn{background:var(--brand);color:#fff;border:none;cursor:pointer;font-weight:700}
+    .btn.alt{background:#1976d2}
+    .btn.ghost{background:#5e35b1}
+    .btn.share{background:#4caf50}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .counter{font-weight:700;color:#b78937}
+    .view-switch{display:flex;gap:6px;align-items:center}
+    .seg{display:flex;border:1px solid #ffd59d;border-radius:8px;overflow:hidden}
+    .seg button{padding:7px 12px;border:0;background:#fffaf5;color:#6a4b20;font-weight:700;cursor:pointer}
+    .seg button.active{background:var(--brand);color:#fff}
+    
+    .rows{display:flex;gap:18px;align-items:flex-start;min-height:450px; position:relative; transition: opacity 0.4s ease;}
+    .rows.fade-out { opacity: 0; }
+    
+    .text-col{flex:0 0 40%;min-width:320px;background:#f9fbff;border-radius:14px;padding:14px 16px;box-shadow:0 2px 16px #ffe9d72a}
+    .text-title{font-size:1.05rem;font-weight:700;color:#d07011;margin:0 0 6px}
+    .text-row{font-size:.96rem;margin:3px 0}
+    .text-row span{color:#77530e;font-weight:600;display:inline-block;min-width:72px}
+    .desc{font-size:.94rem;line-height:1.48;margin-top:10px;color:#222}
+    .hash{margin-top:8px;color:#4a7dc0;font-size:.95rem}
+    .photo-col{flex:1;background:var(--panel);border-radius:16px;padding:14px;box-shadow:0 2px 12px #ffe9d744}
+    .section-title{font-size:1.02rem;font-weight:700;color:#d07011;border-left:4px solid var(--brand);padding-left:10px;margin:2px 0 12px}
+    
+    .frame{position:relative;width:100%;aspect-ratio:16/9;min-height:320px;max-height:520px;overflow:hidden;border-radius:14px;background:#eee;display:flex;align-items:center;justify-content:center}
+    .frame img{width:100%;height:100%;object-fit:cover;display:block;border-radius:14px}
+    .arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:#ff9800dd;color:#fff;font-size:1.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px #0001;z-index:2;}
+    .arrow.left{left:8px}.arrow.right{right:8px}
+    .dots{display:flex;gap:9px;justify-content:center;margin-top:10px}
+    .dot{width:13px;height:13px;border-radius:50%;background:#ddd;border:2px solid #fff;cursor:pointer}
+    .dot.active{background:var(--brand)}
+    
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid .tile{position:relative;overflow:hidden;border-radius:12px;background:#fff;aspect-ratio:4/3;min-height:220px;max-height:360px}
+    .grid .tile img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;cursor:pointer}
+    .grid .tile .overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);color:white;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;cursor:pointer;}
+
+    .status-indicator{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding:20px; text-align:center; font-weight:700; border-radius:12px; }
+    .loader { border: 5px solid #f3f3f3; border-radius: 50%; border-top: 5px solid var(--brand); width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .error-msg { color: var(--error); background: #fff0f0; border: 1px solid var(--error); }
+    .info-msg { color: var(--muted); }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--success); color: white; padding: 12px 24px; border-radius: 8px; z-index: 1000; opacity: 0; transition: opacity 0.5s, bottom 0.5s; font-weight:700; }
+    .toast.show { opacity: 1; bottom: 30px; }
+
+    .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+    @media (max-width:800px){
+      .rows{flex-direction:column}
+      .text-col{order:2;flex:1}
+      .photo-col{order:1}
+      .frame{aspect-ratio:4/3;min-height:220px}
+      .grid .tile{min-height:150px}
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><div class="logo">BJ</div><div class="title">मंडल कार्यक्रम रिपोर्ट</div></div>
+      <div class="spacer"></div>
+      <input type="search" id="searchInput" class="search-input" placeholder="खोजें...">
+      <select class="select" id="eventFilter"><option value="">सभी कार्यक्रम</option></select>
+      <div class="view-switch">
+        <div class="seg">
+          <button id="segSlide" class="active" onclick="setGalleryView('slide')">स्लाइड</button>
+          <button id="segGrid" onclick="setGalleryView('grid')">ग्रिड</button>
+        </div>
+      </div>
+      <span class="counter" id="counter">0 / 0</span>
+      <button class="btn share" onclick="copyLink()">लिंक कॉपी करें</button>
+    </div>
+
+    <div class="rows" id="rows">
+        <div id="loader" class="status-indicator">
+            <div class="loader"></div>
+            <p>रिपोर्ट लोड हो रही हैं...</p>
+        </div>
+        <div id="error" class="status-indicator error-msg" style="display:none;"></div>
+        </div>
+
+    <div class="controls">
+      <button class="btn" onclick="prevSlide()">&#8592; पिछला</button>
+      <button class="btn" onclick="nextSlide()">अगला &#8594;</button>
+      <button class="btn alt" id="tvBtn" onclick="toggleAutoplay()">टीवी-मोड</button>
+      <button class="btn ghost" onclick="downloadPDF()">PDF</button>
+    </div>
+  </div>
+
+  <div id="zoom" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:999;align-items:center;justify-content:center"><img id="zoomImg" src="" style="max-width:96vw;max-height:92vh;border-radius:16px;border:4px solid #fff;box-shadow:0 4px 20px #0008"></div>
+  <div id="toast" class="toast"></div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+  // 🔥 सुरक्षा चेतावनी (SECURITY WARNING!)
+  // 🔥 अपनी Firebase कॉन्फ़िगरेशन कुंजी को सीधे क्लाइंट-साइड कोड में डालना असुरक्षित है।
+  // 🔥 कोई भी आपकी कुंजी देख सकता है और आपके Firebase प्रोजेक्ट का दुरुपयोग कर सकता है।
+  // 🔥
+  // 🔥 PRODUCTION के लिए, इन तरीकों का उपयोग करें:
+  // 🔥 1. **Firebase App Check:** यह सुनिश्चित करता है कि केवल आपकी वेबसाइट ही आपके बैकएंड तक पहुंच सकती है।
+  // 🔥 2. **Firestore सुरक्षा नियम (Security Rules):** अपने डेटा को अनधिकृत पहुंच से बचाने के लिए सख्त नियम लिखें।
+  // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+
+  // PASTE YOUR FIREBASE CONFIG HERE
+  const firebaseConfig = {
+      apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+    authDomain: "mandaleventall.firebaseapp.com",
+    projectId: "mandaleventall",
+    storageBucket: "mandaleventall.firebasestorage.app",
+    messagingSenderId: "900190130114",
+    appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+    measurementId: "G-2BBZZNRS88
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // State
+  let allReports = [], reports = [], eventNameMap = {};
+  let slideIndex = 0, photoIndex = 0;
+  let galleryView = 'slide';
+  let autoplay = false, timer = null, photoTimer = null;
+  let touchStartX = 0, touchEndX = 0;
+
+  // --- UI helpers ---
+  const qs = (sel) => document.querySelector(sel);
+  const showToast = (message) => {
+    const toast = qs('#toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+  };
+
+  // --- Main Functions ---
+  async function init() {
+    try {
+      qs('#loader').style.display = 'block';
+      qs('#error').style.display = 'none';
+      
+      eventNameMap = await loadEventNames();
+      await loadAllReports();
+      filterAndRender();
+      
+      setupEventListeners();
+      if (window.innerWidth < 800) setGalleryView('grid'); else setGalleryView('slide');
+    } catch (err) {
+      console.error("Initialization failed:", err);
+      qs('#error').textContent = `त्रुटि: रिपोर्ट लोड करने में विफल। कृपया अपना इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें।`;
+      qs('#error').style.display = 'block';
+    } finally {
+      qs('#loader').style.display = 'none';
+    }
+  }
+
+  async function loadEventNames() {
+    const snap = await getDocs(collection(db, 'eventNames'));
+    const select = qs('#eventFilter');
+    const map = {};
+    snap.forEach(d => { map[d.id] = d.data().name || ''; });
+    // Sort and populate dropdown
+    Object.entries(map).sort((a,b) => a[1].localeCompare(b[1], 'hi')).forEach(([id, name]) => {
+      select.add(new Option(name, id));
+    });
+    return map;
+  }
+
+  async function loadAllReports() {
+    let tmp = [];
+    for (const id of Object.keys(eventNameMap)) {
+      const repSnap = await getDocs(collection(db, `eventNames/${id}/reports`));
+      repSnap.forEach(doc => {
+        tmp.push({ id: doc.id, eventNameId: id, eventName: eventNameMap[id], ...doc.data() });
+      });
+    }
+    tmp.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    allReports = tmp;
+  }
+
+  function filterAndRender() {
+    const eventFilter = qs('#eventFilter').value;
+    const searchTerm = qs('#searchInput').value.toLowerCase();
+
+    let filtered = allReports;
+
+    if (eventFilter) {
+      filtered = filtered.filter(r => r.eventNameId === eventFilter);
+    }
+
+    if (searchTerm) {
+      filtered = filtered.filter(r => 
+        (r.eventName && r.eventName.toLowerCase().includes(searchTerm)) ||
+        (r.location && r.location.toLowerCase().includes(searchTerm)) ||
+        (r.mandal && r.mandal.toLowerCase().includes(searchTerm)) ||
+        (r.guests && r.guests.toLowerCase().includes(searchTerm)) ||
+        (r.details && r.details.toLowerCase().includes(searchTerm))
+      );
+    }
+    
+    reports = filtered;
+    slideIndex = 0;
+    photoIndex = 0;
+    render();
+  }
+  
+  function render() {
+    const rows = qs('#rows');
+    rows.classList.add('fade-out');
+
+    setTimeout(() => {
+        if (!reports.length) {
+            rows.innerHTML = '<div class="status-indicator info-msg">कोई रिपोर्ट उपलब्ध नहीं</div>';
+            updateCounter();
+            rows.classList.remove('fade-out');
+            return;
+        }
+        
+        const r = reports[slideIndex];
+        const photos = Array.isArray(r.photos) ? r.photos : [];
+
+        const textCol = `
+          <div class="text-col">
+            <div class="text-title">${r.eventName||'कार्यक्रम'}</div>
+            <div class="text-row"><span>तारीख:</span> ${r.date||'-'}</div>
+            <div class="text-row"><span>स्थान:</span> ${r.location||'-'}</div>
+            <div class="text-row"><span>मंडल:</span> ${r.mandal||'-'}</div>
+            <div class="text-row"><span>प्रकार:</span> ${r.type || r.prakar || 'कार्यक्रम'}</div>
+            <div class="text-row"><span>उपस्थिति:</span> ${r.attendance||'-'}</div>
+            <div class="text-row"><span>अतिथि:</span> ${r.guests||'-'}</div>
+            <div class="desc">${(r.details||'').replace(/\\n/g,'<br>')}</div>
+            ${r.hashtag ? '<div class="hash">#'+r.hashtag+'</div>':''}
+          </div>`;
+
+        let photoHtml;
+        if (galleryView === 'slide') {
+            photoHtml = renderSlideView(photos);
+        } else {
+            photoHtml = renderGridView(photos);
+        }
+        rows.innerHTML = textCol + photoHtml;
+        updateCounter();
+        startPhotoAutoplay();
+        rows.classList.remove('fade-out');
+    }, 400); // Match timeout with CSS transition duration
+  }
+
+  function renderSlideView(photos){
+    const idx = Math.min(photoIndex, Math.max(photos.length - 1, 0));
+    const img = photos[idx] ? `<img src="${photos[idx]}" alt="Photo" onclick="zoom('${photos[idx]}')">` : `<div style="font-weight:700;color:#aaa">फोटो नहीं</div>`;
+    let dots = photos.length > 1 ? '<div class="dots">' + photos.map((_, i) => `<div class="dot ${i === idx ? 'active' : ''}" onclick="photoGoto(${i})"></div>`).join('') + '</div>' : '';
+    
+    return `
+      <div class="photo-col">
+        <div class="section-title">फोटो गैलरी</div>
+        <div class="frame">
+          ${photos.length > 1 ? '<button class="arrow left" onclick="photoPrev()">&larr;</button>' : ''}
+          ${img}
+          ${photos.length > 1 ? '<button class="arrow right" onclick="photoNext()">&rarr;</button>' : ''}
+        </div>
+        ${dots}
+      </div>`;
+  }
+
+  function renderGridView(photos){
+      let gridItems = '';
+      const limit = 4;
+      if (photos.length > 0) {
+          gridItems = photos.slice(0, limit).map((url, i) => {
+              let overlay = '';
+              if (i === limit - 1 && photos.length > limit) {
+                  overlay = `<div class="overlay" onclick="setGalleryView('slide')">+${photos.length - limit}</div>`;
+              }
+              return `<div class="tile"><img src="${url}" alt="" loading="lazy" onclick="zoom('${url}')">${overlay}</div>`;
+          }).join('');
+      } else {
+          gridItems = '<div style="padding:18px;color:#aaa;font-weight:700">फोटो नहीं</div>';
+      }
+      return `
+        <div class="photo-col">
+          <div class="section-title">फोटो गैलरी</div>
+          <div class="grid">${gridItems}</div>
+        </div>`;
+  }
+
+  // --- Event Handlers & Navigation ---
+  function setupEventListeners(){
+    qs('#eventFilter').addEventListener('change', filterAndRender);
+    qs('#searchInput').addEventListener('input', filterAndRender);
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft') prevSlide();
+        if (e.key === 'ArrowRight') nextSlide();
+    });
+    const rows = qs('#rows');
+    rows.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+    rows.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+    qs('#zoom').addEventListener('click', () => { qs('#zoom').style.display = 'none'; });
+  }
+
+  function handleSwipe() {
+    if (touchEndX < touchStartX - 50) nextSlide(); // Swiped left
+    if (touchEndX > touchStartX + 50) prevSlide(); // Swiped right
+  }
+  
+  window.prevSlide = () => navigateSlide(-1);
+  window.nextSlide = () => navigateSlide(1);
+  function navigateSlide(direction) {
+    if (!reports.length) return;
+    slideIndex = (slideIndex + direction + reports.length) % reports.length;
+    photoIndex = 0;
+    render();
+  }
+
+  window.photoPrev = () => navigatePhoto(-1);
+  window.photoNext = () => navigatePhoto(1);
+  window.photoGoto = (i) => { photoIndex = i; render(); };
+  function navigatePhoto(direction){
+    const photos = reports[slideIndex]?.photos || [];
+    if (!photos.length) return;
+    photoIndex = (photoIndex + direction + photos.length) % photos.length;
+    render();
+  }
+
+  window.setGalleryView = (mode) => {
+    galleryView = mode;
+    qs('#segSlide').classList.toggle('active', mode === 'slide');
+    qs('#segGrid').classList.toggle('active', mode === 'grid');
+    render();
+  };
+
+  window.toggleAutoplay = () => {
+    autoplay = !autoplay;
+    qs('#tvBtn').textContent = autoplay ? 'टीवी-मोड बंद' : 'टीवी-मोड';
+    if (autoplay) {
+      timer = setInterval(nextSlide, 4500);
+    } else {
+      clearInterval(timer);
+    }
+  };
+  
+  function startPhotoAutoplay() {
+    clearInterval(photoTimer);
+    if (galleryView === 'slide') {
+      const photos = reports[slideIndex]?.photos || [];
+      if (photos.length > 1) {
+        photoTimer = setInterval(photoNext, 3000);
+      }
+    }
+  }
+
+  // --- Utilities ---
+  window.zoom = (src) => { qs('#zoomImg').src = src; qs('#zoom').style.display = 'flex'; };
+  const updateCounter = () => { qs('#counter').textContent = reports.length ? `${slideIndex + 1} / ${reports.length}` : '0 / 0'; };
+  window.copyLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => showToast('लिंक कॉपी किया गया!'))
+      .catch(() => showToast('लिंक कॉपी करने में विफल'));
+  };
+
+  // --- PDF Download ---
+  window.downloadPDF = () => {
+    if (!reports.length) return showToast('डाउनलोड के लिए कोई रिपोर्ट नहीं');
+    const r = reports[slideIndex];
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+    doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+    doc.setFont("NotoSansDevanagari");
+    
+    doc.setFontSize(18);
+    doc.text(r.eventName || 'कार्यक्रम', 44, 42, { lang: 'hi' });
+    doc.setFontSize(12);
+    
+    const details = [
+      ["तारीख", r.date || '-'], ["स्थान", r.location || '-'], ["मंडल", r.mandal || '-'],
+      ["प्रकार", r.type || r.prakar || 'कार्यक्रम'], ["उपस्थिति", r.attendance || '-'], ["अतिथि", r.guests || '-']
+    ];
+    doc.autoTable({
+      startY: 60, head: [["फील्ड", "विवरण"]], body: details,
+      styles: { font: "NotoSansDevanagari", fontSize: 12 },
+      headStyles: { fillColor: [255, 152, 0] }
+    });
+    
+    let y = doc.lastAutoTable.finalY + 20;
+    doc.setFontSize(13);
+    doc.text("कार्यक्रम विवरण:", 44, y, { lang: 'hi' });
+    y += 18;
+    const description = (r.details || '-').replace(/\\n/g, ' ');
+    doc.setFontSize(12);
+    doc.text(description, 54, y, { maxWidth: 450, lang: 'hi' });
+
+    const photos = Array.isArray(r.photos) && r.photos.length > 0 ? r.photos : [];
+    if (photos.length > 0) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        doc.addImage(img, 'JPEG', 540, 70, 240, 160);
+        doc.save(`${r.eventName || 'report'}.pdf`);
+      };
+      img.onerror = () => {
+        showToast('फोटो लोड करने में विफल, बिना फोटो के PDF सहेजा जा रहा है।');
+        doc.save(`${r.eventName || 'report'}.pdf`);
+      };
+      img.src = photos[0];
+    } else {
+      doc.save(`${r.eventName || 'report'}.pdf`);
+    }
+  };
+
+  // --- Start the application ---
+  init();
+</script>
+</body>
+</html>
