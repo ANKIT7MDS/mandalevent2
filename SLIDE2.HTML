@@ -15,15 +15,18 @@
       --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     }
     *{box-sizing:border-box}
+    html, body { height: 100%; }
     body{margin:0; background:var(--bg); color:var(--ink); font-family:'Noto Sans Devanagari', Arial, sans-serif; transition:background .3s ease}
-    body.tv-mode{ background: #111827; }
-    .wrap{max-width:1480px; margin:20px auto; padding: 20px; }
+    body.tv-mode{ background: #111827; overflow: hidden; }
+    .wrap{max-width:1480px; margin:20px auto; padding: 20px; transition: all .4s ease;}
     
     .topbar{
       display:flex; gap:12px; align-items:center; flex-wrap:wrap;
       padding:16px; margin-bottom:20px; background:var(--panel);
-      border-radius:16px; box-shadow: var(--shadow-md);
+      border-radius:16px; box-shadow: var(--shadow-md); transition: opacity .4s ease, transform .4s ease;
     }
+    body.tv-mode .topbar { opacity: 0; pointer-events: none; transform: translateY(-100%); }
+
     .brand{display:flex; align-items:center; gap:12px}
     .logo{
       width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
@@ -63,34 +66,52 @@
     }
     .view-switch button.active{ background:var(--panel); color:var(--brand); box-shadow: var(--shadow-sm); }
 
-    .rows{display:flex; gap:20px; align-items:flex-start; min-height:550px}
+    .rows{
+      display:flex; gap:20px; align-items:flex-start; min-height:550px;
+      transition: opacity .5s ease-in-out;
+    }
+    .rows.fade-out { opacity: 0; }
+    body.tv-mode .rows { height: calc(100vh - 40px); }
+
     .text-col{
       flex:0 0 35%; min-width:340px; background:var(--panel); border-radius:16px;
-      padding:20px; box-shadow: var(--shadow-md); transition: transform .3s ease;
+      padding:20px; box-shadow: var(--shadow-md); transition: transform .3s ease, background .4s ease;
     }
-    .text-col:hover { transform: translateY(-4px); }
-    .text-title{font-size:1.2rem; font-weight:700; color:var(--brand-dark); margin:0 0 12px}
+    body.tv-mode .text-col { background: #1e293b; color: #e2e8f0; }
+    .text-title{font-size:1.2rem; font-weight:700; color:var(--brand-dark); margin:0 0 12px; transition: color .4s ease;}
+    body.tv-mode .text-title { color: var(--brand); }
     .text-row{font-size:1rem; margin:6px 0; display:flex;}
-    .text-row span{color:var(--ink-light); font-weight:500; display:inline-block; min-width:80px}
-    .desc{font-size:1rem; line-height:1.6; margin-top:16px; color:var(--ink-light); max-height: 150px; overflow-y: auto;}
+    .text-row span{color:var(--ink-light); font-weight:500; display:inline-block; min-width:80px; transition: color .4s ease;}
+    body.tv-mode .text-row span { color: #94a3b8; }
+    body.tv-mode .text-row { color: #f1f5f9; }
+    .desc{font-size:1rem; line-height:1.6; margin-top:16px; color:var(--ink-light); max-height: 150px; overflow-y: auto; transition: color .4s ease;}
+    body.tv-mode .desc { color: #cbd5e1; }
     .hash{margin-top:12px; color:#0e7490; font-size:1rem; font-weight: 500;}
 
-    .photo-col{flex:1; background:var(--panel); border-radius:16px; padding:20px; box-shadow: var(--shadow-md)}
+    .photo-col{flex:1; background:var(--panel); border-radius:16px; padding:20px; box-shadow: var(--shadow-md); transition: background .4s ease;}
+    body.tv-mode .photo-col { background: transparent; box-shadow: none; padding: 0; }
     .section-title{
       font-size:1.2rem; font-weight:700; color:var(--brand-dark);
-      border-bottom:2px solid var(--brand-light); padding-bottom:10px; margin:0 0 16px;
+      border-bottom:2px solid var(--brand-light); padding-bottom:10px; margin:0 0 16px; transition: color .4s ease;
     }
+    body.tv-mode .section-title { color: #d1d5db; border-bottom-color: #374151; }
 
     .frame{
-      position:relative; width:100%; aspect-ratio:16/9; min-height:380px; max-height:680px;
+      position:relative; width:100%; aspect-ratio:16/9; min-height:380px; max-height: calc(100vh - 80px);
       overflow:hidden; border-radius:16px; background:#f1f5f9;
       display:flex; align-items:center; justify-content:center;
     }
-    .frame img{width:100%; height:100%; object-fit:cover; display:block; border-radius:16px; animation: fadeIn .5s;}
+    .frame img{
+        position: absolute; width:100%; height:100%; object-fit:cover; display:block; border-radius:16px; 
+        opacity: 0; transition: opacity 1.5s ease-in-out;
+    }
+    .frame img.visible { opacity: 1; }
+    .frame img.kenburns { animation: kenburns 20s infinite; }
+    
     .arrow{
       position:absolute; top:50%; transform:translateY(-50%); width:48px; height:48px; border-radius:50%;
       border:0; background:rgba(255,255,255,0.8); color:var(--brand); font-size:1.8rem;
-      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; z-index: 10;
       box-shadow: var(--shadow-md); backdrop-filter: blur(4px); transition: all .2s ease;
     }
     .arrow:hover{ background: var(--brand); color: white; transform: translateY(-50%) scale(1.1); }
@@ -107,20 +128,25 @@
     .grid .tile:hover { transform: scale(1.05); box-shadow: var(--shadow-lg); z-index: 10; }
     .grid .tile img{width:100%; height:100%; object-fit:cover; cursor:pointer}
 
-    .controls{display:none; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px}
+    .controls{
+      display:none; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px;
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    body.tv-mode .controls { opacity: 0; pointer-events: none; transform: translateY(100%); }
     
     .tv-progress {
-      position: fixed; bottom: 0; left:0; width: 100%; height: 6px;
+      position: fixed; bottom: 0; left:0; width: 100%; height: 8px;
       background: rgba(255,255,255,0.2); display: none; z-index: 1000;
     }
-    .tv-progress-bar {
-      width: 0%; height: 100%; background: var(--brand);
-      transition: width 5s linear;
-    }
+    .tv-progress-bar { width: 0%; height: 100%; background: var(--brand); }
     body.tv-mode .tv-progress { display: block; }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes kenburns {
+      0%, 100% { transform: scale(1) translate(0, 0); }
+      50% { transform: scale(1.2) translate(-5%, 5%); }
+    }
 
     .loader {
       position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
@@ -196,8 +222,8 @@
     
     <div class="controls">
       <button class="btn" onclick="toggleAutoplay()" id="tvBtn">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3.75v3.75m-3.75-3.75v3.75m-3.75-3.75v3.75m9.75-15.75V3.375c0-.621-.504-1.125-1.125-1.125H5.625c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125h9.75z" /></svg>
-        टीवी-मोड
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M21.75 12.75a.75.75 0 000-1.5h-3a.75.75 0 000 1.5h3zM21 15.75a.75.75 0 01-.75.75h-3a.75.75 0 010-1.5h3a.75.75 0 01.75.75zM15.75 12a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3zM10.5 12a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3zM15 8.25a.75.75 0 00-.75-.75h-3a.75.75 0 000 1.5h3a.75.75 0 00.75-.75zM5.25 12.75a.75.75 0 000-1.5h-3a.75.75 0 000 1.5h3zM9 15.75a.75.75 0 01-.75.75h-3a.75.75 0 010-1.5h3a.75.75 0 01.75.75zM4.5 12a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3zM4.5 7.5a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3zM9 8.25a.75.75 0 00-.75-.75h-3a.75.75 0 000 1.5h3a.75.75 0 00.75-.75zM12.75 3.75a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM12 4.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0112 4.5z" /><path fill-rule="evenodd" d="M3 1.5c-1.112 0-2.02.73-2.31 1.752L.153 5.39a.75.75 0 00.585 1.045H2.25V18H.75a.75.75 0 000 1.5h22.5a.75.75 0 000-1.5H21.75V6.435h1.512a.75.75 0 00.585-1.045l-.537-2.138A2.498 2.498 0 0021 1.5H3zm18.25 5.25H2.75V18h18.5V6.75z" clip-rule="evenodd" /></svg>
+        <span class="tv-text">टीवी-मोड</span>
       </button>
       <button class="btn alt" onclick="toggleFullscreen()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0L15 15" /></svg>
@@ -235,6 +261,8 @@
   let allReports = [], reports = [], eventMap = {}, allMandals = [];
   let slideIndex = 0, photoIndex = 0, galleryView = 'slide';
   let autoplay = false, autoplayTimer = null, photoTimer = null;
+  const SLIDE_INTERVAL = 8000; // 8 seconds for main slide
+  const PHOTO_INTERVAL = 4000; // 4 seconds for photo
   
   const qs = (sel) => document.querySelector(sel);
   const qsa = (sel) => document.querySelectorAll(sel);
@@ -249,7 +277,6 @@
   qs('#zoom').addEventListener('click', (e) => { if(e.target === qs('#zoom')) closeZoom(); });
 
   async function loadData() {
-    // Load event names first
     const eventSnap = await getDocs(collection(db, 'eventNames'));
     const select = qs('#eventFilter');
     select.innerHTML = '<option value="">सभी कार्यक्रम</option>';
@@ -259,7 +286,6 @@
       const opt = document.createElement('option'); opt.value=id; opt.textContent=name; select.appendChild(opt);
     });
 
-    // Load all reports
     const events = Object.keys(eventMap);
     let tmp = [];
     for (const id of events) {
@@ -271,7 +297,6 @@
     tmp.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     allReports = tmp;
     
-    // Populate mandal filter
     const mandalSet = new Set(tmp.map(r => r.mandal).filter(Boolean));
     allMandals = Array.from(mandalSet).sort((a, b) => (a || '').localeCompare(b || '', 'hi'));
     const mSel = qs('#mandalFilter');
@@ -292,11 +317,17 @@
     render();
   }
 
-  function render() {
+  async function render() {
     const rows = qs('#rows');
+    rows.classList.add('fade-out');
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     if (!reports.length) {
       rows.innerHTML = `<div class="empty-state"><h3>कोई रिपोर्ट नहीं मिली</h3><p>कृपया अपना फ़िल्टर या खोज बदल कर प्रयास करें।</p></div>`;
-      setCounter(); return;
+      setCounter();
+      rows.classList.remove('fade-out');
+      return;
     }
     const r = reports[slideIndex];
     const textCol = `
@@ -317,15 +348,15 @@
     const noPhotoDiv = `<div style="padding:24px; color:var(--ink-muted); font-weight:500;">कोई फोटो उपलब्ध नहीं है</div>`;
 
     if (galleryView === 'slide') {
-      const idx = Math.min(photoIndex, Math.max(photos.length - 1, 0));
-      const img = photos[idx] ? `<img src="${photos[idx]}" alt="Photo ${idx+1}" onclick="zoom('${photos[idx]}')">` : noPhotoDiv;
-      const dots = photos.length > 1 ? `<div class="dots">${photos.map((_, i) => `<div class="dot ${i === idx ? 'active' : ''}" onclick="photoGoto(${i})"></div>`).join('')}</div>` : '';
+      const dots = photos.length > 1 ? `<div class="dots">${photos.map((_, i) => `<div class="dot ${i === photoIndex ? 'active' : ''}" onclick="photoGoto(${i})"></div>`).join('')}</div>` : '';
+      const imageTags = photos.map((src, i) => `<img src="${src}" class="${i === photoIndex ? 'visible' : ''} ${autoplay ? 'kenburns' : ''}" alt="Photo ${i+1}" onclick="zoom('${src}')">`).join('');
+
       photoHtml = `
         <div class="photo-col">
           <div class="section-title">फोटो गैलरी (${photos.length} चित्र)</div>
           <div class="frame">
             ${photos.length > 1 ? '<button class="arrow left" onclick="photoPrev()">&larr;</button>' : ''}
-            ${img}
+            ${photos.length ? imageTags : noPhotoDiv}
             ${photos.length > 1 ? '<button class="arrow right" onclick="photoNext()">&rarr;</button>' : ''}
           </div>
           ${dots}
@@ -339,6 +370,7 @@
         </div>`;
     }
     rows.innerHTML = textCol + photoHtml;
+    rows.classList.remove('fade-out');
     setCounter();
     startPhotoAutoplay();
   }
@@ -348,16 +380,29 @@
   window.setGalleryView = (mode) => { galleryView = mode; setSeg(); render(); };
   
   const getPhotos = () => reports[slideIndex] && Array.isArray(reports[slideIndex].photos) ? reports[slideIndex].photos : [];
-  window.photoPrev = () => { const p = getPhotos(); if (p.length) { photoIndex = (photoIndex - 1 + p.length) % p.length; render(); } };
-  window.photoNext = () => { const p = getPhotos(); if (p.length) { photoIndex = (photoIndex + 1) % p.length; render(); } };
-  window.photoGoto = (i) => { photoIndex = i; render(); };
+  
+  function updatePhoto(newIndex) {
+    const photos = getPhotos();
+    if (!photos.length) return;
+    photoIndex = newIndex;
+    qsa('.frame img').forEach((img, i) => {
+        img.classList.toggle('visible', i === photoIndex);
+    });
+    qsa('.dots .dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === photoIndex);
+    });
+  }
+
+  window.photoPrev = () => { const p = getPhotos(); if (p.length) updatePhoto((photoIndex - 1 + p.length) % p.length); };
+  window.photoNext = () => { const p = getPhotos(); if (p.length) updatePhoto((photoIndex + 1) % p.length); };
+  window.photoGoto = (i) => updatePhoto(i);
 
   function startPhotoAutoplay() {
     clearInterval(photoTimer);
     if (galleryView !== 'slide' || !autoplay) return;
     const p = getPhotos();
     if (p.length > 1) {
-      photoTimer = setInterval(() => photoNext(), 3500);
+      photoTimer = setInterval(photoNext, PHOTO_INTERVAL);
     }
   }
 
@@ -367,7 +412,7 @@
     bar.style.transition = 'none';
     bar.style.width = '0%';
     setTimeout(() => {
-        bar.style.transition = 'width 5s linear';
+        bar.style.transition = `width ${SLIDE_INTERVAL / 1000}s linear`;
         bar.style.width = '100%';
     }, 50);
   }
@@ -375,13 +420,13 @@
   window.toggleAutoplay = () => {
     autoplay = !autoplay;
     document.body.classList.toggle('tv-mode', autoplay);
-    qsa('#tvBtn').forEach(b => { b.textContent = autoplay ? 'टीवी-मोड बंद' : 'टीवी-मोड'; });
+    qsa('#tvBtn .tv-text').forEach(b => { b.textContent = autoplay ? 'टीवी-मोड बंद' : 'टीवी-मोड'; });
     clearInterval(autoplayTimer);
     clearInterval(photoTimer);
+    render(); // Re-render to apply/remove kenburns effect
     if (autoplay) {
-      autoplayTimer = setInterval(nextSlide, 5000);
+      autoplayTimer = setInterval(nextSlide, SLIDE_INTERVAL);
       restartTvTimer();
-      startPhotoAutoplay();
     }
   };
 
@@ -403,12 +448,10 @@
     doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
     doc.setFont("NotoSansDevanagari");
 
-    // Header
     doc.setFillColor(249, 115, 22); doc.rect(0, 0, 595, 60, 'F');
     doc.setFontSize(20); doc.setTextColor(255, 255, 255);
     doc.text('कार्यक्रम रिपोर्ट', 40, 38, { lang: 'hi' });
 
-    // Title
     doc.setFontSize(16); doc.setTextColor(0, 0, 0);
     doc.text(r.eventName || 'कार्यक्रम', 40, 90, { lang: 'hi' });
     
@@ -443,12 +486,10 @@
     }
   };
 
-  // --- Event Listeners ---
   qs('#eventFilter').addEventListener('change', applyFilters);
   qs('#mandalFilter').addEventListener('change', applyFilters);
   qs('#searchInput').addEventListener('input', applyFilters);
 
-  // --- Initialize ---
   async function init() {
     await loadData();
     applyFilters();
@@ -461,3 +502,4 @@
 </script>
 </body>
 </html>
+
