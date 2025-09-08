@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>कार्यक्रम रिपोर्ट डैशबोर्ड</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand: #f97316; --brand-light: #ffedd5; --brand-dark: #c2410c;
+      --ink: #1e293b; --ink-light: #475569; --ink-muted: #94a3b8;
+      --bg: #f8fafc; --panel: #ffffff; --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--bg); color:var(--ink); font-family:'Noto Sans Devanagari', Arial, sans-serif; transition:background .3s ease}
+    body.tv-mode{ background: #111827; }
+    .wrap{max-width:1480px; margin:20px auto; padding: 20px; }
+    
+    .topbar{
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      padding:16px; margin-bottom:20px; background:var(--panel);
+      border-radius:16px; box-shadow: var(--shadow-md);
+    }
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{
+      width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(135deg, var(--brand-light), var(--brand)); color:white;
+      font-weight:700; font-size: 1.2rem; border: 3px solid white; box-shadow: var(--shadow-sm);
+    }
+    .title{font-size:1.3rem; font-weight:700; color: var(--ink);}
+    .spacer{flex:1}
+    
+    .search-box{ position:relative; }
+    .search-box input{
+      background: #f1f5f9; border:2px solid transparent; border-radius:10px;
+      padding: 10px 14px 10px 38px; font-size:1rem; width: 240px; transition: all .2s ease;
+    }
+    .search-box input:focus{ border-color: var(--brand); background: white; width: 280px; }
+    .search-box svg{ position:absolute; left:12px; top:13px; width:18px; height:18px; color: #9ca3af; }
+
+    .select, .btn{
+      font-size:1rem; border:1px solid var(--border); background:var(--panel); color:var(--ink-light);
+      border-radius:10px; padding:9px 14px; font-family:inherit; transition: all .2s ease;
+    }
+    .select:hover, .btn:hover{ border-color: #cbd5e1; box-shadow: var(--shadow-sm); }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap: 8px;
+      background:var(--brand); color:#fff; border:none; cursor:pointer; font-weight:500;
+    }
+    .btn.alt{ background:#1d4ed8; }
+    .btn.ghost{ background:#6d28d9; }
+    .btn:disabled{ opacity:.5; cursor:not-allowed; }
+    .btn svg { width: 18px; height: 18px; }
+
+    .counter{ font-weight:700; color:var(--brand-dark); font-size: 1.1rem; }
+    .view-switch{ display:flex; gap:6px; align-items:center; background: #f1f5f9; padding: 4px; border-radius:10px;}
+    .view-switch button{
+      padding:6px 12px; border:0; background:transparent; color: var(--ink-light);
+      font-weight:700; cursor:pointer; border-radius: 8px;
+    }
+    .view-switch button.active{ background:var(--panel); color:var(--brand); box-shadow: var(--shadow-sm); }
+
+    .rows{display:flex; gap:20px; align-items:flex-start; min-height:550px}
+    .text-col{
+      flex:0 0 35%; min-width:340px; background:var(--panel); border-radius:16px;
+      padding:20px; box-shadow: var(--shadow-md); transition: transform .3s ease;
+    }
+    .text-col:hover { transform: translateY(-4px); }
+    .text-title{font-size:1.2rem; font-weight:700; color:var(--brand-dark); margin:0 0 12px}
+    .text-row{font-size:1rem; margin:6px 0; display:flex;}
+    .text-row span{color:var(--ink-light); font-weight:500; display:inline-block; min-width:80px}
+    .desc{font-size:1rem; line-height:1.6; margin-top:16px; color:var(--ink-light); max-height: 150px; overflow-y: auto;}
+    .hash{margin-top:12px; color:#0e7490; font-size:1rem; font-weight: 500;}
+
+    .photo-col{flex:1; background:var(--panel); border-radius:16px; padding:20px; box-shadow: var(--shadow-md)}
+    .section-title{
+      font-size:1.2rem; font-weight:700; color:var(--brand-dark);
+      border-bottom:2px solid var(--brand-light); padding-bottom:10px; margin:0 0 16px;
+    }
+
+    .frame{
+      position:relative; width:100%; aspect-ratio:16/9; min-height:380px; max-height:680px;
+      overflow:hidden; border-radius:16px; background:#f1f5f9;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .frame img{width:100%; height:100%; object-fit:cover; display:block; border-radius:16px; animation: fadeIn .5s;}
+    .arrow{
+      position:absolute; top:50%; transform:translateY(-50%); width:48px; height:48px; border-radius:50%;
+      border:0; background:rgba(255,255,255,0.8); color:var(--brand); font-size:1.8rem;
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      box-shadow: var(--shadow-md); backdrop-filter: blur(4px); transition: all .2s ease;
+    }
+    .arrow:hover{ background: var(--brand); color: white; transform: translateY(-50%) scale(1.1); }
+    .arrow.left{left:16px} .arrow.right{right:16px}
+    .dots{display:flex; gap:10px; justify-content:center; margin-top:16px}
+    .dot{width:12px; height:12px; border-radius:50%; background:var(--border); cursor:pointer; transition: all .3s ease;}
+    .dot.active{background:var(--brand); transform: scale(1.2);}
+
+    .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px}
+    .grid .tile{
+      position:relative; overflow:hidden; border-radius:14px; background:#f1f5f9;
+      aspect-ratio:4/3; box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s;
+    }
+    .grid .tile:hover { transform: scale(1.05); box-shadow: var(--shadow-lg); z-index: 10; }
+    .grid .tile img{width:100%; height:100%; object-fit:cover; cursor:pointer}
+
+    .controls{display:none; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px}
+    
+    .tv-progress {
+      position: fixed; bottom: 0; left:0; width: 100%; height: 6px;
+      background: rgba(255,255,255,0.2); display: none; z-index: 1000;
+    }
+    .tv-progress-bar {
+      width: 0%; height: 100%; background: var(--brand);
+      transition: width 5s linear;
+    }
+    body.tv-mode .tv-progress { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader {
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      background:var(--bg); z-index:10000; transition: opacity .5s ease;
+    }
+    .spinner{
+      width: 60px; height: 60px; border-radius: 50%;
+      border: 5px solid var(--brand-light); border-top-color: var(--brand);
+      animation: spin 1s linear infinite;
+    }
+
+    .empty-state { text-align:center; padding: 60px 20px; background:var(--panel); border-radius: 16px; width: 100%;}
+    .empty-state h3 { font-size: 1.5rem; color: var(--brand-dark); }
+    .empty-state p { color: var(--ink-light); }
+
+    .zoom-modal {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:999;
+      align-items:center; justify-content:center; backdrop-filter: blur(8px);
+    }
+    .zoom-modal img {max-width:95vw; max-height:94vh; border-radius:16px;}
+    .zoom-modal .close {
+      position: absolute; top: 20px; right: 20px; width: 44px; height: 44px;
+      background: rgba(255,255,255,0.1); border-radius:50%; color: white; border:0;
+      cursor: pointer; font-size: 24px; line-height: 44px;
+    }
+
+    @media (max-width:1200px){
+      .search-box input:focus { width: 240px; }
+      .rows{flex-direction:column}
+      .text-col{order:2; flex:1; width:100%;}
+      .photo-col{order:1; width:100%;}
+    }
+    @media (max-width:768px){
+      .title { font-size: 1.1rem; }
+      .topbar { flex-direction: column; align-items: stretch; }
+      .spacer { display: none; }
+      .controls { display: flex; }
+      .topbar .btn, .topbar .select { width: 100%; text-align: center; }
+      .counter, .view-switch { margin: 0 auto; }
+      .rows { gap: 16px; }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
+</head>
+<body>
+  <div id="loader" class="loader"><div class="spinner"></div></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">BJ</div>
+        <div class="title">कार्यक्रम रिपोर्ट डैशबोर्ड</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+        <input type="search" id="searchInput" placeholder="रिपोर्ट खोजें..." />
+      </div>
+      <select class="select" id="eventFilter" title="कार्यक्रम फ़िल्टर"></select>
+      <select class="select" id="mandalFilter" title="मंडल फ़िल्टर"></select>
+      <div class="view-switch" title="फोटो व्यू">
+        <button id="segSlide" onclick="setGalleryView('slide')">स्लाइड</button>
+        <button id="segGrid" onclick="setGalleryView('grid')">ग्रिड</button>
+      </div>
+      <span class="counter" id="counter">0 / 0</span>
+      <button class="btn" onclick="prevSlide()" title="पिछला">&#8592;</button>
+      <button class="btn" onclick="nextSlide()" title="अगला">&#8594;</button>
+    </div>
+
+    <div class="rows" id="rows"><!-- content injected --></div>
+    
+    <div class="controls">
+      <button class="btn" onclick="toggleAutoplay()" id="tvBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3.75v3.75m-3.75-3.75v3.75m-3.75-3.75v3.75m9.75-15.75V3.375c0-.621-.504-1.125-1.125-1.125H5.625c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125h9.75z" /></svg>
+        टीवी-मोड
+      </button>
+      <button class="btn alt" onclick="toggleFullscreen()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0L15 15" /></svg>
+        फुल-स्क्रीन
+      </button>
+      <button class="btn ghost" onclick="downloadPDF()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+        PDF डाउनलोड
+      </button>
+    </div>
+  </div>
+
+  <div class="zoom-modal" id="zoom">
+    <button class="close" onclick="closeZoom()">&times;</button>
+    <img id="zoomImg" src="">
+  </div>
+  <div class="tv-progress"><div class="tv-progress-bar" id="tvProgressBar"></div></div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+    authDomain: "mandaleventall.firebaseapp.com",
+    projectId: "mandaleventall",
+    storageBucket: "mandaleventall.firebasestorage.app",
+    messagingSenderId: "900190130114",
+    appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+    measurementId: "G-2BBZZNRS88"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let allReports = [], reports = [], eventMap = {}, allMandals = [];
+  let slideIndex = 0, photoIndex = 0, galleryView = 'slide';
+  let autoplay = false, autoplayTimer = null, photoTimer = null;
+  
+  const qs = (sel) => document.querySelector(sel);
+  const qsa = (sel) => document.querySelectorAll(sel);
+  const setCounter = () => qs('#counter').textContent = reports.length ? `${slideIndex + 1} / ${reports.length}` : '0 / 0';
+  const setSeg = () => {
+    qs('#segSlide').classList.toggle('active', galleryView === 'slide');
+    qs('#segGrid').classList.toggle('active', galleryView === 'grid');
+  };
+
+  window.zoom = (src) => { qs('#zoomImg').src = src; qs('#zoom').style.display = 'flex'; };
+  window.closeZoom = () => { qs('#zoom').style.display = 'none'; qs('#zoomImg').src = ''; };
+  qs('#zoom').addEventListener('click', (e) => { if(e.target === qs('#zoom')) closeZoom(); });
+
+  async function loadData() {
+    // Load event names first
+    const eventSnap = await getDocs(collection(db, 'eventNames'));
+    const select = qs('#eventFilter');
+    select.innerHTML = '<option value="">सभी कार्यक्रम</option>';
+    eventMap = {};
+    eventSnap.forEach(d => { eventMap[d.id] = d.data().name || ''; });
+    Object.entries(eventMap).sort((a,b)=>a[1].localeCompare(b[1],'hi')).forEach(([id,name])=>{
+      const opt = document.createElement('option'); opt.value=id; opt.textContent=name; select.appendChild(opt);
+    });
+
+    // Load all reports
+    const events = Object.keys(eventMap);
+    let tmp = [];
+    for (const id of events) {
+      const repSnap = await getDocs(collection(db, `eventNames/${id}/reports`));
+      repSnap.forEach(doc => {
+        tmp.push({ id: doc.id, eventNameId: id, eventName: eventMap[id], ...doc.data() });
+      });
+    }
+    tmp.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    allReports = tmp;
+    
+    // Populate mandal filter
+    const mandalSet = new Set(tmp.map(r => r.mandal).filter(Boolean));
+    allMandals = Array.from(mandalSet).sort((a, b) => (a || '').localeCompare(b || '', 'hi'));
+    const mSel = qs('#mandalFilter');
+    mSel.innerHTML = '<option value="">सभी मंडल</option>' + allMandals.map(m => `<option value="${m}">${m}</option>`).join('');
+  }
+
+  function applyFilters() {
+    const eid = qs('#eventFilter').value;
+    const mandal = qs('#mandalFilter').value;
+    const search = qs('#searchInput').value.toLowerCase();
+    
+    reports = allReports.filter(r => 
+      (!eid || r.eventNameId === eid) && 
+      (!mandal || r.mandal === mandal) &&
+      (!search || (r.eventName?.toLowerCase().includes(search) || r.mandal?.toLowerCase().includes(search) || r.location?.toLowerCase().includes(search) || r.guests?.toLowerCase().includes(search)))
+    );
+    slideIndex = 0; photoIndex = 0;
+    render();
+  }
+
+  function render() {
+    const rows = qs('#rows');
+    if (!reports.length) {
+      rows.innerHTML = `<div class="empty-state"><h3>कोई रिपोर्ट नहीं मिली</h3><p>कृपया अपना फ़िल्टर या खोज बदल कर प्रयास करें।</p></div>`;
+      setCounter(); return;
+    }
+    const r = reports[slideIndex];
+    const textCol = `
+      <div class="text-col">
+        <div class="text-title">${r.eventName || 'कार्यक्रम'}</div>
+        <div class="text-row"><span>तारीख:</span> <b>${r.date || '-'}</b></div>
+        <div class="text-row"><span>स्थान:</span> ${r.location || '-'}</div>
+        <div class="text-row"><span>मंडल:</span> ${r.mandal || '-'}</div>
+        <div class="text-row"><span>प्रकार:</span> ${r.type || r.prakar || 'कार्यक्रम'}</div>
+        <div class="text-row"><span>उपस्थिति:</span> ${r.attendance || '-'}</div>
+        <div class="text-row"><span>अतिथि:</span> ${r.guests || '-'}</div>
+        <div class="desc">${(r.details || '').replace(/\\n/g, '<br>')}</div>
+        ${r.hashtag ? `<div class="hash">#${r.hashtag}</div>` : ''}
+      </div>`;
+
+    const photos = Array.isArray(r.photos) ? r.photos : [];
+    let photoHtml = '';
+    const noPhotoDiv = `<div style="padding:24px; color:var(--ink-muted); font-weight:500;">कोई फोटो उपलब्ध नहीं है</div>`;
+
+    if (galleryView === 'slide') {
+      const idx = Math.min(photoIndex, Math.max(photos.length - 1, 0));
+      const img = photos[idx] ? `<img src="${photos[idx]}" alt="Photo ${idx+1}" onclick="zoom('${photos[idx]}')">` : noPhotoDiv;
+      const dots = photos.length > 1 ? `<div class="dots">${photos.map((_, i) => `<div class="dot ${i === idx ? 'active' : ''}" onclick="photoGoto(${i})"></div>`).join('')}</div>` : '';
+      photoHtml = `
+        <div class="photo-col">
+          <div class="section-title">फोटो गैलरी (${photos.length} चित्र)</div>
+          <div class="frame">
+            ${photos.length > 1 ? '<button class="arrow left" onclick="photoPrev()">&larr;</button>' : ''}
+            ${img}
+            ${photos.length > 1 ? '<button class="arrow right" onclick="photoNext()">&rarr;</button>' : ''}
+          </div>
+          ${dots}
+        </div>`;
+    } else { // Grid view
+      const grid = photos.length ? photos.map(u => `<div class="tile"><img src="${u}" alt="" onclick="zoom('${u}')"></div>`).join('') : noPhotoDiv;
+      photoHtml = `
+        <div class="photo-col">
+          <div class="section-title">फोटो गैलरी (${photos.length} चित्र)</div>
+          <div class="grid">${grid}</div>
+        </div>`;
+    }
+    rows.innerHTML = textCol + photoHtml;
+    setCounter();
+    startPhotoAutoplay();
+  }
+  
+  window.prevSlide = () => { if (!reports.length) return; slideIndex = (slideIndex - 1 + reports.length) % reports.length; photoIndex = 0; render(); restartTvTimer(); };
+  window.nextSlide = () => { if (!reports.length) return; slideIndex = (slideIndex + 1) % reports.length; photoIndex = 0; render(); restartTvTimer(); };
+  window.setGalleryView = (mode) => { galleryView = mode; setSeg(); render(); };
+  
+  const getPhotos = () => reports[slideIndex] && Array.isArray(reports[slideIndex].photos) ? reports[slideIndex].photos : [];
+  window.photoPrev = () => { const p = getPhotos(); if (p.length) { photoIndex = (photoIndex - 1 + p.length) % p.length; render(); } };
+  window.photoNext = () => { const p = getPhotos(); if (p.length) { photoIndex = (photoIndex + 1) % p.length; render(); } };
+  window.photoGoto = (i) => { photoIndex = i; render(); };
+
+  function startPhotoAutoplay() {
+    clearInterval(photoTimer);
+    if (galleryView !== 'slide' || !autoplay) return;
+    const p = getPhotos();
+    if (p.length > 1) {
+      photoTimer = setInterval(() => photoNext(), 3500);
+    }
+  }
+
+  function restartTvTimer() {
+    if(!autoplay) return;
+    const bar = qs('#tvProgressBar');
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    setTimeout(() => {
+        bar.style.transition = 'width 5s linear';
+        bar.style.width = '100%';
+    }, 50);
+  }
+  
+  window.toggleAutoplay = () => {
+    autoplay = !autoplay;
+    document.body.classList.toggle('tv-mode', autoplay);
+    qsa('#tvBtn').forEach(b => { b.textContent = autoplay ? 'टीवी-मोड बंद' : 'टीवी-मोड'; });
+    clearInterval(autoplayTimer);
+    clearInterval(photoTimer);
+    if (autoplay) {
+      autoplayTimer = setInterval(nextSlide, 5000);
+      restartTvTimer();
+      startPhotoAutoplay();
+    }
+  };
+
+  window.toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => console.error(err));
+    } else {
+      document.exitFullscreen();
+    }
+  }
+  
+  window.downloadPDF = () => {
+    if (!reports.length) return;
+    const r = reports[slideIndex];
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+    
+    doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+    doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+    doc.setFont("NotoSansDevanagari");
+
+    // Header
+    doc.setFillColor(249, 115, 22); doc.rect(0, 0, 595, 60, 'F');
+    doc.setFontSize(20); doc.setTextColor(255, 255, 255);
+    doc.text('कार्यक्रम रिपोर्ट', 40, 38, { lang: 'hi' });
+
+    // Title
+    doc.setFontSize(16); doc.setTextColor(0, 0, 0);
+    doc.text(r.eventName || 'कार्यक्रम', 40, 90, { lang: 'hi' });
+    
+    const details = [
+      ["तारीख", r.date||'-'], ["स्थान", r.location||'-'],
+      ["मंडल", r.mandal||'-'], ["प्रकार", r.type || r.prakar || 'कार्यक्रम'],
+      ["उपस्थिति", r.attendance||'-'], ["अतिथि", r.guests||'-']
+    ];
+    doc.autoTable({
+      startY: 110, head: [["विवरण", "जानकारी"]], body: details,
+      theme: 'grid', styles: { font: "NotoSansDevanagari", fontSize: 11 },
+      headStyles: { fillColor: [30, 41, 59] }
+    });
+    
+    let y = doc.lastAutoTable.finalY + 20;
+    doc.setFontSize(14); doc.text("विवरण:", 40, y, { lang: 'hi' });
+    const description = (r.details || '-').replace(/\\n/g, ' ');
+    doc.setFontSize(11);
+    doc.text(description, 40, y + 20, { maxWidth: 515, lang: 'hi' });
+    
+    const photos = getPhotos();
+    if (photos.length) {
+      const img = new Image(); img.crossOrigin = "anonymous";
+      img.onload = () => {
+        doc.addImage(img, 'JPEG', 40, doc.internal.pageSize.height - 240, 220, 165);
+        doc.save(`${r.eventName || 'report'}.pdf`);
+      };
+      img.onerror = () => doc.save(`${r.eventName || 'report'}.pdf`);
+      img.src = photos[0];
+    } else {
+      doc.save(`${r.eventName || 'report'}.pdf`);
+    }
+  };
+
+  // --- Event Listeners ---
+  qs('#eventFilter').addEventListener('change', applyFilters);
+  qs('#mandalFilter').addEventListener('change', applyFilters);
+  qs('#searchInput').addEventListener('input', applyFilters);
+
+  // --- Initialize ---
+  async function init() {
+    await loadData();
+    applyFilters();
+    if (window.innerWidth < 900) { setGalleryView('grid'); } else { setGalleryView('slide'); }
+    qs('#loader').style.opacity = '0';
+    setTimeout(() => { qs('#loader').style.display = 'none'; }, 500);
+  }
+  
+  init();
+</script>
+</body>
+</html>
