@@ -338,7 +338,6 @@
       for (const r of pageReports) {
         let photosHTML = "";
         if (Array.isArray(r.photos) && r.photos.length > 0) {
-          // *** THE IMPORTANT FIX IS HERE: crossorigin="anonymous" ***
           photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" crossorigin="anonymous" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
         }
         const row = document.createElement('tr');
