@@ -120,7 +120,6 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     
-    // All firebase logic remains the same...
     const firebaseConfig = {
       apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
       authDomain: "mandaleventall.firebaseapp.com",
@@ -144,7 +143,7 @@
       try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: "Markdown" })
         });
       } catch (err) { console.error("टेलीग्राम अलर्ट नहीं भेजा जा सका:", err); }
     }
@@ -154,8 +153,8 @@
       const previousValue = preserveSelection ? filterEvent.value : "";
       filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
       const snap = await getDocs(collection(db, "eventNames"));
-      snap.docs.sort((a, b) => a.data().name.localeCompare(b.data().name, 'hi'));
-      for (const docSnap of snap.docs) {
+      const sortedDocs = snap.docs.sort((a, b) => (a.data().name || '').localeCompare(b.data().name || '', 'hi'));
+      for (const docSnap of sortedDocs) {
         const data = docSnap.data();
         eventNameMap[docSnap.id] = data.name || 'Unknown';
         const option = document.createElement('option');
@@ -237,13 +236,10 @@
       for (const docSnap of events.docs) {
         const event = docSnap.data();
         const eventName = eventNameMap[event.eventNameId] || '';
-        
         if (filterEventId && event.eventNameId !== filterEventId) continue;
         if (filterMandalVal && event.mandal !== filterMandalVal) continue;
-
         const searchableText = `${eventName} ${event.mandal || ''} ${event.location || ''}`.toLowerCase();
         if (searchTerm && !searchableText.includes(searchTerm)) continue;
-
         filtered.push({id: docSnap.id, ...event, eventName});
       }
       
@@ -253,10 +249,10 @@
       
       for (const event of pageEvents) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${event.eventName}</td><td>${event.mandal || '-'}</td><td>${event.date || '-'}</td><td>${event.time || '-'}</td><td>${event.location || '-'}</td><td><button class="action-btn" onclick="editEvent('${event.id}')">✏️</button><button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button></td>`;
+        row.innerHTML = `<td>${event.eventName}</td><td>${event.mandal || '-'}</td><td>${event.date || '-'}</td><td>${event.time || '-'}</td><td>${event.location || '-'}</td><td><button class="action-btn" onclick="editEvent('${event.id}', '${event.eventNameId}')">✏️</button><button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button></td>`;
         eventList.appendChild(row);
       }
-      document.getElementById('eventPagination').innerHTML = `<div style="text-align:center"><button onclick="changeEventPage(-1)" ${eventPage==1?'disabled':''}>पिछला</button> ${eventPage}/${totalPages} <button onclick="changeEventPage(1)" ${eventPage==totalPages?'disabled':''}>अगला</button></div>`;
+      document.getElementById('eventPagination').innerHTML = `<div style="text-align:center"><button onclick="changeEventPage(-1)" ${eventPage===1?'disabled':''}>पिछला</button> ${eventPage}/${totalPages} <button onclick="changeEventPage(1)" ${eventPage===totalPages?'disabled':''}>अगला</button></div>`;
     }
 
     window.loadCoordinators = async function() {
@@ -291,7 +287,7 @@
         row.innerHTML = `<td>${c.eventName}</td><td>${c.mandal || '-'}</td><td>${c.name || '-'}</td><td>${c.mobile || '-'}</td><td>${c.coCoordName1 || '-'}</td><td>${c.coCoordMobile1 || '-'}</td><td>${c.coCoordName2 || '-'}</td><td>${c.coCoordMobile2 || '-'}</td><td><button class="action-btn" onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button><button class="action-btn delete" onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button></td>`;
         coordinatorList.appendChild(row);
       }
-      document.getElementById('coordPagination').innerHTML = `<div style="text-align:center"><button onclick="changeCoordPage(-1)" ${coordPage==1?'disabled':''}>पिछला</button> ${coordPage}/${totalPages} <button onclick="changeCoordPage(1)" ${coordPage==totalPages?'disabled':''}>अगला</button></div>`;
+      document.getElementById('coordPagination').innerHTML = `<div style="text-align:center"><button onclick="changeCoordPage(-1)" ${coordPage===1?'disabled':''}>पिछला</button> ${coordPage}/${totalPages} <button onclick="changeCoordPage(1)" ${coordPage===totalPages?'disabled':''}>अगला</button></div>`;
     }
 
     window.loadReports = async function() {
@@ -301,34 +297,34 @@
       const filterMandalVal = document.getElementById('filterMandal').value;
       const searchTerm = document.getElementById('reportSearch').value.toLowerCase();
 
-      let filtered = [];
+      let allReports = [];
       const eventNamesSnap = await getDocs(collection(db, "eventNames"));
       for (const eventNameDoc of eventNamesSnap.docs) {
         const eventNameId = eventNameDoc.id;
-        if (filterEventId && eventNameId !== filterEventId) continue;
         const eventName = eventNameDoc.data().name || '';
         const reportsSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
         for (const docSnap of reportsSnap.docs) {
-          const r = docSnap.data();
-          if (filterMandalVal && r.mandal !== filterMandalVal) continue;
-          const searchableText = `${eventName} ${r.mandal || ''} ${r.location || ''} ${r.guests || ''} ${r.details || ''}`.toLowerCase();
-          if (searchTerm && !searchableText.includes(searchTerm)) continue;
-          filtered.push({id: docSnap.id, eventNameId, name: eventName, ...r});
+          allReports.push({id: docSnap.id, eventNameId, name: eventName, ...docSnap.data()});
         }
       }
+      
+      let filtered = allReports.filter(r => {
+          if (filterEventId && r.eventNameId !== filterEventId) return false;
+          if (filterMandalVal && r.mandal !== filterMandalVal) return false;
+          const searchableText = `${r.name} ${r.mandal || ''} ${r.location || ''} ${r.guests || ''} ${r.details || ''}`.toLowerCase();
+          if (searchTerm && !searchableText.includes(searchTerm)) return false;
+          return true;
+      });
 
-      const reportedMandals = new Set(filtered.map(r => r.mandal));
-      let pendingMandals = mandals.filter(m => !reportedMandals.has(m) && !(filterMandalVal && m !== filterMandalVal));
-      if (filterMandalVal) pendingMandals = [];
+      const reportedMandals = new Set(allReports.filter(r=> filterEventId ? r.eventNameId === filterEventId : true).map(r => r.mandal));
+      let pendingMandals = mandals.filter(m => !reportedMandals.has(m));
       const pendingText = pendingMandals.length ? `रिपोर्ट नहीं: ${pendingMandals.join(", ")}` : 'सभी मंडलों से रिपोर्ट प्राप्त।';
-      document.getElementById('pendingMandals').innerText = pendingMandals.length ? pendingText : '';
+      document.getElementById('pendingMandals').innerText = (filterEventId && pendingMandals.length) ? pendingText : '';
       
       const currentKey = `${filterEventId}-${pendingMandals.join("|")}`;
-      if (currentKey !== lastPendingKey) {
+      if (filterEventId && currentKey !== lastPendingKey) {
         lastPendingKey = currentKey;
-        if(filterEventId) {
-            await sendTelegramAlert(pendingMandals.length ? `🔔 *${eventNameMap[filterEventId]}*: ${pendingMandals.length} मंडल शेष - ${pendingMandals.join(", ")}` : `✅ *${eventNameMap[filterEventId]}*: सभी मंडलों की रिपोर्ट प्राप्त।` );
-        }
+        await sendTelegramAlert(pendingMandals.length ? `🔔 *${eventNameMap[filterEventId]}*: ${pendingMandals.length} मंडल शेष - ${pendingMandals.join(", ")}` : `✅ *${eventNameMap[filterEventId]}*: सभी मंडलों की रिपोर्ट प्राप्त।` );
       }
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -344,20 +340,23 @@
         row.innerHTML = `<td>${r.name}</td><td>${r.mandal || '-'}</td><td>${r.location || '-'}</td><td>${r.date || '-'}</td><td>${r.attendance || '-'}</td><td>${r.guests || '-'}</td><td>${r.details || '-'}</td><td>${photosHTML}</td><td><button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button><button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button></td>`;
         reportList.appendChild(row);
       }
-      document.getElementById('reportPagination').innerHTML = `<div style="text-align:center"><button onclick="changeReportPage(-1)" ${reportPage==1?'disabled':''}>पिछला</button> ${reportPage}/${totalPages} <button onclick="changeReportPage(1)" ${reportPage==totalPages?'disabled':''}>अगला</button></div>`;
+      document.getElementById('reportPagination').innerHTML = `<div style="text-align:center"><button onclick="changeReportPage(-1)" ${reportPage===1?'disabled':''}>पिछला</button> ${reportPage}/${totalPages} <button onclick="changeReportPage(1)" ${reportPage===totalPages?'disabled':''}>अगला</button></div>`;
     }
 
-    // Pagination and Edit/Delete functions remain the same...
-    window.changeEventPage = function(diff) { eventPage += diff; loadEvents(); };
-    window.changeCoordPage = function(diff) { coordPage += diff; loadCoordinators(); };
-    window.changeReportPage = function(diff) { reportPage += diff; loadReports(); };
+    window.changeEventPage = function(diff) { eventPage = Math.max(1, eventPage + diff); loadEvents(); };
+    window.changeCoordPage = function(diff) { coordPage = Math.max(1, coordPage + diff); loadCoordinators(); };
+    window.changeReportPage = function(diff) { reportPage = Math.max(1, reportPage + diff); loadReports(); };
     
-    window.editEvent = async function(id) {
+    window.editEvent = async function(id, eventNameId) {
         const docSnap = await getDoc(doc(db, "events", id));
         if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
         const event = docSnap.data();
-        const mandal = prompt("मंडल:", event.mandal || ""); const date = prompt("तारीख:", event.date || ""); const time = prompt("समय:", event.time || ""); const location = prompt("स्थान:", event.location || "");
-        if (mandal !== null) { await updateDoc(doc(db, "events", id), { mandal, date, time, location }); await loadEvents(); }
+        const newMandal = prompt("मंडल:", event.mandal || ""); if (newMandal === null) return;
+        const newDate = prompt("तारीख:", event.date || ""); if (newDate === null) return;
+        const newTime = prompt("समय:", event.time || ""); if (newTime === null) return;
+        const newLocation = prompt("स्थान:", event.location || ""); if (newLocation === null) return;
+        await updateDoc(doc(db, "events", id), { mandal: newMandal, date: newDate, time: newTime, location: newLocation });
+        await loadEvents();
     };
     window.deleteEvent = async function(id) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, "events", id)); await loadEvents(); } };
     
@@ -365,8 +364,15 @@
         const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
         if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
         const c = docSnap.data();
-        const mandal = prompt("मंडल:", c.mandal || ""); const name = prompt("संयोजक:", c.name || ""); const mobile = prompt("मोबाइल:", c.mobile || ""); const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || ""); const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || ""); const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || ""); const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || "");
-        if (mandal !== null) { await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), { mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2 }); await loadCoordinators(); }
+        const mandal = prompt("मंडल:", c.mandal || ""); if (mandal === null) return;
+        const name = prompt("संयोजक:", c.name || ""); if (name === null) return;
+        const mobile = prompt("मोबाइल:", c.mobile || ""); if (mobile === null) return;
+        const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || ""); if (coCoordName1 === null) return;
+        const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || ""); if (coCoordMobile1 === null) return;
+        const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || ""); if (coCoordName2 === null) return;
+        const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || ""); if (coCoordMobile2 === null) return;
+        await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), { mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2 });
+        await loadCoordinators();
     };
     window.deleteCoordinator = async function(eventNameId, coordId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId)); await loadCoordinators(); } };
 
@@ -374,8 +380,14 @@
         const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
         if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
         const r = docSnap.data();
-        const mandal = prompt("मंडल:", r.mandal || ""); const location = prompt("स्थान:", r.location || ""); const date = prompt("तारीख:", r.date || ""); const attendance = prompt("उपस्थिति:", r.attendance || ""); const guests = prompt("विशिष्ट अतिथि:", r.guests || ""); const details = prompt("विवरण:", r.details || "");
-        if (mandal !== null) { await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal, location, date, attendance, guests, details }); await loadReports(); }
+        const mandal = prompt("मंडल:", r.mandal || ""); if (mandal === null) return;
+        const location = prompt("स्थान:", r.location || ""); if (location === null) return;
+        const date = prompt("तारीख:", r.date || ""); if (date === null) return;
+        const attendance = prompt("उपस्थिति:", r.attendance || ""); if (attendance === null) return;
+        const guests = prompt("विशिष्ट अतिथि:", r.guests || ""); if (guests === null) return;
+        const details = prompt("विवरण:", r.details || ""); if (details === null) return;
+        await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal, location, date, attendance, guests, details });
+        await loadReports();
     };
     window.deleteReport = async function(eventNameId, reportId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId)); await loadReports(); } };
     
@@ -383,13 +395,13 @@
     document.getElementById('imgZoomModal').onclick = function() { this.style.display = 'none'; document.getElementById('imgZoomModalImg').src = ''; };
     
     async function loadListsOnly() { await Promise.all([loadEvents(), loadCoordinators(), loadReports()]); }
-    async function loadAll() { await loadEventNames({ preserveSelection: true }); await loadListsOnly(); }
+    async function loadAll() { await loadEventNames(); await loadListsOnly(); }
     
     loadAll();
   </script>
 
   <script>
-    const NotoSansDevanagariNormal = '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gACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACg-';
+    const NotoSansDevanagariNormal = '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gACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACg-';
 
     window.exportEvents = function(type) {
         const table = document.querySelector('#eventsTab table');
@@ -406,177 +418,232 @@
 
     function exportTableData(table, type, title) {
         const rows = Array.from(table.querySelectorAll('tr'));
-        const data = rows.map(row => Array.from(row.querySelectorAll("td:not(:last-child)")).map(cell => cell.innerText)); // Don't include Action column
-        if (data.length < 2) return alert("डेटा उपलब्ध नहीं है!");
+        const data = rows.map(row => Array.from(row.querySelectorAll("td:not(:last-child)")).map(cell => cell.innerText)); 
+        if (data.length < 2) return alert("इस सारणी में एक्सपोर्ट करने के लिए कोई डेटा नहीं है!");
+
+        const header = Array.from(table.querySelectorAll('th:not(:last-child)')).map(th => th.innerText);
+        const body = data.slice(1);
 
         if (type === 'csv' || type === 'excel') {
-            const header = Array.from(table.querySelectorAll('th:not(:last-child)')).map(th => th.innerText);
-            const ws = XLSX.utils.aoa_to_sheet([header, ...data.slice(1)]);
+            const ws = XLSX.utils.aoa_to_sheet([header, ...body]);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, title);
             XLSX.writeFile(wb, `${title}.${type === 'csv' ? 'csv' : 'xlsx'}`);
         } else if (type === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-            doc.addFileToVFS("NotoSansDevanagari-Regular.ttf", NotoSansDevanagariNormal);
-            doc.addFont("NotoSansDevanagari-Regular.ttf", "NotoSansDevanagari", "normal");
-            doc.setFont("NotoSansDevanagari");
-            doc.setFontSize(14);
-            doc.text(title, 40, 40);
-            
-            const head = [Array.from(table.querySelectorAll('th:not(:last-child)')).map(th => th.innerText)];
-            const body = data.slice(1);
-            
-            doc.autoTable({
-                startY: 60,
-                head: head,
-                body: body,
-                styles: { font: "NotoSansDevanagari", fontSize: 10 },
-                headStyles: { fillColor: [255, 152, 0] },
-                bodyStyles: { textColor: 30 }
-            });
-            doc.save(`${title}.pdf`);
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+                doc.addFileToVFS("NotoSansDevanagari-Regular.ttf", NotoSansDevanagariNormal);
+                doc.addFont("NotoSansDevanagari-Regular.ttf", "NotoSansDevanagari", "normal");
+                doc.setFont("NotoSansDevanagari");
+                doc.setFontSize(14);
+                doc.text(title, 40, 40);
+                
+                doc.autoTable({
+                    startY: 60,
+                    head: [header],
+                    body: body,
+                    styles: { font: "NotoSansDevanagari", fontSize: 10, cellPadding: 4 },
+                    headStyles: { fillColor: [255, 152, 0] },
+                    bodyStyles: { textColor: 30 }
+                });
+                doc.save(`${title}.pdf`);
+            } catch (error) {
+                console.error("Standard PDF बनाने में त्रुटि:", error);
+                alert("PDF बनाने में त्रुटि हुई। सुनिश्चित करें कि फॉन्ट सही से लोड हुआ है।");
+            }
         }
     }
 
     async function exportReportsToPdfAdvanced() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-      doc.addFileToVFS("NotoSansDevanagari-Regular.ttf", NotoSansDevanagariNormal);
-      doc.addFont("NotoSansDevanagari-Regular.ttf", "NotoSansDevanagari", "normal");
-      doc.setFont("NotoSansDevanagari");
-      
-      const reportRows = document.querySelectorAll('#reportList tr');
-      if (reportRows.length === 0) return alert("कोई रिपोर्ट डेटा नहीं मिला!");
-
-      const imageToBase64 = async (url) => {
-        try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        } catch (e) {
-          console.error(`छवि लोड नहीं हो सकी: ${url}`, e);
-          const canvas = document.createElement('canvas');
-          canvas.width = 100; canvas.height = 100;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = "#eee"; ctx.fillRect(0, 0, 100, 100);
-          ctx.fillStyle = "#777"; ctx.font = "12px Arial";
-          ctx.fillText("Error", 35, 55);
-          return canvas.toDataURL();
-        }
-      };
-
-      doc.setFontSize(20);
-      doc.text("कार्यक्रम रिपोर्ट सूची", doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
-      let yPosition = 70;
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 40;
-
-      for (let i = 0; i < reportRows.length; i++) {
-        const row = reportRows[i];
-        const cells = row.querySelectorAll('td');
-        if (cells.length === 0) continue;
-
-        const textLines = (cells[6].innerText.length / 50) + 6;
-        const estimatedHeight = textLines * 15 + (cells[7].querySelectorAll('img').length > 0 ? 100 : 0);
-        if (yPosition + estimatedHeight > pageHeight - margin) {
-          doc.addPage();
-          yPosition = 40;
-        }
-        if (i > 0) {
-           doc.setDrawColor(220);
-           doc.line(margin, yPosition, doc.internal.pageSize.getWidth() - margin, yPosition);
-           yPosition += 20;
-        }
-        const reportData = {
-          "कार्यक्रम": cells[0].innerText, "मंडल": cells[1].innerText, "स्थान": cells[2].innerText, "तारीख": cells[3].innerText,
-          "उपस्थिति": cells[4].innerText, "विशिष्ट अतिथि": cells[5].innerText, "विवरण": cells[6].innerText
-        };
-        doc.setFontSize(14);
-        doc.setFont(undefined, "bold");
-        doc.text(`${reportData['कार्यक्रम']} - ${reportData['मंडल']}`, margin, yPosition);
-        yPosition += 25;
-        doc.setFontSize(11);
-        doc.setFont(undefined, "normal");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+        doc.addFileToVFS("NotoSansDevanagari-Regular.ttf", NotoSansDevanagariNormal);
+        doc.addFont("NotoSansDevanagari-Regular.ttf", "NotoSansDevanagari", "normal");
+        doc.setFont("NotoSansDevanagari");
         
-        for (const [key, value] of Object.entries(reportData)) {
-          if (key !== "कार्यक्रम" && key !== "मंडल" && value && value.trim() !== '-') {
-            const fullText = `${key}: ${value}`;
-            const splitText = doc.splitTextToSize(fullText, doc.internal.pageSize.getWidth() - margin * 2 - 5);
-            doc.text(splitText, margin + 5, yPosition);
-            yPosition += (splitText.length * 12) + 8;
-          }
-        }
-        const images = Array.from(cells[7].querySelectorAll('img'));
-        if (images.length > 0) {
-          yPosition += 5;
-          doc.setFont(undefined, "bold");
-          doc.text("फोटो:", margin, yPosition);
-          yPosition += 15;
-          
-          const photoSize = 70; const photoGap = 8; let photoX = margin;
-          const maxPhotosPerRow = Math.floor((doc.internal.pageSize.getWidth() - margin*2 + photoGap) / (photoSize + photoGap));
-          
-          for(let j = 0; j < Math.min(images.length, 6) ; j++) { // Limit to 6 photos
-            const img = images[j];
-            const base64Img = await imageToBase64(img.src);
-            if (j > 0 && j % maxPhotosPerRow === 0) {
-              photoX = margin;
-              yPosition += photoSize + photoGap;
-               if (yPosition + photoSize > pageHeight - margin) { doc.addPage(); yPosition = 40; }
+        const reportRows = Array.from(document.querySelectorAll('#reportList tr')).slice(1); // Skip header row
+        if (reportRows.length === 0) return alert("कोई रिपोर्ट डेटा नहीं मिला!");
+
+        const imageToBase64 = async (url) => {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) {
+                console.error(`छवि ${url} लोड नहीं हो सकी:`, e);
+                const canvas = document.createElement('canvas');
+                canvas.width = 100; canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = "#eee"; ctx.fillRect(0, 0, 100, 100);
+                ctx.fillStyle = "#999"; ctx.font = "12px Arial"; ctx.textAlign = "center";
+                ctx.fillText("इमेज लोड", 50, 45);
+                ctx.fillText("नहीं हुई", 50, 60);
+                return canvas.toDataURL();
             }
-            doc.addImage(base64Img, 'JPEG', photoX, yPosition, photoSize, photoSize);
-            photoX += photoSize + photoGap;
-          }
-          yPosition += photoSize + 20;
-        } else { yPosition += 10; }
-      }
-      doc.save("रिपोर्ट-सूची.pdf");
+        };
+
+        doc.setFontSize(20);
+        doc.text("कार्यक्रम रिपोर्ट सूची", doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
+        let yPosition = 70;
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 40;
+
+        for (let i = 0; i < reportRows.length; i++) {
+            const row = reportRows[i];
+            const cells = row.querySelectorAll('td');
+            if (cells.length === 0) continue;
+
+            const textLines = (cells[6].innerText.length / 50) + 6;
+            const imgCount = cells[7].querySelectorAll('img').length;
+            const estimatedHeight = textLines * 15 + (imgCount > 0 ? (Math.ceil(imgCount/3) * 80) : 0);
+            
+            if (yPosition + estimatedHeight > pageHeight - margin && i > 0) {
+                doc.addPage();
+                yPosition = 40;
+            }
+
+            if (i > 0) {
+                doc.setDrawColor(220);
+                doc.line(margin, yPosition, doc.internal.pageSize.getWidth() - margin, yPosition);
+                yPosition += 20;
+            }
+
+            const reportData = {
+                "कार्यक्रम": cells[0].innerText, "मंडल": cells[1].innerText, "स्थान": cells[2].innerText, "तारीख": cells[3].innerText,
+                "उपस्थिति": cells[4].innerText, "विशिष्ट अतिथि": cells[5].innerText, "विवरण": cells[6].innerText
+            };
+            doc.setFontSize(14);
+            doc.setFont(undefined, "bold");
+            doc.text(`${reportData['कार्यक्रम']} - ${reportData['मंडल']}`, margin, yPosition);
+            yPosition += 25;
+            doc.setFontSize(11);
+            doc.setFont(undefined, "normal");
+            
+            for (const [key, value] of Object.entries(reportData)) {
+                if (key !== "कार्यक्रम" && key !== "मंडल" && value && value.trim() !== '-') {
+                    const fullText = `${key}: ${value}`;
+                    const splitText = doc.splitTextToSize(fullText, doc.internal.pageSize.getWidth() - margin * 2 - 5);
+                    doc.text(splitText, margin + 5, yPosition);
+                    yPosition += (splitText.length * 12) + 8;
+                }
+            }
+            const images = Array.from(cells[7].querySelectorAll('img'));
+            if (images.length > 0) {
+                yPosition += 5;
+                doc.setFont(undefined, "bold");
+                doc.text("फोटो:", margin, yPosition);
+                yPosition += 15;
+                
+                const photoSize = 70; const photoGap = 8; let photoX = margin;
+                const maxPhotosPerRow = Math.floor((doc.internal.pageSize.getWidth() - margin*2 + photoGap) / (photoSize + photoGap));
+                
+                for(let j = 0; j < Math.min(images.length, 6) ; j++) {
+                    const img = images[j];
+                    const base64Img = await imageToBase64(img.src);
+                    if (j > 0 && j % maxPhotosPerRow === 0) {
+                        photoX = margin;
+                        yPosition += photoSize + photoGap;
+                        if (yPosition + photoSize > pageHeight - margin) { doc.addPage(); yPosition = 40; }
+                    }
+                    doc.addImage(base64Img, 'JPEG', photoX, yPosition, photoSize, photoSize);
+                    photoX += photoSize + photoGap;
+                }
+                yPosition += photoSize + 20;
+            } else { yPosition += 10; }
+        }
+        doc.save("रिपोर्ट-सूची.pdf");
     }
 
-    window.exportCombinedTable = function(type) {
-        // This function can be implemented if needed, similar to exportTableData
-        alert("संयुक्त PDF अभी उपलब्ध नहीं है।");
-    }
-
-    window.handleExport = function() {
-      const value = document.getElementById('exportDropdown').value;
-      if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
-      
-      const [category, type] = value.split('-');
-
-      if (category === 'reports' && type === 'pdf') {
-        alert("विस्तृत PDF रिपोर्ट तैयार की जा रही है... इसमें इमेज की संख्या के आधार पर कुछ समय लग सकता है।");
-        exportReportsToPdfAdvanced().catch(err => {
-          console.error("PDF बनाने में त्रुटि:", err);
-          alert("PDF बनाने में एक त्रुटि हुई।");
+    window.exportCombinedTable = async function(type) {
+        if(type !== 'pdf') return alert("संयुक्त डेटा के लिए केवल PDF एक्सपोर्ट उपलब्ध है।");
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation:'landscape',unit:'pt',format:'a3'});
+        doc.addFileToVFS("NotoSansDevanagari-Regular.ttf", NotoSansDevanagariNormal);
+        doc.addFont("NotoSansDevanagari-Regular.ttf", "NotoSansDevanagari", "normal");
+        doc.setFont("NotoSansDevanagari");
+        doc.setFontSize(14);
+        doc.text("मंडल संयुक्त डेटा एक्सपोर्ट", 40, 40);
+        
+        const masterHeader = [
+            "डेटा स्रोत", "कार्यक्रम नाम", "मंडल", "तारीख", "समय", "स्थान",
+            "संयोजक", "मोबाइल", "सह-संयोजक1", "मोबाइल1", "सह-संयोजक2", "मोबाइल2",
+            "उपस्थिति", "विशिष्ट अतिथि", "विवरण"
+        ];
+        
+        let allRows = [];
+        const eventRows = Array.from(document.querySelectorAll("#eventList tr")).slice(1);
+        eventRows.forEach(tr => {
+            const tds = [...tr.querySelectorAll("td")];
+            if(tds.length) allRows.push(["कार्यक्रम", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[2]?.innerText||"", tds[3]?.innerText||"", tds[4]?.innerText||"",...Array(9).fill('')]);
         });
-        return;
-      }
+        
+        const coordinatorRows = Array.from(document.querySelectorAll("#coordinatorList tr")).slice(1);
+        coordinatorRows.forEach(tr => {
+            const tds = [...tr.querySelectorAll("td")];
+            if(tds.length) allRows.push(["संयोजक", tds[0]?.innerText||"", tds[1]?.innerText||"", "", "", "", tds[2]?.innerText||"", tds[3]?.innerText||"", tds[4]?.innerText||"", tds[5]?.innerText||"", tds[6]?.innerText||"", tds[7]?.innerText||"", "", "", ""]);
+        });
+        
+        const reportRows = Array.from(document.querySelectorAll("#reportList tr")).slice(1);
+        reportRows.forEach(tr => {
+            const tds = [...tr.querySelectorAll("td")];
+            if(tds.length) allRows.push(["रिपोर्ट", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[3]?.innerText||"", "", tds[2]?.innerText||"", ...Array(6).fill(''), tds[4]?.innerText||"", tds[5]?.innerText||"", tds[6]?.innerText||""]);
+        });
+        
+        if(allRows.length === 0) return alert("एक्सपोर्ट करने के लिए कोई डेटा नहीं है।");
 
-      if (type === "jpg") {
-        const selector = `#${category}Tab`;
-        exportSectionAsJPG(selector, `Dashboard-${category}`);
-        return;
-      }
+        doc.autoTable({
+            startY: 60,
+            head: [masterHeader],
+            body: allRows,
+            styles: { font: "NotoSansDevanagari", fontSize: 10 },
+            headStyles: {fillColor:[255,152,0]},
+            bodyStyles: {textColor:30}
+        });
+        doc.save("AllData.pdf");
+    }
 
-      if (category === 'events') exportEvents(type);
-      else if (category === 'coordinators') exportCoordinators(type);
-      else if (category === 'reports') exportReports(type);
-      else if (category === 'combined') exportCombinedTable(type);
+    window.handleExport = async function() {
+      try {
+        const value = document.getElementById('exportDropdown').value;
+        if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
+        
+        const [category, type] = value.split('-');
+
+        if (category === 'reports' && type === 'pdf') {
+          alert("विस्तृत PDF रिपोर्ट तैयार की जा रही है... इसमें इमेज की संख्या के आधार पर कुछ समय लग सकता है।");
+          await exportReportsToPdfAdvanced();
+          return;
+        }
+
+        if (type === "jpg") {
+          const selector = `#${category}Tab`;
+          exportSectionAsJPG(selector, `Dashboard-${category}`);
+          return;
+        }
+
+        if (category === 'events') exportEvents(type);
+        else if (category === 'coordinators') exportCoordinators(type);
+        else if (category === 'reports') exportReports(type);
+        else if (category === 'combined') await exportCombinedTable(type);
+      } catch (error) {
+          console.error("फाइल बनाने में त्रुटि:", error);
+          alert("फ़ाइल बनाने में एक त्रुटि हुई। अधिक जानकारी के लिए कंसोल देखें।");
+      }
     };
 
     function exportSectionAsJPG(selector, fileName="Dashboard") {
       const section = document.querySelector(selector);
       if(!section) return alert("सेक्शन नहीं मिला!");
-      html2canvas(section, {backgroundColor:"#fff"}).then(canvas => {
+      html2canvas(section, {useCORS: true, backgroundColor:"#fff"}).then(canvas => {
         let link = document.createElement("a");
-        link.href = canvas.toDataURL("image/jpeg", 1.0);
+        link.href = canvas.toDataURL("image/jpeg", 0.9);
         link.download = `${fileName}.jpg`;
         document.body.appendChild(link);
         link.click();
@@ -586,3 +653,4 @@
   </script>
 </body>
 </html>
+
