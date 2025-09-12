@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -248,7 +249,7 @@
       }
       
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-      if (eventPage > totalPages) eventPage = totalPages;
+      eventPage = Math.min(eventPage, totalPages);
       const pageEvents = filtered.slice((eventPage - 1) * PAGE_SIZE, eventPage * PAGE_SIZE);
       
       for (const event of pageEvents) {
@@ -283,7 +284,7 @@
       }
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-      if (coordPage > totalPages) coordPage = totalPages;
+      coordPage = Math.min(coordPage, totalPages);
       const pageCoords = filtered.slice((coordPage - 1) * PAGE_SIZE, coordPage * PAGE_SIZE);
       
       for (const c of pageCoords) {
@@ -332,13 +333,13 @@
       }
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-      if (reportPage > totalPages) reportPage = totalPages;
+      reportPage = Math.min(reportPage, totalPages);
       const pageReports = filtered.slice((reportPage - 1) * PAGE_SIZE, reportPage * PAGE_SIZE);
       
       for (const r of pageReports) {
         let photosHTML = "";
         if (Array.isArray(r.photos) && r.photos.length > 0) {
-          photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
+          photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" crossorigin="anonymous" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
         }
         const row = document.createElement('tr');
         row.innerHTML = `<td>${r.name}</td><td>${r.mandal || '-'}</td><td>${r.location || '-'}</td><td>${r.date || '-'}</td><td>${r.attendance || '-'}</td><td>${r.guests || '-'}</td><td>${r.details || '-'}</td><td>${photosHTML}</td><td><button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button><button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button></td>`;
@@ -405,12 +406,9 @@
   </script>
 
   <script>
-    // --- Export Functions ---
-
     function exportTableToExcel(table, title) {
         if (!table) return alert("एक्सेल एक्सपोर्ट के लिए सारणी नहीं मिली!");
         const rows = Array.from(table.querySelectorAll('tr'));
-        // For reports, we handle the image column differently
         let data;
         if (title.includes("रिपोर्ट")) {
             data = rows.map(row => Array.from(row.querySelectorAll("th, td")).filter(cell => !cell.querySelector('div.report-photos-grid')).map(cell => cell.innerText));
@@ -426,91 +424,104 @@
         XLSX.writeFile(wb, `${title}.xlsx`);
     }
 
-    function exportElementAsPdf(selector, fileName) {
+    /**
+     * Captures an element after ensuring all images inside it are loaded.
+     * @param {string} selector - The CSS selector for the element to capture.
+     * @returns {Promise<HTMLCanvasElement>} A promise that resolves with the canvas element.
+     */
+    function captureElementWithImages(selector) {
         const element = document.querySelector(selector);
-        if (!element) return alert("PDF बनाने के लिए सेक्शन नहीं मिला!");
+        if (!element) {
+            return Promise.reject("एलिमेंट नहीं मिला!");
+        }
 
-        alert("PDF बनाई जा रही है, कृपया प्रतीक्षा करें...");
-
-        // Temporarily remove pagination and action buttons for a cleaner PDF
         const pagination = element.querySelector('.pagination-controls');
         const actionButtons = element.querySelectorAll('.action-btn');
         if (pagination) pagination.style.display = 'none';
         actionButtons.forEach(btn => btn.style.display = 'none');
-        
-        html2canvas(element, {
-            useCORS: true,
-            scale: 2 
-        }).then(canvas => {
-            // Restore visibility of elements
-            if (pagination) pagination.style.display = 'block';
-            actionButtons.forEach(btn => btn.style.display = 'inline-block');
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const { jsPDF } = window.jspdf;
-
-            const pdf = new jsPDF({
-                orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-                unit: 'pt',
-                format: 'a4'
-            });
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasAspectRatio = canvas.width / canvas.height;
-            
-            let imgWidth, imgHeight;
-
-            if (pdf.internal.pageSize.width / pdf.internal.pageSize.height > canvasAspectRatio) {
-                // Canvas is taller relative to page
-                imgHeight = pdfHeight - 40; // 20pt margin top and bottom
-                imgWidth = imgHeight * canvasAspectRatio;
-            } else {
-                // Canvas is wider relative to page
-                imgWidth = pdfWidth - 40; // 20pt margin left and right
-                imgHeight = imgWidth / canvasAspectRatio;
+        return new Promise((resolve, reject) => {
+            const images = Array.from(element.querySelectorAll('img'));
+            if (images.length === 0) {
+                // If no images, capture immediately
+                html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" })
+                    .then(canvas => {
+                        if (pagination) pagination.style.display = 'block';
+                        actionButtons.forEach(btn => btn.style.display = 'inline-block');
+                        resolve(canvas);
+                    }).catch(reject);
+                return;
             }
 
-            const x = (pdfWidth - imgWidth) / 2;
-            const y = (pdfHeight - imgHeight) / 2;
+            const imageLoadPromises = images.map(img => {
+                return new Promise((res) => {
+                    if (img.complete && img.naturalHeight > 0) {
+                        res();
+                    } else {
+                        img.onload = res;
+                        img.onerror = () => {
+                            console.warn(`Could not load image: ${img.src}`);
+                            res(); // Resolve even on error to not block the PDF generation
+                        };
+                    }
+                });
+            });
 
-            pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
-            pdf.save(`${fileName}.pdf`);
-        }).catch(err => {
-            // Restore visibility even if there's an error
-            if (pagination) pagination.style.display = 'block';
-            actionButtons.forEach(btn => btn.style.display = 'inline-block');
-            console.error("PDF बनाने में त्रुटि:", err);
-            alert("PDF बनाने में त्रुटि हुई।");
+            Promise.all(imageLoadPromises).then(() => {
+                setTimeout(() => { // Small delay to allow browser to render images
+                    html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" })
+                        .then(canvas => {
+                            if (pagination) pagination.style.display = 'block';
+                            actionButtons.forEach(btn => btn.style.display = 'inline-block');
+                            resolve(canvas);
+                        })
+                        .catch(err => {
+                            if (pagination) pagination.style.display = 'block';
+                            actionButtons.forEach(btn => btn.style.display = 'inline-block');
+                            reject(err);
+                        });
+                }, 200);
+            });
         });
     }
 
-    function exportSectionAsJPG(selector, fileName="Dashboard") {
-        const section = document.querySelector(selector);
-        if(!section) return alert("JPG बनाने के लिए सेक्शन नहीं मिला!");
-
-        // Temporarily hide elements for cleaner image
-        const pagination = section.querySelector('.pagination-controls');
-        const actionButtons = section.querySelectorAll('.action-btn');
-        if (pagination) pagination.style.display = 'none';
-        actionButtons.forEach(btn => btn.style.display = 'none');
-
-        html2canvas(section, {useCORS: true, backgroundColor:"#fff"}).then(canvas => {
-            if (pagination) pagination.style.display = 'block';
-            actionButtons.forEach(btn => btn.style.display = 'inline-block');
-            
-            let link = document.createElement("a");
-            link.href = canvas.toDataURL("image/jpeg", 0.9);
-            link.download = `${fileName}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }).catch(err => {
-            if (pagination) pagination.style.display = 'block';
-            actionButtons.forEach(btn => btn.style.display = 'inline-block');
-            console.error("JPG बनाने में त्रुटि:", err);
-            alert("JPG बनाने में त्रुटि हुई।");
+    function exportCanvasToPdf(canvas, fileName) {
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+            unit: 'pt',
+            format: 'a4'
         });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasAspectRatio = canvas.width / canvas.height;
+        const pageAspectRatio = pdfWidth / pdfHeight;
+
+        let imgWidth, imgHeight;
+        if (canvasAspectRatio > pageAspectRatio) {
+            imgWidth = pdfWidth - 40;
+            imgHeight = imgWidth / canvasAspectRatio;
+        } else {
+            imgHeight = pdfHeight - 40;
+            imgWidth = imgHeight * canvasAspectRatio;
+        }
+
+        const x = (pdfWidth - imgWidth) / 2;
+        const y = (pdfHeight - imgHeight) / 2;
+
+        pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+        pdf.save(`${fileName}.pdf`);
+    }
+
+    function exportCanvasToJpg(canvas, fileName) {
+        let link = document.createElement("a");
+        link.href = canvas.toDataURL("image/jpeg", 0.9);
+        link.download = `${fileName}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
     
     window.handleExport = async function() {
@@ -531,13 +542,24 @@
                 alert("अमान्य एक्सपोर्ट प्रकार।");
                 return;
             }
+            
+            alert("फ़ाइल बनाई जा रही है, कृपया प्रतीक्षा करें...");
 
-            if (type === 'pdf') {
-                exportElementAsPdf(selector, fileName);
-            } else if (type === 'jpg') {
-                exportSectionAsJPG(selector, fileName);
-            } else if (type === 'excel') {
+            if (type === 'excel') {
                 exportTableToExcel(table, fileName);
+            } else {
+                captureElementWithImages(selector)
+                    .then(canvas => {
+                        if (type === 'pdf') {
+                            exportCanvasToPdf(canvas, fileName);
+                        } else if (type === 'jpg') {
+                            exportCanvasToJpg(canvas, fileName);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("कैप्चर करने में त्रुटि:", err);
+                        alert("फ़ाइल बनाने में त्रुटि हुई।");
+                    });
             }
         } catch (error) {
             console.error("फाइल बनाने में त्रुटि:", error);
@@ -547,4 +569,3 @@
   </script>
 </body>
 </html>
-
