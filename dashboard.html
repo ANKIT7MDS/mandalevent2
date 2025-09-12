@@ -42,28 +42,23 @@
       .report-photos-grid img { width: 46px; height: 46px; }
     }
   </style>
-  <!-- Export libs -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
-  <!-- html2canvas for JPG export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
   <div class="container">
     <h1>डैशबोर्ड</h1>
-    <!-- Top Controls (All in One Line) -->
     <div class="top-bar">
       <div class="left">
         <label for="filterEvent">कार्यक्रम:</label>
         <select id="filterEvent"><option value="">सभी कार्यक्रम</option></select>
-        <!-- Yahan Badlav Kiya Gaya Hai -->
         <div id="eventActions" style="display: none; gap: 4px;">
             <button class="action-btn" id="editEventBtn" title="कार्यक्रम का नाम बदलें" style="font-size:1.1em;padding:2px 8px;">✏️</button>
             <button class="action-btn delete" id="deleteEventBtn" title="कार्यक्रम हटाएं" style="font-size:1.1em;padding:2px 8px;">❌</button>
         </div>
-        <!-- Badlav Khatam -->
         <label for="filterMandal">मंडल:</label>
         <select id="filterMandal"><option value="">सभी मंडल</option></select>
         <span id="pendingMandals" class="pending-mandals"></span>
@@ -101,14 +96,11 @@
         <button onclick="addEventName()">जोड़ें</button>
       </div>
     </div>
-    <!-- Event name inline list ko hata diya gaya hai -->
-    <!-- Tabs -->
     <div class="tabs">
       <button class="tab-btn" id="eventTabBtn" onclick="switchTab('eventsTab')">कार्यक्रम सूची</button>
       <button class="tab-btn" id="coordinatorTabBtn" onclick="switchTab('coordinatorsTab')">संयोजक सूची</button>
       <button class="tab-btn active" id="reportTabBtn" onclick="switchTab('reportsTab')">रिपोर्ट सूची</button>
     </div>
-    <!-- Tabs Content -->
     <div class="tab-content" id="eventsTab">
       <table>
         <thead>
@@ -168,7 +160,6 @@
     <img id="imgZoomModalImg" src="">
   </div>
 
-  <!-- Firebase + App JS -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -634,9 +625,167 @@
         doc.save("AllData.pdf");
       }
     };
+
+    // ===================================================================
+    // ===== नया और बेहतर रिपोर्ट PDF एक्सपोर्ट फंक्शन =====
+    // ===================================================================
+    async function exportReportsToPdfAdvanced() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+
+        // हिंदी फॉन्ट रजिस्टर करें
+        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+        doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+        doc.setFont("NotoSansDevanagari");
+
+        const reportRows = document.querySelectorAll('#reportList tr');
+        if (reportRows.length === 0) {
+            alert("कोई रिपोर्ट डेटा नहीं मिला!");
+            return;
+        }
+
+        // --- हेल्पर फंक्शन: इमेज यूआरएल को Base64 में बदलने के लिए ---
+        const imageToBase64 = async (url) => {
+            try {
+                // CORS समस्या से बचने के लिए, सीधे इमेज को fetch कर रहे हैं।
+                // यह तभी काम करेगा जब Firebase Storage में CORS सही से कॉन्फ़िगर हो।
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) {
+                console.error(`छवि लोड नहीं हो सकी: ${url}`, e);
+                // अगर इमेज लोड नहीं होती है तो एक प्लेसहोल्डर बना सकते हैं
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = "#eee";
+                ctx.fillRect(0, 0, 100, 100);
+                ctx.fillStyle = "#777";
+                ctx.font = "12px Arial";
+                ctx.fillText("Error", 35, 55);
+                return canvas.toDataURL();
+            }
+        };
+
+        // --- मुख्य PDF बनाने का लॉजिक ---
+        doc.setFontSize(20);
+        doc.text("कार्यक्रम रिपोर्ट सूची", doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
+
+        let yPosition = 70;
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 40;
+
+        for (let i = 0; i < reportRows.length; i++) {
+            const row = reportRows[i];
+            const cells = row.querySelectorAll('td');
+            if (cells.length === 0) continue;
+
+            // अनुमान लगाएं कि इस रिपोर्ट के लिए कितनी जगह चाहिए होगी
+            const textLines = (cells[6].innerText.length / 50) + 5; // विवरण और अन्य फ़ील्ड के लिए अनुमानित लाइनें
+            const estimatedHeight = textLines * 15 + (cells[7].querySelectorAll('img').length > 0 ? 100 : 0);
+            
+            if (yPosition + estimatedHeight > pageHeight - margin) {
+                doc.addPage();
+                yPosition = 40; // नए पेज पर टॉप से शुरू करें
+            }
+
+            // --- हर रिपोर्ट के बीच एक सेपरेटर लाइन बनाएं ---
+            if (i > 0) {
+               doc.setDrawColor(200); // हल्का ग्रे रंग
+               doc.line(margin, yPosition, doc.internal.pageSize.getWidth() - margin, yPosition);
+               yPosition += 20;
+            }
+
+            // --- टेक्स्ट डेटा निकालें और लिखें ---
+            const reportData = {
+                "कार्यक्रम": cells[0].innerText,
+                "मंडल": cells[1].innerText,
+                "स्थान": cells[2].innerText,
+                "तारीख": cells[3].innerText,
+                "उपस्थिति": cells[4].innerText,
+                "विशिष्ट अतिथि": cells[5].innerText,
+                "विवरण": cells[6].innerText
+            };
+
+            doc.setFontSize(14);
+            doc.setFont("NotoSansDevanagari", "bold");
+            doc.text(`${reportData['कार्यक्रम']} - ${reportData['मंडल']}`, margin, yPosition);
+            yPosition += 25;
+
+            doc.setFontSize(11);
+            doc.setFont("NotoSansDevanagari", "normal");
+
+            let textX = margin + 5;
+            for (const [key, value] of Object.entries(reportData)) {
+                if (key !== "कार्यक्रम" && key !== "मंडल" && value && value.trim() !== '-') {
+                    const fullText = `${key}: ${value}`;
+                    const splitText = doc.splitTextToSize(fullText, doc.internal.pageSize.getWidth() - margin * 2 - 10);
+                    doc.text(splitText, textX, yPosition);
+                    yPosition += (splitText.length * 12) + 8;
+                }
+            }
+
+            // --- इमेज निकालें और ग्रिड में दिखाएं ---
+            const images = Array.from(cells[7].querySelectorAll('img'));
+            if (images.length > 0) {
+                yPosition += 10;
+                doc.setFont("NotoSansDevanagari", "bold");
+                doc.text("फोटो:", margin, yPosition);
+                yPosition += 15;
+                doc.setFont("NotoSansDevanagari", "normal");
+
+                const photoSize = 70;
+                const photoGap = 8;
+                let photoX = margin;
+                const maxPhotosPerRow = Math.floor((doc.internal.pageSize.getWidth() - margin*2) / (photoSize + photoGap));
+
+                for(let j = 0; j < images.length; j++) {
+                    const img = images[j];
+                    const base64Img = await imageToBase64(img.src);
+                    
+                    if (j > 0 && j % maxPhotosPerRow === 0) {
+                        photoX = margin;
+                        yPosition += photoSize + photoGap;
+                         if (yPosition + photoSize > pageHeight - margin) {
+                            doc.addPage();
+                            yPosition = 40;
+                        }
+                    }
+                    doc.addImage(base64Img, 'JPEG', photoX, yPosition, photoSize, photoSize);
+                    photoX += photoSize + photoGap;
+                }
+                yPosition += photoSize + 20;
+            } else {
+                 yPosition += 10;
+            }
+        }
+
+        doc.save("रिपोर्ट-सूची.pdf");
+    }
+
+
     window.handleExport = function() {
       const value = document.getElementById('exportDropdown').value;
       if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
+
+      // --- बदला हुआ हिस्सा ---
+      // अगर 'रिपोर्ट PDF' चुना गया है, तो नया फंक्शन कॉल करें
+      if (value === 'reports-pdf') {
+          alert("PDF रिपोर्ट तैयार की जा रही है... इसमें इमेज की संख्या के आधार पर कुछ समय लग सकता है। कृपया प्रतीक्षा करें।");
+          exportReportsToPdfAdvanced().catch(err => {
+              console.error("PDF बनाने में त्रुटि:", err);
+              alert("PDF बनाने में एक त्रुटि हुई। कंसोल में विस्तृत जानकारी देखें।");
+          });
+          return; // फंक्शन को यहीं रोक दें
+      }
+      // --- बदलाव समाप्त ---
+
       // JPG Download
       if (value.endsWith("-jpg")) {
         let selector = "";
@@ -677,4 +826,3 @@
   </script>
 </body>
 </html>
-
