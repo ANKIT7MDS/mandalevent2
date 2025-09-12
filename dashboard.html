@@ -338,7 +338,7 @@
       for (const r of pageReports) {
         let photosHTML = "";
         if (Array.isArray(r.photos) && r.photos.length > 0) {
-          photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" crossorigin="anonymous" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
+          photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
         }
         const row = document.createElement('tr');
         row.innerHTML = `<td>${r.name}</td><td>${r.mandal || '-'}</td><td>${r.location || '-'}</td><td>${r.date || '-'}</td><td>${r.attendance || '-'}</td><td>${r.guests || '-'}</td><td>${r.details || '-'}</td><td>${photosHTML}</td><td><button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button><button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button></td>`;
@@ -433,29 +433,40 @@
         actionButtons.forEach(btn => btn.style.display = 'none');
 
         const images = Array.from(element.querySelectorAll('img'));
-        const imageLoadPromises = images.map(img => {
-            return new Promise(resolve => {
-                if (img.complete && img.naturalHeight !== 0) {
-                    resolve();
-                } else {
-                    img.onload = resolve;
-                    img.onerror = () => {
-                        console.error(`Image failed to load: ${img.src}`);
+        const originalSrcs = images.map(img => img.src);
+        
+        // This is the key part: fetch images through a CORS proxy and convert to data URLs
+        const dataUrlPromises = images.map(async (img) => {
+            if (!img.src) return;
+            try {
+                // Using a reliable public CORS proxy for images
+                const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(img.src)}`;
+                const response = await fetch(proxyUrl);
+                const blob = await response.blob();
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        img.src = reader.result;
                         resolve();
                     };
-                }
-            });
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                console.warn(`Could not convert image to data URL: ${img.src}`, error);
+                return Promise.resolve(); 
+            }
         });
         
-        await Promise.all(imageLoadPromises);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await Promise.all(dataUrlPromises);
 
         try {
             const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" });
             return canvas;
         } finally {
+            // Restore everything
             if (pagination) pagination.style.display = 'block';
             actionButtons.forEach(btn => btn.style.display = 'inline-block');
+            images.forEach((img, index) => { img.src = originalSrcs[index]; });
         }
     }
 
