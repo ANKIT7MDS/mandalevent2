@@ -338,7 +338,8 @@
       for (const r of pageReports) {
         let photosHTML = "";
         if (Array.isArray(r.photos) && r.photos.length > 0) {
-          photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
+          // *** THE IMPORTANT FIX IS HERE: crossorigin="anonymous" ***
+          photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" crossorigin="anonymous" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
         }
         const row = document.createElement('tr');
         row.innerHTML = `<td>${r.name}</td><td>${r.mandal || '-'}</td><td>${r.location || '-'}</td><td>${r.date || '-'}</td><td>${r.attendance || '-'}</td><td>${r.guests || '-'}</td><td>${r.details || '-'}</td><td>${photosHTML}</td><td><button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button><button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button></td>`;
@@ -425,52 +426,37 @@
 
     async function captureElementWithImages(selector) {
         const element = document.querySelector(selector);
-        if (!element) {
-            throw new Error("एलिमेंट नहीं मिला!");
-        }
+        if (!element) throw new Error("एलिमेंट नहीं मिला!");
 
         const pagination = element.querySelector('.pagination-controls');
         const actionButtons = element.querySelectorAll('.action-btn');
         if (pagination) pagination.style.display = 'none';
         actionButtons.forEach(btn => btn.style.display = 'none');
 
-        // Replace image srcs with data URLs
         const images = Array.from(element.querySelectorAll('img'));
-        const originalSrcs = images.map(img => img.src);
-        
-        const dataUrlPromises = images.map(async (img) => {
-            try {
-                const response = await fetch(img.src);
-                const blob = await response.blob();
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        img.src = reader.result;
+        const imageLoadPromises = images.map(img => {
+            return new Promise(resolve => {
+                if (img.complete && img.naturalHeight !== 0) {
+                    resolve();
+                } else {
+                    img.onload = resolve;
+                    img.onerror = () => {
+                        console.error(`Image failed to load: ${img.src}`);
                         resolve();
                     };
-                    reader.readAsDataURL(blob);
-                });
-            } catch (error) {
-                console.warn(`Could not convert image to data URL: ${img.src}`, error);
-                return Promise.resolve(); 
-            }
+                }
+            });
         });
         
-        await Promise.all(dataUrlPromises);
+        await Promise.all(imageLoadPromises);
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         try {
             const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" });
-            // Restore everything
-            if (pagination) pagination.style.display = 'block';
-            actionButtons.forEach(btn => btn.style.display = 'inline-block');
-            images.forEach((img, index) => { img.src = originalSrcs[index]; });
             return canvas;
-        } catch(err) {
-            // Restore everything on error too
+        } finally {
             if (pagination) pagination.style.display = 'block';
             actionButtons.forEach(btn => btn.style.display = 'inline-block');
-            images.forEach((img, index) => { img.src = originalSrcs[index]; });
-            throw err;
         }
     }
 
