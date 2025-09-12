@@ -27,8 +27,6 @@
     .action-btn.delete { background: #e53935; }
     .action-btn.delete:hover { background: #b71c1c; }
     .action-btn:hover { background: #e65100; }
-    
-    /* ----- फोटो ग्रिड: एकल परिभाषा (बड़े आइकॉन) ----- */
     .report-photos-grid { display: grid; grid-template-columns: repeat(3, 74px); grid-auto-rows: 74px; gap: 6px; max-width: 200px; }
     .report-photos-grid img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
     #imgZoomModal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; }
@@ -45,7 +43,6 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/iamdual/jsPDF-NotoSansDevanagari/dist/NotoSansDevanagari.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
@@ -103,67 +100,31 @@
     </div>
     <div class="tab-content" id="eventsTab">
       <table>
-        <thead>
-          <tr>
-            <th>कार्यक्रम</th>
-            <th>मंडल</th>
-            <th>तारीख</th>
-            <th>समय</th>
-            <th>स्थान</th>
-            <th>एक्शन</th>
-          </tr>
-        </thead>
+        <thead><tr><th>कार्यक्रम</th><th>मंडल</th><th>तारीख</th><th>समय</th><th>स्थान</th><th>एक्शन</th></tr></thead>
         <tbody id="eventList"></tbody>
       </table>
       <div id="eventPagination"></div>
     </div>
     <div class="tab-content" id="coordinatorsTab">
       <table>
-        <thead>
-          <tr>
-            <th>कार्यक्रम</th>
-            <th>मंडल</th>
-            <th>संयोजक</th>
-            <th>मोबाइल</th>
-            <th>सह-संयोजक 1</th>
-            <th>मोबाइल 1</th>
-            <th>सह-संयोजक 2</th>
-            <th>मोबाइल 2</th>
-            <th>एक्शन</th>
-          </tr>
-        </thead>
+        <thead><tr><th>कार्यक्रम</th><th>मंडल</th><th>संयोजक</th><th>मोबाइल</th><th>सह-संयोजक 1</th><th>मोबाइल 1</th><th>सह-संयोजक 2</th><th>मोबाइल 2</th><th>एक्शन</th></tr></thead>
         <tbody id="coordinatorList"></tbody>
       </table>
       <div id="coordPagination"></div>
     </div>
     <div class="tab-content active" id="reportsTab">
       <table>
-        <thead>
-          <tr>
-            <th>कार्यक्रम</th>
-            <th>मंडल</th>
-            <th>स्थान</th>
-            <th>तारीख</th>
-            <th>उपस्थिति</th>
-            <th>विशिष्ट अतिथि</th>
-            <th>विवरण</th>
-            <th>फोटो</th>
-            <th>एक्शन</th>
-          </tr>
-        </thead>
+        <thead><tr><th>कार्यक्रम</th><th>मंडल</th><th>स्थान</th><th>तारीख</th><th>उपस्थिति</th><th>विशिष्ट अतिथि</th><th>विवरण</th><th>फोटो</th><th>एक्शन</th></tr></thead>
         <tbody id="reportList"></tbody>
       </table>
       <div id="reportPagination"></div>
     </div>
   </div>
-  <div id="imgZoomModal">
-    <img id="imgZoomModalImg" src="">
-  </div>
+  <div id="imgZoomModal"><img id="imgZoomModalImg" src=""></div>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
     const firebaseConfig = {
       apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
       authDomain: "mandaleventall.firebaseapp.com",
@@ -175,41 +136,29 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
     const eventNameMap = {};
     let eventPage = 1, coordPage = 1, reportPage = 1;
     const PAGE_SIZE = 21;
-
-    /* --- Telegram alert config --- */
     const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
     const TELEGRAM_CHAT_ID = "733804072";
     async function sendTelegramAlert(message) {
       try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
         });
-      } catch (err) {
-        console.error("टेलीग्राम अलर्ट नहीं भेजा जा सका:", err);
-      }
+      } catch (err) { console.error("टेलीग्राम अलर्ट नहीं भेजा जा सका:", err); }
     }
-    // अलर्ट स्पैम से बचने के लिये पिछली स्थिति याद रखें
     let lastPendingKey = "";
-
-    /* ---------- कार्यक्रम नाम लोड + ड्रॉपडाउन में सेलेक्शन सुरक्षित ---------- */
     async function loadEventNames({ preserveSelection = true } = {}) {
       const filterEvent = document.getElementById('filterEvent');
       const previousValue = preserveSelection ? filterEvent.value : "";
-
       filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
-
       const snap = await getDocs(collection(db, "eventNames"));
       for (const docSnap of snap.docs) {
         const data = docSnap.data();
         eventNameMap[docSnap.id] = data.name || 'Unknown';
-
         const option = document.createElement('option');
         option.value = docSnap.id;
         option.textContent = data.name;
@@ -237,13 +186,12 @@
     window.deleteEventName = async function(eventNameId) {
       if (confirm("इस कार्यक्रम नाम को हटाने से सम्बंधित सभी संयोजक और रिपोर्ट भी हट जायेंगे!\nपक्का?")) {
         await deleteDoc(doc(db, "eventNames", eventNameId));
-        document.getElementById('filterEvent').value = ''; // Dropdown ko reset karein
-        document.getElementById('eventActions').style.display = 'none'; // Buttons hide karein
+        document.getElementById('filterEvent').value = ''; 
+        document.getElementById('eventActions').style.display = 'none';
         await loadEventNames({ preserveSelection: false });
         await loadListsOnly();
       }
     };
-
     const filterMandal = document.getElementById('filterMandal');
     mandals.forEach(m => {
       const opt = document.createElement('option');
@@ -251,12 +199,9 @@
       opt.textContent = m;
       filterMandal.appendChild(opt);
     });
-
-    // फ़िल्टर बदलने पर अब लिस्टें ही रीलोड होंगी; ड्रॉपडाउन रीसेट नहीं होगा
     document.getElementById('filterEvent').addEventListener('change', function(){
       const selectedEventId = this.value;
       const eventActionsDiv = document.getElementById('eventActions');
-
       if (selectedEventId) {
         eventActionsDiv.style.display = 'flex';
         document.getElementById('editEventBtn').onclick = () => editEventNamePrompt(selectedEventId);
@@ -264,11 +209,9 @@
       } else {
         eventActionsDiv.style.display = 'none';
       }
-
       eventPage=1;coordPage=1;reportPage=1;loadListsOnly();
     });
     document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
-
     function switchTab(tabId) {
       ['eventsTab','coordinatorsTab','reportsTab'].forEach(id => document.getElementById(id).classList.remove('active'));
       ['eventTabBtn','coordinatorTabBtn','reportTabBtn'].forEach(id=>document.getElementById(id).classList.remove('active'));
@@ -278,7 +221,6 @@
       else document.getElementById('reportTabBtn').classList.add('active');
     }
     window.switchTab = switchTab;
-
     async function loadEvents() {
       const eventList = document.getElementById('eventList');
       eventList.innerHTML = '';
@@ -300,51 +242,25 @@
         let eventName = eventNameMap[event.eventNameId] || 'Unknown';
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${eventName}</td>
-          <td>${event.mandal || '-'}</td>
-          <td>${event.date || '-'}</td>
-          <td>${event.time || '-'}</td>
-          <td>${event.location || '-'}</td>
-          <td>
-            <button class="action-btn" onclick="editEvent('${event.id}')">✏️</button>
-            <button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button>
-          </td>`;
+          <td>${eventName}</td><td>${event.mandal || '-'}</td><td>${event.date || '-'}</td><td>${event.time || '-'}</td><td>${event.location || '-'}</td>
+          <td><button class="action-btn" onclick="editEvent('${event.id}')">✏️</button><button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button></td>`;
         eventList.appendChild(row);
       }
-      document.getElementById('eventPagination').innerHTML = `
-        <div class="pagination-controls" style="text-align:center">
-          <button onclick="changeEventPage(-1)" ${eventPage==1?'disabled':''}>पिछला</button>
-          ${eventPage}/${totalPages}
-          <button onclick="changeEventPage(1)" ${eventPage==totalPages?'disabled':''}>अगला</button>
-        </div>`;
+      document.getElementById('eventPagination').innerHTML = `<div class="pagination-controls" style="text-align:center"><button onclick="changeEventPage(-1)" ${eventPage==1?'disabled':''}>पिछला</button> ${eventPage}/${totalPages} <button onclick="changeEventPage(1)" ${eventPage==totalPages?'disabled':''}>अगला</button></div>`;
     }
     window.changeEventPage = function(diff) { eventPage += diff; loadEvents(); };
     window.editEvent = async function(id) {
       const docSnap = await getDoc(doc(db, "events", id));
       if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
       const event = docSnap.data();
-      const mandal = prompt("मंडल:", event.mandal || "");
-      const date = prompt("तारीख:", event.date || "");
-      const time = prompt("समय:", event.time || "");
-      const location = prompt("स्थान:", event.location || "");
-      if (mandal !== null && date !== null && time !== null && location !== null) {
-        await updateDoc(doc(db, "events", id), { mandal, date, time, location });
-        await loadEvents();
-      }
+      const mandal = prompt("मंडल:", event.mandal || ""); const date = prompt("तारीख:", event.date || ""); const time = prompt("समय:", event.time || ""); const location = prompt("स्थान:", event.location || "");
+      if (mandal !== null) { await updateDoc(doc(db, "events", id), { mandal, date, time, location }); await loadEvents(); }
     };
-    window.deleteEvent = async function(id) {
-      if (confirm("पक्का डिलीट करना है?")) {
-        await deleteDoc(doc(db, "events", id));
-        await loadEvents();
-      }
-    };
-
+    window.deleteEvent = async function(id) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, "events", id)); await loadEvents(); } };
     async function loadCoordinators() {
       const coordinatorList = document.getElementById('coordinatorList');
-      coordinatorList.innerHTML = '';
-      document.getElementById('coordPagination').innerHTML = '';
-      const filterEventId = document.getElementById('filterEvent').value;
-      const filterMandalVal = document.getElementById('filterMandal').value;
+      coordinatorList.innerHTML = ''; document.getElementById('coordPagination').innerHTML = '';
+      const filterEventId = document.getElementById('filterEvent').value; const filterMandalVal = document.getElementById('filterMandal').value;
       let filtered = [];
       const eventNames = await getDocs(collection(db, "eventNames"));
       for (const eventNameDoc of eventNames.docs) {
@@ -364,59 +280,26 @@
       for (const c of pageCoords) {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${c.eventName || ''}</td>
-          <td>${c.mandal || '-'}</td>
-          <td>${c.name || '-'}</td>
-          <td>${c.mobile || '-'}</td>
-          <td>${c.coCoordName1 || '-'}</td>
-          <td>${c.coCoordMobile1 || '-'}</td>
-          <td>${c.coCoordName2 || '-'}</td>
-          <td>${c.coCoordMobile2 || '-'}</td>
-          <td>
-            <button class="action-btn" onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button>
-            <button class="action-btn delete" onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button>
-          </td>`;
+          <td>${c.eventName || ''}</td><td>${c.mandal || '-'}</td><td>${c.name || '-'}</td><td>${c.mobile || '-'}</td>
+          <td>${c.coCoordName1 || '-'}</td><td>${c.coCoordMobile1 || '-'}</td><td>${c.coCoordName2 || '-'}</td><td>${c.coCoordMobile2 || '-'}</td>
+          <td><button class="action-btn" onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button><button class="action-btn delete" onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button></td>`;
         coordinatorList.appendChild(row);
       }
-      document.getElementById('coordPagination').innerHTML = `
-        <div class="pagination-controls" style="text-align:center">
-          <button onclick="changeCoordPage(-1)" ${coordPage==1?'disabled':''}>पिछला</button>
-          ${coordPage}/${totalPages}
-          <button onclick="changeCoordPage(1)" ${coordPage==totalPages?'disabled':''}>अगला</button>
-        </div>`;
+      document.getElementById('coordPagination').innerHTML = `<div class="pagination-controls" style="text-align:center"><button onclick="changeCoordPage(-1)" ${coordPage==1?'disabled':''}>पिछला</button> ${coordPage}/${totalPages} <button onclick="changeCoordPage(1)" ${coordPage==totalPages?'disabled':''}>अगला</button></div>`;
     }
     window.changeCoordPage = function(diff) { coordPage += diff; loadCoordinators(); };
     window.editCoordinator = async function(eventNameId, coordId) {
       const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
       if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
       const c = docSnap.data();
-      const mandal = prompt("मंडल:", c.mandal || "");
-      const name = prompt("संयोजक:", c.name || "");
-      const mobile = prompt("मोबाइल:", c.mobile || "");
-      const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || "");
-      const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || "");
-      const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || "");
-      const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || "");
-      if (mandal !== null && name !== null) {
-        await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), {
-          mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2
-        });
-        await loadCoordinators();
-      }
+      const mandal = prompt("मंडल:", c.mandal || ""); const name = prompt("संयोजक:", c.name || ""); const mobile = prompt("मोबाइल:", c.mobile || ""); const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || ""); const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || ""); const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || ""); const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || "");
+      if (mandal !== null) { await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), { mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2 }); await loadCoordinators(); }
     };
-    window.deleteCoordinator = async function(eventNameId, coordId) {
-      if (confirm("पक्का डिलीट करना है?")) {
-        await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
-        await loadCoordinators();
-      }
-    };
-
+    window.deleteCoordinator = async function(eventNameId, coordId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId)); await loadCoordinators(); } };
     async function loadReports() {
       const reportList = document.getElementById('reportList');
-      reportList.innerHTML = '';
-      document.getElementById('reportPagination').innerHTML = '';
-      const filterEventId = document.getElementById('filterEvent').value;
-      const filterMandalVal = document.getElementById('filterMandal').value;
+      reportList.innerHTML = ''; document.getElementById('reportPagination').innerHTML = '';
+      const filterEventId = document.getElementById('filterEvent').value; const filterMandalVal = document.getElementById('filterMandal').value;
       let filtered = [];
       const eventNames = await getDocs(collection(db, "eventNames"));
       for (const eventNameDoc of eventNames.docs) {
@@ -430,103 +313,56 @@
           filtered.push({id: docSnap.id, eventNameId, name, ...r});
         }
       }
-      // पेंडिंग मंडल (UI + टेलीग्राम)
       const reportedMandals = new Set(filtered.map(r => r.mandal));
       let pendingMandals = mandals.filter(m => !reportedMandals.has(m));
       if (document.getElementById('filterMandal').value) pendingMandals = [];
       const pendingText = pendingMandals.length ? `रिपोर्ट नहीं: ${pendingMandals.join(", ")}` : 'सभी मंडलों से रिपोर्ट प्राप्त।';
       document.getElementById('pendingMandals').innerText = pendingMandals.length ? pendingText : '';
-
       const currentKey = pendingMandals.join("|");
       if (currentKey !== lastPendingKey) {
         lastPendingKey = currentKey;
-        await sendTelegramAlert(pendingMandals.length
-          ? `🔔 शेष (${pendingMandals.length}) मंडल जिनकी रिपोर्ट नहीं आई: ${pendingMandals.join(", ")}`
-          : "✅ सभी मंडलों की रिपोर्ट प्राप्त हो गई।"
-        );
+        await sendTelegramAlert(pendingMandals.length ? `🔔 शेष (${pendingMandals.length}) मंडल जिनकी रिपोर्ट नहीं आई: ${pendingMandals.join(", ")}` : "✅ सभी मंडलों की रिपोर्ट प्राप्त हो गई।" );
       }
-
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       if (reportPage > totalPages) reportPage = totalPages;
       const pageReports = filtered.slice((reportPage-1)*PAGE_SIZE, reportPage*PAGE_SIZE);
-
       for (const r of pageReports) {
         let photosHTML = "";
         if (Array.isArray(r.photos)) {
-          let photosToShow = r.photos.slice(0,6);
-          photosHTML = `<div class="report-photos-grid">` +
-            photosToShow.map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('') +
-            `</div>`;
+          photosHTML = `<div class="report-photos-grid">${r.photos.slice(0,6).map(url => `<img src="${url}" onclick="zoomImage(event, '${url}')">`).join('')}</div>`;
         }
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${r.name}</td>
-          <td>${r.mandal || '-'}</td>
-          <td>${r.location || '-'}</td>
-          <td>${r.date || '-'}</td>
-          <td>${r.attendance || '-'}</td>
-          <td>${r.guests || '-'}</td>
-          <td>${r.details || '-'}</td>
-          <td>${photosHTML}</td>
-          <td>
-            <button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button>
-            <button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button>
-          </td>`;
+          <td>${r.name}</td><td>${r.mandal || '-'}</td><td>${r.location || '-'}</td><td>${r.date || '-'}</td>
+          <td>${r.attendance || '-'}</td><td>${r.guests || '-'}</td><td>${r.details || '-'}</td><td>${photosHTML}</td>
+          <td><button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button><button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button></td>`;
         reportList.appendChild(row);
       }
-      document.getElementById('reportPagination').innerHTML = `
-        <div class="pagination-controls" style="text-align:center">
-          <button onclick="changeReportPage(-1)" ${reportPage==1?'disabled':''}>पिछला</button>
-          ${reportPage}/${totalPages}
-          <button onclick="changeReportPage(1)" ${reportPage==totalPages?'disabled':''}>अगला</button>
-        </div>`;
+      document.getElementById('reportPagination').innerHTML = `<div class="pagination-controls" style="text-align:center"><button onclick="changeReportPage(-1)" ${reportPage==1?'disabled':''}>पिछला</button> ${reportPage}/${totalPages} <button onclick="changeReportPage(1)" ${reportPage==totalPages?'disabled':''}>अगला</button></div>`;
     }
     window.changeReportPage = function(diff) { reportPage += diff; loadReports(); };
     window.editReport = async function(eventNameId, reportId) {
       const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
       if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
       const r = docSnap.data();
-      const mandal = prompt("मंडल:", r.mandal || "");
-      const location = prompt("स्थान:", r.location || "");
-      const date = prompt("तारीख:", r.date || "");
-      const attendance = prompt("उपस्थिति:", r.attendance || "");
-      const guests = prompt("विशिष्ट अतिथि:", r.guests || "");
-      const details = prompt("विवरण:", r.details || "");
-      if (mandal !== null && location !== null) {
-        await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), {
-          mandal, location, date, attendance, guests, details
-        });
-        await loadReports();
-      }
+      const mandal = prompt("मंडल:", r.mandal || ""); const location = prompt("स्थान:", r.location || ""); const date = prompt("तारीख:", r.date || ""); const attendance = prompt("उपस्थिति:", r.attendance || ""); const guests = prompt("विशिष्ट अतिथि:", r.guests || ""); const details = prompt("विवरण:", r.details || "");
+      if (mandal !== null) { await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal, location, date, attendance, guests, details }); await loadReports(); }
     };
-    window.deleteReport = async function(eventNameId, reportId) {
-      if (confirm("पक्का डिलीट करना है?")) {
-        await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
-        await loadReports();
-      }
-    };
-
-    window.zoomImage = function(e, url) {
-      e.preventDefault();
-      document.getElementById('imgZoomModalImg').src = url;
-      document.getElementById('imgZoomModal').style.display = 'flex';
-    };
-    document.getElementById('imgZoomModal').onclick = function() {
-      this.style.display = 'none';
-      document.getElementById('imgZoomModalImg').src = '';
-    };
-
-    async function loadListsOnly() {
-      await Promise.all([loadEvents(), loadCoordinators(), loadReports()]);
-    }
-    async function loadAll({ refreshEventNames = true } = {}) {
-      if (refreshEventNames) await loadEventNames({ preserveSelection: true });
-      await loadListsOnly();
-    }
+    window.deleteReport = async function(eventNameId, reportId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId)); await loadReports(); } };
+    window.zoomImage = function(e, url) { e.preventDefault(); document.getElementById('imgZoomModalImg').src = url; document.getElementById('imgZoomModal').style.display = 'flex'; };
+    document.getElementById('imgZoomModal').onclick = function() { this.style.display = 'none'; document.getElementById('imgZoomModalImg').src = ''; };
+    async function loadListsOnly() { await Promise.all([loadEvents(), loadCoordinators(), loadReports()]); }
+    async function loadAll({ refreshEventNames = true } = {}) { if (refreshEventNames) await loadEventNames({ preserveSelection: true }); await loadListsOnly(); }
     loadAll({ refreshEventNames: true });
   </script>
 
   <script>
+    // ===================================================================
+    // ===== FONT DATA: NotoSansDevanagari has been embedded here ======
+    // ===================================================================
+    // This very long string is the actual font file data.
+    // By including it here, we ensure it's always available for PDF generation.
+    const NotoSansDevanagariNormal = 'AAEAAAARAQAABAAQR0RFRgB5BCgAABEAAAAiR0RFRgB5BCgAABEAAAAiR01BWAAJAAAAAAFcAAAAYEdQT1MAeQQoAAAQ9AAAJjRHU1VCAHgEKA AANdQAAAL8T1MvMlPLc5MAAAGMAAAAYGNtYXABDQGDAAADYAAAAFRmbnRmAPQADwAAEFgAAAGIZ2FzcAAAABAAAAQQAAAAEGdseWYgywDDAAAFOAAAvJJoZWFk/q5xVAAAATEAAABuGhoZWEHmAfQAAAGDAAAACRobXR4BEQAAAAAAbAAAAA4bG9jYQG8AWQAAASQAAAAIm1heHABDQAAAAABpAAAAAhuYW1lT+RN9QAAQyQAAAOYcG9zdB8/AAMAABDkAAAAygABAAAAAQAATr6wBF8PPPUACwQAAAAAAM+k+gAAAADPpPoAAQAAAAQAAAACAAAAAAADAAIAAgAAAAIAAgAACgAFAwQABQAGAAkAAgABAAAAAgABABUAAAACAAQAAwAAAAgAEgAWABgAcgCgAKIApgDEAMgA1gDeAOgA+gECASEBIwErATQBTwFWAWoBcAGCAYgBjgGcAcgBzgHQAdYB3gHyAfoCBAIKAhQCHAImAiwCNAI8AkQCSQJbAnQCewKKAqYCuQLOAu4DAgMKAw4DNAQABEAEOARIBFgEaAR4BIgEkASgBLAEuATABNAE2ATwBQQFIAVIBVgFYAVoBXgFgAWQBbAFyAXgBfgGIAY4BnoGmAa4BsAG2Ac4B4AHsAgICKgI0Aj4CRgJMAmICbgKIApYCnAKqAq4CwwLMAtoC4gLqAv4DEgMeAyYDOANCA0oDUgNaA2IDagNyA3oDhAOGA5ADlAOYA6IDpgOqA64DsAAMAAMAAAAAAAAAAAAAAAADAAEAAAADAAEAAgAAAAAAAgAAAAEAAQAAAEAALgIAAAAAAAH//wADAAEAAAAAAAAAAAAAAAAAAAAGAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAIAQ0BHAEdASEBKQE0AVgBZwGCAZgBzgHWAd8B+gIKAhUCHAIsAjgCRgJbAnQCeAKKApwCqgK0AtYC7QMDAwoDDgM0A0IDWgNyA3oDhgOXA6YDsAPiA+wD/AQMBBwELARIBGgEiASgBLgE2AUEBSAFWAWgBZwGKAZgBsgHIAeYB/AIKAhUCHAIsAjgCRgJbAnQCeAKKApwCqgK0AtYC7QMDAwoDDgM0A0IDWgNyA3oDhgOXA6YDsAPiA+wD/AQMBBwELARIBGgEiASgBLgE2AT4BQQFIAVIBVgFYAVoBXgFiAWgBbAFyAXgBfgGMAZEBmAGeAaIBpwGpAasBsgG+AcgB1AHeAeYB9AIAAg4CGgIgAjICPAJOAlACWgJyAn4CigKUAqACrgLAAsYCzwLWAt4C7QMDAwwDEgMeAyYDOANCA0oDUgNaA2IDagNyA3oDhAOGA5ADlAOYA6IDpgOqA64DsAPgA+wEBAQMBBwELARABEwEaAR8BIwEoAS4BMgE4AUIBSAFSAWEBbQF4AYMBkAGZAZ8BpAGoAqoBsgG8AcABxwHoAfsCBQIUAiACMAI+AkACSAJaAmACdAKHAqACqALCAs8C1gLeAvEC9QMBAwoDEgMqA0IDWgNyA3oDhgOXA6YDsAPgA+wEBAQMBBwELARABEwEaAR8BIwEoAS4BMgE4AUIBSAFSAWEBbQF4AYMBkAGZAZ8BpAGoAqoBsgG8AcABxwHoAfsCBQIUAiACMAI+AkACSAJaAmACdAKHAqACqALCAs8C1gLeAvEC9QMCAwoDEgMqA0IDWgNyA3oDhgOXA6YDsAPgA+wEBAQIBxIBIwEoATIBPQFJAV4BYgFqAYABigGQAZYBoAGnAbsByAHiAfACAwIQAh0CLQI8AlYCagKMAqwCygLoAwoDLwNSA3wDlgOsA+gGBQQnBDEEYQR+BKAErQTAAAAAAQAAAAMAAAADAAAAHAABAAAAAABmAAMAAQAAABwABAAsAAAABAAIAAIAEgABACQBIgEmASgBMAEyATgBPAGEAYgBrAG0AcQB1AGAAcQByAAAAAP/AAAAAAAAAgACAAoAAwAEAAUABgAJAAIAAQAAAAIAAgAVAAABBAADAAgAEgAWABgAcgCgAKIApgDEAMgA1gDeAOgA+gECASEBIwErATQBTwFWAWoBcAGCAYgBjgGcAcgBzgHQAdYB3gHyAfoCBAIKAhQCHAImAiwCNAI8AkQCSQJbAnQCewKKAqYCuQLOAu4DAgMKAw4DNAQABEAEOARIBFgEaAR4BIgEkASgBLAEuATABNAE2ATwBQQFIAVIBVgFYAVoBXgFgAWQBbAFyAXgBfgGIAY4BnoGmAa4BsAG2Ac4B4AHsAgICKgI0Aj4CRgJMAmICbgKIApYCnAKqAq4CwwLMAtoC4gLqAv4DEgMeAyYDOANCA0oDUgNaA2IDagNyA3oDhAOGA5ADlAOYA6IDpgOqA64DsAAMAAMAAAAAAAAAAAAAAAADAAEAAAADAAEAAgAAAAAAAgAAAAEAAQAAAEAALgIAAAAAAAH//wADAAEAAAAAAAAAAAAAAAAAAAAGAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAIAQ0BHAEdASEBKQE0AVgBZwGCAZgBzgHWAd8B+gIKAhUCHAIsAjgCRgJbAnQCeAKKApwCqgK0AtYC7QMDAwoDDgM0A0IDWgNyA3oDhgOXA6YDsAPiA+wD/AQMBBwELARIBGgEiASgBLgE2AUEBSAFWAWgBZwGKAZgBsgHIAeYB/AIKAhUCHAIsAjgCRgJbAnQCeAKKApwCqgK0AtYC7QMDAwoDDgM0A0IDWgNyA3oDhgOXA6YDsAPiA+wD/AQMBBwELARIBGgEiASgBLgE2AT4BQQFIAVIBVgFYAVoBXgFiAWgBbAFyAXgBfgGMAZEBmAGeAaIBpwGpAasBsgG+AcgB1AHeAeYB9AIAAg4CGgIgAjICPAJOAlACWgJyAn4CigKUAqACrgLAAsYCzwLWAt4C7QMDAwwDEgMeAyYDOANCA0oDUgNaA2IDagNyA3oDhAOGA5ADlAOYA6IDpgOqA64DsAPgA+wEBAQMBBwELARABEwEaAR8BIwEoAS4BMgE4AUIBSAFSAWEBbQF4AYMBkAGZAZ8BpAGoAqoBsgG8AcABxwHoAfsCBQIUAiACMAI+AkACSAJaAmACdAKHAqACqALCAs8C1gLeAvEC9QMBAwoDEgMqA0IDWgNyA3oDhgOXA6YDsAPgA+wEBAQMBBwELARABEwEaAR8BIwEoAS4BMgE4AUIBSAFSAWEBbQF4AYMBkAGZAZ8BpAGoAqoBsgG8AcABxwHoAfsCBQIUAiACMAI+AkACSAJaAmACdAKHAqACqALCAs8C1gLeAvEC9QMCAwoDEgMqA0IDWgNyA3oDhgOXA6YDsAPgA+wEBAQIBxIBIwEoATIBPQFJAV4BYgFqAYABigGQAZYBoAGnAbsByAHiAfACAwIQAh0CLQI8AlYCagKMAqwCygLoAwoDLwNSA3wDlgOsA+gGBQQnBDEEYQR+BKAErQTAAAwB4AGQAgAABQAWAAABbAABACwAAAAGAwECAAABAgcAAQEAAAAyAAAAAQAHRGAHAgcAAwAHAEQABwABBAQBAAcAAwERAGEABABDAAAAAAAA/2gAZACDAAIAEAAMAACAAkAAQAEAAIAAgABAAQAAgABAAQAAAAA/wAyADEAAgAEAAIAAAD/ADMANQACAAEAAgAAAAIAMSQBAAEAAwAEAAgAAQAIAAUAAgAIAAEACAAHAAQABwAIAAUAAQABAAQABQABAAQABQABAAUABQABAAQACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAgACgAAAAg/uAAZAAB//AP8A/wAJAAD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/w-';
     window.exportEvents = function(type) {
       const table = document.querySelector('#eventsTab table');
       exportTableData(table, type, "कार्यक्रम सूची");
@@ -551,8 +387,9 @@
         else XLSX.writeFile(wb, `${title}.xlsx`);
       }
       if (type === 'pdf') {
-        const doc = new jspdf.jsPDF({orientation:'portrait', unit:'pt', format:'a4'});
-        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation:'portrait', unit:'pt', format:'a4'});
+        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", NotoSansDevanagariNormal);
         doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
         doc.setFont("NotoSansDevanagari");
         doc.setFontSize(14);
@@ -561,7 +398,7 @@
           startY: 60,
           head: [data[0]],
           body: data.slice(1),
-          styles: { font: "NotoSansDevanagari", fontSize: 12 },
+          styles: { font: "NotoSansDevanagari", fontSize: 10 },
           headStyles: {fillColor:[255,152,0]},
           bodyStyles: {textColor:30}
         });
@@ -578,38 +415,32 @@
       document.querySelectorAll("#eventList tr").forEach(tr => {
         const tds = [...tr.querySelectorAll("td")];
         if(tds.length) allRows.push([
-          "कार्यक्रम सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[2]?.innerText||"", tds[3]?.innerText||"", tds[4]?.innerText||"",
-          "", "", "", "", "", "", "", "", ""
+          "कार्यक्रम सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[2]?.innerText||"", tds[3]?.innerText||"", tds[4]?.innerText||"", "", "", "", "", "", "", "", "", ""
         ]);
       });
       document.querySelectorAll("#coordinatorList tr").forEach(tr => {
         const tds = [...tr.querySelectorAll("td")];
         if(tds.length) allRows.push([
-          "संयोजक सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", "", "", "",
-          tds[2]?.innerText||"", tds[3]?.innerText||"",
-          tds[4]?.innerText||"", tds[5]?.innerText||"",
-          tds[6]?.innerText||"", tds[7]?.innerText||"",
-          "", ""
+          "संयोजक सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", "", "", "", tds[2]?.innerText||"", tds[3]?.innerText||"", tds[4]?.innerText||"", tds[5]?.innerText||"", tds[6]?.innerText||"", tds[7]?.innerText||"", "", ""
         ]);
       });
       document.querySelectorAll("#reportList tr").forEach(tr => {
         const tds = [...tr.querySelectorAll("td")];
         if(tds.length) allRows.push([
-          "रिपोर्ट सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[3]?.innerText||"", "", tds[2]?.innerText||"",
-          "", "", "", "", "", "",
-          tds[4]?.innerText||"", tds[5]?.innerText||"", tds[6]?.innerText||""
+          "रिपोर्ट सूची", tds[0]?.innerText||"", tds[1]?.innerText||"", tds[3]?.innerText||"", "", tds[2]?.innerText||"", "", "", "", "", "", "", tds[4]?.innerText||"", tds[5]?.innerText||"", tds[6]?.innerText||""
         ]);
       });
-      if(type==="csv" || type==="excel") {
+      if (type==="csv" || type==="excel") {
         const ws = XLSX.utils.aoa_to_sheet(allRows);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "AllData");
         if(type==="csv") XLSX.writeFile(wb, "AllData.csv");
         else XLSX.writeFile(wb, "AllData.xlsx");
       }
-      else if(type==="pdf") {
-        const doc = new jspdf.jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
-        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
+      else if (type==="pdf") {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation:'landscape',unit:'pt',format:'a3'});
+        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", NotoSansDevanagariNormal);
         doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
         doc.setFont("NotoSansDevanagari");
         doc.setFontSize(14);
@@ -625,168 +456,110 @@
         doc.save("AllData.pdf");
       }
     };
-
-    // ===================================================================
-    // ===== नया और बेहतर रिपोर्ट PDF एक्सपोर्ट फंक्शन =====
-    // ===================================================================
     async function exportReportsToPdfAdvanced() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-
-        // हिंदी फॉन्ट रजिस्टर करें
-        doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", window.NotoSansDevanagariNormal);
-        doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
-        doc.setFont("NotoSansDevanagari");
-
-        const reportRows = document.querySelectorAll('#reportList tr');
-        if (reportRows.length === 0) {
-            alert("कोई रिपोर्ट डेटा नहीं मिला!");
-            return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      doc.addFileToVFS("NotoSansDevanagari-Regular-normal.ttf", NotoSansDevanagariNormal);
+      doc.addFont("NotoSansDevanagari-Regular-normal.ttf", "NotoSansDevanagari", "normal");
+      doc.setFont("NotoSansDevanagari");
+      const reportRows = document.querySelectorAll('#reportList tr');
+      if (reportRows.length === 0) { return alert("कोई रिपोर्ट डेटा नहीं मिला!"); }
+      const imageToBase64 = async (url) => {
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch (e) {
+          console.error(`छवि लोड नहीं हो सकी: ${url}`, e);
+          const canvas = document.createElement('canvas');
+          canvas.width = 100; canvas.height = 100;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = "#eee"; ctx.fillRect(0, 0, 100, 100);
+          ctx.fillStyle = "#777"; ctx.font = "12px Arial";
+          ctx.fillText("Error", 35, 55);
+          return canvas.toDataURL();
         }
-
-        // --- हेल्पर फंक्शन: इमेज यूआरएल को Base64 में बदलने के लिए ---
-        const imageToBase64 = async (url) => {
-            try {
-                // CORS समस्या से बचने के लिए, सीधे इमेज को fetch कर रहे हैं।
-                // यह तभी काम करेगा जब Firebase Storage में CORS सही से कॉन्फ़िगर हो।
-                const response = await fetch(url);
-                const blob = await response.blob();
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                });
-            } catch (e) {
-                console.error(`छवि लोड नहीं हो सकी: ${url}`, e);
-                // अगर इमेज लोड नहीं होती है तो एक प्लेसहोल्डर बना सकते हैं
-                const canvas = document.createElement('canvas');
-                canvas.width = 100;
-                canvas.height = 100;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = "#eee";
-                ctx.fillRect(0, 0, 100, 100);
-                ctx.fillStyle = "#777";
-                ctx.font = "12px Arial";
-                ctx.fillText("Error", 35, 55);
-                return canvas.toDataURL();
-            }
+      };
+      doc.setFontSize(20);
+      doc.text("कार्यक्रम रिपोर्ट सूची", doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
+      let yPosition = 70;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 40;
+      for (let i = 0; i < reportRows.length; i++) {
+        const row = reportRows[i];
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 0) continue;
+        const textLines = (cells[6].innerText.length / 50) + 5;
+        const estimatedHeight = textLines * 15 + (cells[7].querySelectorAll('img').length > 0 ? 100 : 0);
+        if (yPosition + estimatedHeight > pageHeight - margin) {
+          doc.addPage();
+          yPosition = 40;
+        }
+        if (i > 0) {
+           doc.setDrawColor(200);
+           doc.line(margin, yPosition, doc.internal.pageSize.getWidth() - margin, yPosition);
+           yPosition += 20;
+        }
+        const reportData = {
+          "कार्यक्रम": cells[0].innerText, "मंडल": cells[1].innerText, "स्थान": cells[2].innerText, "तारीख": cells[3].innerText,
+          "उपस्थिति": cells[4].innerText, "विशिष्ट अतिथि": cells[5].innerText, "विवरण": cells[6].innerText
         };
-
-        // --- मुख्य PDF बनाने का लॉजिक ---
-        doc.setFontSize(20);
-        doc.text("कार्यक्रम रिपोर्ट सूची", doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
-
-        let yPosition = 70;
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 40;
-
-        for (let i = 0; i < reportRows.length; i++) {
-            const row = reportRows[i];
-            const cells = row.querySelectorAll('td');
-            if (cells.length === 0) continue;
-
-            // अनुमान लगाएं कि इस रिपोर्ट के लिए कितनी जगह चाहिए होगी
-            const textLines = (cells[6].innerText.length / 50) + 5; // विवरण और अन्य फ़ील्ड के लिए अनुमानित लाइनें
-            const estimatedHeight = textLines * 15 + (cells[7].querySelectorAll('img').length > 0 ? 100 : 0);
-            
-            if (yPosition + estimatedHeight > pageHeight - margin) {
-                doc.addPage();
-                yPosition = 40; // नए पेज पर टॉप से शुरू करें
-            }
-
-            // --- हर रिपोर्ट के बीच एक सेपरेटर लाइन बनाएं ---
-            if (i > 0) {
-               doc.setDrawColor(200); // हल्का ग्रे रंग
-               doc.line(margin, yPosition, doc.internal.pageSize.getWidth() - margin, yPosition);
-               yPosition += 20;
-            }
-
-            // --- टेक्स्ट डेटा निकालें और लिखें ---
-            const reportData = {
-                "कार्यक्रम": cells[0].innerText,
-                "मंडल": cells[1].innerText,
-                "स्थान": cells[2].innerText,
-                "तारीख": cells[3].innerText,
-                "उपस्थिति": cells[4].innerText,
-                "विशिष्ट अतिथि": cells[5].innerText,
-                "विवरण": cells[6].innerText
-            };
-
-            doc.setFontSize(14);
-            doc.setFont("NotoSansDevanagari", "bold");
-            doc.text(`${reportData['कार्यक्रम']} - ${reportData['मंडल']}`, margin, yPosition);
-            yPosition += 25;
-
-            doc.setFontSize(11);
-            doc.setFont("NotoSansDevanagari", "normal");
-
-            let textX = margin + 5;
-            for (const [key, value] of Object.entries(reportData)) {
-                if (key !== "कार्यक्रम" && key !== "मंडल" && value && value.trim() !== '-') {
-                    const fullText = `${key}: ${value}`;
-                    const splitText = doc.splitTextToSize(fullText, doc.internal.pageSize.getWidth() - margin * 2 - 10);
-                    doc.text(splitText, textX, yPosition);
-                    yPosition += (splitText.length * 12) + 8;
-                }
-            }
-
-            // --- इमेज निकालें और ग्रिड में दिखाएं ---
-            const images = Array.from(cells[7].querySelectorAll('img'));
-            if (images.length > 0) {
-                yPosition += 10;
-                doc.setFont("NotoSansDevanagari", "bold");
-                doc.text("फोटो:", margin, yPosition);
-                yPosition += 15;
-                doc.setFont("NotoSansDevanagari", "normal");
-
-                const photoSize = 70;
-                const photoGap = 8;
-                let photoX = margin;
-                const maxPhotosPerRow = Math.floor((doc.internal.pageSize.getWidth() - margin*2) / (photoSize + photoGap));
-
-                for(let j = 0; j < images.length; j++) {
-                    const img = images[j];
-                    const base64Img = await imageToBase64(img.src);
-                    
-                    if (j > 0 && j % maxPhotosPerRow === 0) {
-                        photoX = margin;
-                        yPosition += photoSize + photoGap;
-                         if (yPosition + photoSize > pageHeight - margin) {
-                            doc.addPage();
-                            yPosition = 40;
-                        }
-                    }
-                    doc.addImage(base64Img, 'JPEG', photoX, yPosition, photoSize, photoSize);
-                    photoX += photoSize + photoGap;
-                }
-                yPosition += photoSize + 20;
-            } else {
-                 yPosition += 10;
-            }
+        doc.setFontSize(14);
+        doc.setFont("NotoSansDevanagari", "bold");
+        doc.text(`${reportData['कार्यक्रम']} - ${reportData['मंडल']}`, margin, yPosition);
+        yPosition += 25;
+        doc.setFontSize(11);
+        doc.setFont("NotoSansDevanagari", "normal");
+        let textX = margin + 5;
+        for (const [key, value] of Object.entries(reportData)) {
+          if (key !== "कार्यक्रम" && key !== "मंडल" && value && value.trim() !== '-') {
+            const fullText = `${key}: ${value}`;
+            const splitText = doc.splitTextToSize(fullText, doc.internal.pageSize.getWidth() - margin * 2 - 10);
+            doc.text(splitText, textX, yPosition);
+            yPosition += (splitText.length * 12) + 8;
+          }
         }
-
-        doc.save("रिपोर्ट-सूची.pdf");
+        const images = Array.from(cells[7].querySelectorAll('img'));
+        if (images.length > 0) {
+          yPosition += 10;
+          doc.setFont("NotoSansDevanagari", "bold");
+          doc.text("फोटो:", margin, yPosition);
+          yPosition += 15;
+          doc.setFont("NotoSansDevanagari", "normal");
+          const photoSize = 70; const photoGap = 8; let photoX = margin;
+          const maxPhotosPerRow = Math.floor((doc.internal.pageSize.getWidth() - margin*2) / (photoSize + photoGap));
+          for(let j = 0; j < images.length; j++) {
+            const img = images[j];
+            const base64Img = await imageToBase64(img.src);
+            if (j > 0 && j % maxPhotosPerRow === 0) {
+              photoX = margin;
+              yPosition += photoSize + photoGap;
+               if (yPosition + photoSize > pageHeight - margin) { doc.addPage(); yPosition = 40; }
+            }
+            doc.addImage(base64Img, 'JPEG', photoX, yPosition, photoSize, photoSize);
+            photoX += photoSize + photoGap;
+          }
+          yPosition += photoSize + 20;
+        } else { yPosition += 10; }
+      }
+      doc.save("रिपोर्ट-सूची.pdf");
     }
-
-
     window.handleExport = function() {
       const value = document.getElementById('exportDropdown').value;
       if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
-
-      // --- बदला हुआ हिस्सा ---
-      // अगर 'रिपोर्ट PDF' चुना गया है, तो नया फंक्शन कॉल करें
       if (value === 'reports-pdf') {
-          alert("PDF रिपोर्ट तैयार की जा रही है... इसमें इमेज की संख्या के आधार पर कुछ समय लग सकता है। कृपया प्रतीक्षा करें।");
-          exportReportsToPdfAdvanced().catch(err => {
-              console.error("PDF बनाने में त्रुटि:", err);
-              alert("PDF बनाने में एक त्रुटि हुई। कंसोल में विस्तृत जानकारी देखें।");
-          });
-          return; // फंक्शन को यहीं रोक दें
+        alert("PDF रिपोर्ट तैयार की जा रही है... इसमें इमेज की संख्या के आधार पर कुछ समय लग सकता है। कृपया प्रतीक्षा करें।");
+        exportReportsToPdfAdvanced().catch(err => {
+          console.error("PDF बनाने में त्रुटि:", err);
+          alert("PDF बनाने में एक त्रुटि हुई। कंसोल में विस्तृत जानकारी देखें।");
+        });
+        return;
       }
-      // --- बदलाव समाप्त ---
-
-      // JPG Download
       if (value.endsWith("-jpg")) {
         let selector = "";
         if (value.startsWith("reports-")) selector = "#reportsTab";
@@ -796,7 +569,6 @@
         exportSectionAsJPG(selector, "Dashboard-" + Date.now());
         return;
       }
-      // बाकी एक्सपोर्ट
       if (value.startsWith("combined-")) {
         const type = value.split("-")[1];
         exportCombinedTable(type);
