@@ -580,47 +580,122 @@ window.splitDoneRemaining = function(doneNames){
 </script>
 
 
-<!-- @@ADDON:PLM_COMPAT -->
+<!-- @@ADDON:PLM_DUAL -->
 <div id="plm-toggle"><a href="javascript:void(0)" id="plm-open">Program List Manager</a></div>
 <div id="plm-panel" hidden>
   <div>Active & Default (eventNames)</div>
   <div id="plm-list"></div>
 </div>
+
 <script>
 (function(){
-  if (!window.firebase || !firebase.firestore) { console.warn("Firebase compat API not found."); return; }
-  var db = firebase.firestore();
   var panel = document.getElementById('plm-panel');
   var openBtn = document.getElementById('plm-open');
   var listEl = document.getElementById('plm-list');
-  if (openBtn){ openBtn.addEventListener('click', function(){ panel.hidden = !panel.hidden; }); }
+  if (openBtn){ openBtn.addEventListener('click', function(){ if(panel){ panel.hidden = !panel.hidden; } }); }
 
-  function rowHTML(id, name, active, isDefault){
+  async function fetchRows(){
+    // v9 modular try
+    try{
+      if (window.getDocs && window.collection && window.db){
+        const snap = await getDocs(collection(db, 'eventNames'));
+        const rows = [];
+        snap.forEach((d)=>{
+          const v = d.data();
+          rows.push({ id:d.id, name:(v&&v.name)||'—', active:!!(v&&v.active), isDefault:!!(v&&v.isDefault) });
+        });
+        return rows;
+      }
+    }catch(e){ console.warn('PLM v9 fetch failed', e); }
+
+    // v8 compat fallback
+    try{
+      if (window.firebase && firebase.firestore){
+        const rows = [];
+        const snap = await firebase.firestore().collection('eventNames').get();
+        snap.forEach(function(doc){
+          var v = doc.data()||{};
+          rows.push({ id:doc.id, name:v.name||'—', active:!!v.active, isDefault:!!v.isDefault });
+        });
+        return rows;
+      }
+    }catch(e){ console.warn('PLM v8 fetch failed', e); }
+
+    console.warn('No Firestore API detected.');
+    return [];
+  }
+
+  async function setActive(id, on){
+    // v9
+    try{
+      if (window.updateDoc && window.doc && window.db){
+        await updateDoc(doc(db, 'eventNames', id), { active: !!on });
+        return;
+      }
+    }catch(e){}
+    // v8
+    try{
+      if (window.firebase && firebase.firestore){
+        await firebase.firestore().collection('eventNames').doc(id).update({ active: !!on });
+        return;
+      }
+    }catch(e){ console.warn(e); }
+  }
+
+  async function setDefault(id){
+    // v9
+    try{
+      if (window.getDocs && window.collection && window.writeBatch && window.doc && window.db){
+        const snap = await getDocs(collection(db, 'eventNames'));
+        const batch = writeBatch(db);
+        snap.forEach((d)=>{ batch.update(doc(db,'eventNames', d.id), { isDefault: d.id === id }); });
+        await batch.commit();
+        return;
+      }
+    }catch(e){}
+    // v8
+    try{
+      if (window.firebase && firebase.firestore){
+        const db8 = firebase.firestore();
+        const snap = await db8.collection('eventNames').get();
+        const batch = db8.batch();
+        snap.forEach(function(d){ batch.update(db8.collection('eventNames').doc(d.id), { isDefault: d.id === id }); });
+        await batch.commit();
+        return;
+      }
+    }catch(e){ console.warn(e); }
+  }
+
+  function rowHTML(r){
     return (
       '<div class="plm-row">' +
-        '<div class="plm-title"><strong>' + (name||'—') + '</strong> <span class="plm-id">' + id + '</span></div>' +
-        '<label><input type="checkbox" class="plm-active" data-id="'+id+'" '+(active?'checked':'')+'> Active</label>' +
-        '<label><input type="radio" name="plm-default" class="plm-default" data-id="'+id+'" '+(isDefault?'checked':'')+'> Default</label>' +
+        '<div class="plm-title"><strong>'+ (r.name||'—') +'</strong> <span class="plm-id">'+ r.id +'</span></div>' +
+        '<label><input type="checkbox" class="plm-active" data-id="'+r.id+'" '+(r.active?'checked':'')+'> Active</label>' +
+        '<label><input type="radio" name="plm-default" class="plm-default" data-id="'+r.id+'" '+(r.isDefault?'checked':'')+'> Default</label>' +
       '</div>'
     );
   }
-  function bindHandlers(){
+
+  async function render(){
+    const rows = await fetchRows();
+    listEl.innerHTML = rows.map(rowHTML).join('');
     Array.prototype.forEach.call(document.querySelectorAll('.plm-active'), function(el){
-      el.onchange = function(){ var id = el.getAttribute('data-id'); db.collection('eventNames').doc(id).update({ active: !!el.checked }).catch(console.warn); };
+      el.addEventListener('change', function(){
+        var id = el.getAttribute('data-id'); setActive(id, el.checked);
+      });
     });
     Array.prototype.forEach.call(document.querySelectorAll('.plm-default'), function(el){
-      el.onchange = function(){ var setId = el.getAttribute('data-id'); db.collection('eventNames').get().then(function(snap){ var batch=db.batch(); snap.forEach(function(d){ batch.update(db.collection('eventNames').doc(d.id), { isDefault: d.id === setId }); }); return batch.commit(); }).catch(console.warn); };
+      el.addEventListener('change', function(){
+        var id = el.getAttribute('data-id'); setDefault(id);
+      });
     });
   }
-  function load(){
-    db.collection('eventNames').get().then(function(snap){
-      var html = ''; snap.forEach(function(doc){ var d=doc.data()||{}; html += rowHTML(doc.id, d.name, !!d.active, !!d.isDefault); });
-      listEl.innerHTML = html; bindHandlers();
-    }).catch(console.warn);
-  }
-  load();
+
+  render();
 })();
 </script>
+<!-- @@END:PLM_DUAL -->
+
 <!-- @@END:PLM_COMPAT -->
 
 
