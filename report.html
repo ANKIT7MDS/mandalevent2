@@ -1,77 +1,149 @@
 <!DOCTYPE html>
-});
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>आप के मंडल में सम्पन्न हुए वर्तमान कार्यक्रम की पूरी जानकारी भेजिए </title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #ffedd2; font-family: 'Segoe UI', Arial, sans-serif; }
+        .container { max-width: 450px; margin: 40px auto; background: #ffd89b; border-radius: 16px; box-shadow: 0 2px 16px #ff980044; padding: 36px 22px 28px 22px; }
+        h1 { color: #e65100; text-align: center; margin-bottom: 18px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 18px; }
+        label { margin-bottom: 6px; font-weight: 500; color: #b85c00; }
+        input, select, textarea { padding: 11px 10px; border-radius: 6px; border: 1.5px solid #ffc27b; background: #fffdf6; font-size: 1.1rem; outline: none; transition: border 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #ff9800; background: #fff7e0; }
+        button, input[type="submit"] { width: 100%; background: #ff9800; color: #fff; border: none; border-radius: 7px; padding: 11px 18px; font-size: 1.13rem; font-weight: bold; cursor: pointer; margin-top: 12px; margin-bottom: 5px; transition: background 0.2s;}
+        button:hover, input[type="submit"]:hover { background: #e65100; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>आप के मंडल में सम्पन्न हुए वर्तमान कार्यक्रम की पूरी जानकारी भेजिए</h1>
+        <form id="reportForm" autocomplete="off">
+            <div class="form-group">
+                <label for="reportEventSelect">कार्यक्रम का नाम</label>
+                <select id="reportEventSelect" required>
+                    <option value="">कार्यक्रम का नाम चुनें</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="reportMandal">मंडल</label>
+                <select id="reportMandal" required>
+                    <option value="">-- मंडल चुनें --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="reportLocation">स्थान</label>
+                <input type="text" id="reportLocation" required placeholder="जहा कार्यक्रम संप्पन हुआ वो स्थान लिखे ">
+            </div>
+            <div class="form-group">
+                <label for="attendance">उपस्थिति</label>
+                <input type="number" id="attendance" required placeholder="कार्यक्रम में कुल उपस्तिथ संख्या ">
+            </div>
+            <label>दिनांक</label>
+            <input id="reportDate" type="date" required>
+            <div class="form-group">
+                <label for="guests">विशिष्ट अतिथि</label>
+                <input type="text" id="guests" placeholder="विशिष्ट अतिथि, जनप्रतिनिधि,प्रभारी ,वक्ता आदि ">
+            </div>
+            <div class="form-group">
+                <label for="details">विवरण</label>
+                <textarea id="details" rows="3" placeholder="कार्यक्रम का संक्षिप्त विवरण "></textarea>
+            </div>
+            <div class="form-group">
+                <label for="photos">फोटो अपलोड करें</label>
+                <input type="file" id="photos" multiple accept="image/*">
+            </div>
+            <!-- ↓↓↓ ये लाइन जोड़ी है: वेटिंग मेसेज के लिए -->
+            <div id="loadingMessage" style="display:none;text-align:center;color:#e65100;margin-bottom:10px;">
+                रिपोर्ट सबमिट हो रही है, कृपया प्रतीक्षा करें…
+            </div>
+            <!-- ↑↑↑ ये लाइन जोड़ी है: वेटिंग मेसेज के लिए -->
+            <button type="submit" id="submitBtn">रिपोर्ट सबमिट करें</button>
+        </form>
+    </div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
+        const firebaseConfig = {
+            apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+            authDomain: "mandaleventall.firebaseapp.com",
+            projectId: "mandaleventall",
+            storageBucket: "mandaleventall.firebasestorage.app",
+            messagingSenderId: "900190130114",
+            appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+            measurementId: "G-2BBZZNRS88"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
-async function loadEventNames(){
-const eventSelect = document.getElementById('reportEventSelect');
-eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-const qs = await getDocs(collection(db,'eventNames'));
-qs.forEach(doc=>{
-const opt=document.createElement('option'); opt.value=doc.id; opt.textContent=doc.data().name; eventSelect.appendChild(opt);
-});
-}
+        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            const reportMandalSelect = document.getElementById('reportMandal');
+            mandals.forEach(mandal => {
+                const option = document.createElement('option');
+                option.value = mandal;
+                option.textContent = mandal;
+                reportMandalSelect.appendChild(option);
+            });
+            await loadEventNames();
+        });
 
-function showSummaryPopup(data){
-const summary = Object.entries(data).map(([k,v])=>`<b>${k}</b>: ${Array.isArray(v)? v.join(', '):(v||'-')}`).join('<br>');
-const wrap = document.createElement('div');
-wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:5000';
-wrap.innerHTML = `<div style="background:#fff;max-width:480px;width:92%;padding:18px;border-radius:12px;">
-<h3 style="margin:0 0 8px 0;">भरी गई जानकारी</h3>
-<div style="font-size:14px;line-height:1.45">${summary}</div>
-<div style="margin-top:10px;color:#d35400;font-size:12px;">इसका screenshot लेकर अपने पास रख सकते हैं</div>
-<div style="text-align:right;margin-top:12px;"><button onclick="this.closest('div').parentElement.remove()">OK</button></div>
-</div>`;
-document.body.appendChild(wrap);
-}
+        async function loadEventNames() {
+            const eventSelect = document.getElementById('reportEventSelect');
+            eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+            const querySnapshot = await getDocs(collection(db, "eventNames"));
+            querySnapshot.forEach((doc) => {
+                const eventName = doc.data().name;
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = eventName;
+                eventSelect.appendChild(option);
+            });
+        }
 
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // ↓↓↓ ये लाइन जोड़ी है: बटन और लोडिंग डिव को पकड़ने के लिए
+            const submitBtn = document.getElementById('submitBtn');  // जोड़ी गई लाइन
+            const loadingDiv = document.getElementById('loadingMessage'); // जोड़ी गई लाइन
+            submitBtn.disabled = true;                // जोड़ी गई लाइन: बटन को disable करें
+            loadingDiv.style.display = "block";       // जोड़ी गई लाइन: मेसेज दिखाएँ
 
-document.getElementById('reportForm').addEventListener('submit', async (e) => {
-e.preventDefault();
-const submitBtn = document.getElementById('submitBtn');
-const loadingDiv = document.getElementById('loadingMessage');
-submitBtn.disabled = true; loadingDiv.style.display = 'block';
-
-
-const eventNameId = document.getElementById('reportEventSelect').value;
-const files = document.getElementById('photos').files;
-const photoUrls = [];
-try {
-for (let file of files) {
-const storageRef = ref(storage, `reports/${eventNameId}/${file.name}`);
-await uploadBytes(storageRef, file);
-const url = await getDownloadURL(storageRef);
-photoUrls.push(url);
-}
-const reportData = {
-eventNameId,
-mandal: document.getElementById('reportMandal').value,
-location: document.getElementById('reportLocation').value,
-attendance: document.getElementById('attendance').value,
-reportDate: document.getElementById('reportDate').value,
-guests: document.getElementById('guests').value,
-details: document.getElementById('details').value,
-photos: photoUrls
-};
-await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
-
-
-// Done / Remaining calc for REPORTS of this program
-const all = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
-const doneSet = new Set(); all.forEach(d=>{ const r=d.data(); if(r.mandal) doneSet.add(r.mandal); });
-const done=[...doneSet]; const remaining = mandals.filter(m=>!doneSet.has(m));
-await sendTelegramAlert(`✅ REPORT | ${eventNameId}\n${reportData.mandal} ने submit किया.\n\nPoore hue (${done.length}/21):\n- ${done.join('\n- ')}\n\nBache hue (${remaining.length}):\n- ${remaining.join('\n- ')}`);
-if(done.length===21){ await sendTelegramAlert(`🎉 REPORT | ${eventNameId}: Sabhi 21/21 Mandal complete!`); }
-
-
-showSummaryPopup(reportData);
-alert('रिपोर्ट सबमिट की गई!');
-document.getElementById('reportForm').reset();
-} catch (error) {
-alert('Error: ' + error.message);
-}
-submitBtn.disabled = false; loadingDiv.style.display = 'none';
-});
-</script>
+            const eventNameId = document.getElementById('reportEventSelect').value;
+            const files = document.getElementById('photos').files;
+            const photoUrls = [];
+            try {
+                for (let file of files) {
+                    const storageRef = ref(storage, `reports/${eventNameId}/${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    photoUrls.push(url);
+                }
+                const reportDate = document.getElementById("reportDate").value;
+                const reportData = {
+                    eventNameId: eventNameId,
+                    mandal: document.getElementById('reportMandal').value,
+                    location: document.getElementById('reportLocation').value,
+                    attendance: document.getElementById('attendance').value,
+                    reportDate: reportDate,
+                    guests: document.getElementById('guests').value,
+                    details: document.getElementById('details').value,
+                    photos: photoUrls
+                };
+                await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
+                alert("रिपोर्ट सबमिट की गई!");
+                document.getElementById('reportForm').reset();
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+            submitBtn.disabled = false;           // जोड़ी गई लाइन: बटन वापस enable करें
+            loadingDiv.style.display = "none";    // जोड़ी गई लाइन: मेसेज छुपाएँ
+        });
+    </script>
 </body>
 </html>
