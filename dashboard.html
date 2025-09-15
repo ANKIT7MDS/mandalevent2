@@ -552,6 +552,138 @@
         }
     };
   </script>
+
+<!-- @@ADDON:COMMON_HELPERS -->
+<script>
+window.MANDALS = window.MANDALS || [
+  "सीतामऊ","भानपुरा","गरोठ","भागवतगढ़","शामगढ़","दलोदा",
+  "मगरामाता जी","मंदसौर ग्रामीण","मंदसौर उत्तर","मंदसौर दक्षिण",
+  "नाहargarh","सुवासरा","अफजलपुर","तुरकिया","सनावदिया",
+  "बिच्चलाना","झाबुआखेड़ी","खटवासा","पिपलियामंडी","सुवालिया","चिताखेड़ा"
+];
+window.TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
+window.TELEGRAM_CHAT_ID   = "733804072";
+window.sendTelegram = async function(text){
+  try{
+    await fetch("https://api.telegram.org/bot" + window.TELEGRAM_BOT_TOKEN + "/sendMessage", {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: window.TELEGRAM_CHAT_ID, text: text, parse_mode: 'Markdown' })
+    });
+  }catch(e){ console.warn(e); }
+};
+window.splitDoneRemaining = function(doneNames){
+  var done = Array.from(new Set((doneNames||[]).filter(Boolean)));
+  var remaining = (window.MANDALS||[]).filter(function(m){ return done.indexOf(m) === -1; });
+  return { done: done, remaining: remaining };
+};
+</script>
+
+
+<!-- @@ADDON:PLM_COMPAT -->
+<div id="plm-toggle"><a href="javascript:void(0)" id="plm-open">Program List Manager</a></div>
+<div id="plm-panel" hidden>
+  <div>Active & Default (eventNames)</div>
+  <div id="plm-list"></div>
+</div>
+<script>
+(function(){
+  if (!window.firebase || !firebase.firestore) { console.warn("Firebase compat API not found."); return; }
+  var db = firebase.firestore();
+  var panel = document.getElementById('plm-panel');
+  var openBtn = document.getElementById('plm-open');
+  var listEl = document.getElementById('plm-list');
+  if (openBtn){ openBtn.addEventListener('click', function(){ panel.hidden = !panel.hidden; }); }
+
+  function rowHTML(id, name, active, isDefault){
+    return (
+      '<div class="plm-row">' +
+        '<div class="plm-title"><strong>' + (name||'—') + '</strong> <span class="plm-id">' + id + '</span></div>' +
+        '<label><input type="checkbox" class="plm-active" data-id="'+id+'" '+(active?'checked':'')+'> Active</label>' +
+        '<label><input type="radio" name="plm-default" class="plm-default" data-id="'+id+'" '+(isDefault?'checked':'')+'> Default</label>' +
+      '</div>'
+    );
+  }
+  function bindHandlers(){
+    Array.prototype.forEach.call(document.querySelectorAll('.plm-active'), function(el){
+      el.onchange = function(){ var id = el.getAttribute('data-id'); db.collection('eventNames').doc(id).update({ active: !!el.checked }).catch(console.warn); };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.plm-default'), function(el){
+      el.onchange = function(){ var setId = el.getAttribute('data-id'); db.collection('eventNames').get().then(function(snap){ var batch=db.batch(); snap.forEach(function(d){ batch.update(db.collection('eventNames').doc(d.id), { isDefault: d.id === setId }); }); return batch.commit(); }).catch(console.warn); };
+    });
+  }
+  function load(){
+    db.collection('eventNames').get().then(function(snap){
+      var html = ''; snap.forEach(function(doc){ var d=doc.data()||{}; html += rowHTML(doc.id, d.name, !!d.active, !!d.isDefault); });
+      listEl.innerHTML = html; bindHandlers();
+    }).catch(console.warn);
+  }
+  load();
+})();
+</script>
+<!-- @@END:PLM_COMPAT -->
+
+
+<!-- @@ADDON:DROPDOWN_ACTIVE_DEFAULT (DUAL) -->
+<script>
+(function(){
+  async function fetchEventNames(){
+    // Returns [{id, name, active, isDefault}...]
+    try{
+      // Try modular v9
+      if (window.getDocs && window.collection && window.db){
+        const snap = await getDocs(collection(db, 'eventNames'));
+        const rows = [];
+        snap.forEach(d => {
+          const v = d.data();
+          rows.push({ id: d.id, name: (v&&v.name)||'—', active: !!(v&&v.active), isDefault: !!(v&&v.isDefault) });
+        });
+        return rows;
+      }
+    }catch(e){ console.warn("v9 fetch failed", e); }
+    try{
+      // Fallback: compat v8
+      if (window.firebase && firebase.firestore){
+        const rows = [];
+        const snap = await firebase.firestore().collection('eventNames').get();
+        snap.forEach(function(doc){
+          var v = doc.data() || {};
+          rows.push({ id: doc.id, name: v.name || '—', active: !!v.active, isDefault: !!v.isDefault });
+        });
+        return rows;
+      }
+    }catch(e){ console.warn("v8 fetch failed", e); }
+    console.warn("No Firestore API detected for eventNames.");
+    return [];
+  }
+
+  window.loadEventNamesActive = async function(selectEl){
+    try{
+      if (!selectEl) return;
+      selectEl.innerHTML = '<option value=\"\">कार्यक्रम का नाम चुनें</option>';
+      const rows = await fetchEventNames();
+      let defaultId = ''; const actives = [];
+      rows.forEach(function(r){ if (r.isDefault) defaultId = r.id; if (r.active) actives.push(r); });
+      actives.forEach(function(r){
+        var opt = document.createElement('option');
+        opt.value = r.id; opt.textContent = r.name;
+        selectEl.appendChild(opt);
+      });
+      if (defaultId){ selectEl.value = defaultId; }
+      else if (actives.length >= 1){ selectEl.value = actives[0].id; }
+    }catch(e){ console.warn(e); }
+  };
+
+  document.addEventListener('DOMContentLoaded', async function(){
+    var ids = ['eventName','coordEventName','reportEventSelect'];
+    ids.forEach(async function(id){
+      var el = document.getElementById(id);
+      if (el) await window.loadEventNamesActive(el);
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
 
