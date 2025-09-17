@@ -50,7 +50,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
@@ -83,12 +83,17 @@
             await loadEventNames();
         });
 
-        async function loadEventNames(){
-          const sel = document.getElementById('eventName');
-          sel.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-          const snap = await getDocs(collection(db,'eventNames'));
-          const sorted = snap.docs.sort((a,b)=> (a.data().name||'').localeCompare(b.data().name||'','hi'));
-          for(const d of sorted){ const opt=document.createElement('option'); opt.value=d.id; opt.textContent=d.data().name; sel.appendChild(opt); }
+        async function loadEventNames() {
+            const sel = document.getElementById('eventName');
+            sel.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
+            
+            // केवल active कार्यक्रम लोड करने के लिए query बदल दी गई है
+            const eventNamesRef = collection(db, "eventNames");
+            const q = query(eventNamesRef, where("isActive", "==", true));
+            const snap = await getDocs(q);
+
+            const sorted = snap.docs.sort((a,b)=> (a.data().name||'').localeCompare(b.data().name||'','hi'));
+            for(const d of sorted){ const opt=document.createElement('option'); opt.value=d.id; opt.textContent=d.data().name; sel.appendChild(opt); }
         }
 
         function showSummaryPopup(data){
@@ -106,8 +111,10 @@
 
         document.getElementById('eventForm').addEventListener('submit', async (e)=>{
           e.preventDefault();
+          const selectedEventOption = document.getElementById('eventName').options[document.getElementById('eventName').selectedIndex];
+          const eventNameText = selectedEventOption.text;
           const data = {
-            eventNameId: document.getElementById('eventName').value,
+            eventNameId: selectedEventOption.value,
             mandal: document.getElementById('mandal').value,
             date: document.getElementById('eventDate').value,
             time: document.getElementById('eventTime').value,
@@ -115,14 +122,21 @@
           };
           try{
             await addDoc(collection(db,'events'), data);
-            const eventsSnap = await getDocs(collection(db,'events'));
-            const doneSet = new Set();
-            eventsSnap.forEach(d=>{ const ev=d.data(); if(ev.eventNameId===data.eventNameId && ev.mandal) doneSet.add(ev.mandal); });
-            const done = [...doneSet];
+            
+            const eventsQuery = query(collection(db, "events"), where("eventNameId", "==", data.eventNameId));
+            const eventsSnap = await getDocs(eventsQuery);
+            const doneSet = new Set(eventsSnap.docs.map(d => d.data().mandal));
+
             const remaining = mandals.filter(m=> !doneSet.has(m));
-            await sendTelegramAlert(`✅ EVENT | ${data.eventNameId}\n${data.mandal} ने submit किया.\n\nPoore hue (${done.length}/21):\n- ${done.join('\n- ')}\n\nBache hue (${remaining.length}):\n- ${remaining.join('\n- ')}`);
-            if(done.length===21){ await sendTelegramAlert(`🎉 EVENT | ${data.eventNameId}: Sabhi 21/21 Mandal complete!`); }
-            showSummaryPopup(data);
+            const alertText = `✅ कार्यक्रम जानकारी: *${eventNameText}*\n\n*मंडल:* ${data.mandal}\n*स्थान:* ${data.location}\n\n*शेष मंडल (${remaining.length}):*\n- ${remaining.join('\n- ')}`;
+            await sendTelegramAlert(alertText);
+
+            if(remaining.length === 0){ await sendTelegramAlert(`🎉 *${eventNameText}* के लिए सभी 21 मंडलों से कार्यक्रम जानकारी प्राप्त हो गई है!`); }
+
+            showSummaryPopup({
+                "कार्यक्रम": eventNameText,
+                ...data
+            });
             alert('कार्यक्रम जोड़ा गया!');
             e.target.reset();
           }catch(err){ alert('Error: '+err.message); }
