@@ -54,17 +54,15 @@
                 <label for="photos">फोटो अपलोड करें</label>
                 <input type="file" id="photos" multiple accept="image/*">
             </div>
-            <!-- ↓↓↓ ये लाइन जोड़ी है: वेटिंग मेसेज के लिए -->
             <div id="loadingMessage" style="display:none;text-align:center;color:#e65100;margin-bottom:10px;">
                 रिपोर्ट सबमिट हो रही है, कृपया प्रतीक्षा करें…
             </div>
-            <!-- ↑↑↑ ये लाइन जोड़ी है: वेटिंग मेसेज के लिए -->
             <button type="submit" id="submitBtn">रिपोर्ट सबमिट करें</button>
         </form>
     </div>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
         const firebaseConfig = {
@@ -80,7 +78,7 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडਾ", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const reportMandalSelect = document.getElementById('reportMandal');
@@ -96,7 +94,12 @@
         async function loadEventNames() {
             const eventSelect = document.getElementById('reportEventSelect');
             eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-            const querySnapshot = await getDocs(collection(db, "eventNames"));
+            
+            // केवल active कार्यक्रम लोड करने के लिए query बदल दी गई है
+            const eventNamesRef = collection(db, "eventNames");
+            const q = query(eventNamesRef, where("isActive", "==", true));
+            const querySnapshot = await getDocs(q);
+
             querySnapshot.forEach((doc) => {
                 const eventName = doc.data().name;
                 const option = document.createElement('option');
@@ -108,29 +111,27 @@
 
         document.getElementById('reportForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // ↓↓↓ ये लाइन जोड़ी है: बटन और लोडिंग डिव को पकड़ने के लिए
-            const submitBtn = document.getElementById('submitBtn');  // जोड़ी गई लाइन
-            const loadingDiv = document.getElementById('loadingMessage'); // जोड़ी गई लाइन
-            submitBtn.disabled = true;                // जोड़ी गई लाइन: बटन को disable करें
-            loadingDiv.style.display = "block";       // जोड़ी गई लाइन: मेसेज दिखाएँ
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingDiv = document.getElementById('loadingMessage');
+            submitBtn.disabled = true;
+            loadingDiv.style.display = "block";
 
             const eventNameId = document.getElementById('reportEventSelect').value;
             const files = document.getElementById('photos').files;
             const photoUrls = [];
             try {
                 for (let file of files) {
-                    const storageRef = ref(storage, `reports/${eventNameId}/${file.name}`);
+                    const storageRef = ref(storage, `reports/${eventNameId}/${Date.now()}_${file.name}`);
                     await uploadBytes(storageRef, file);
                     const url = await getDownloadURL(storageRef);
                     photoUrls.push(url);
                 }
-                const reportDate = document.getElementById("reportDate").value;
                 const reportData = {
                     eventNameId: eventNameId,
                     mandal: document.getElementById('reportMandal').value,
                     location: document.getElementById('reportLocation').value,
                     attendance: document.getElementById('attendance').value,
-                    reportDate: reportDate,
+                    date: document.getElementById("reportDate").value,
                     guests: document.getElementById('guests').value,
                     details: document.getElementById('details').value,
                     photos: photoUrls
@@ -141,8 +142,8 @@
             } catch (error) {
                 alert("Error: " + error.message);
             }
-            submitBtn.disabled = false;           // जोड़ी गई लाइन: बटन वापस enable करें
-            loadingDiv.style.display = "none";    // जोड़ी गई लाइन: मेसेज छुपाएँ
+            submitBtn.disabled = false;
+            loadingDiv.style.display = "none";
         });
     </script>
 </body>
