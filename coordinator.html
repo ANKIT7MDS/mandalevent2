@@ -61,7 +61,7 @@
     </div>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
@@ -91,7 +91,12 @@
         async function loadEventNames() {
             const eventSelect = document.getElementById('eventSelect');
             eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-            const querySnapshot = await getDocs(collection(db, "eventNames"));
+            
+            // केवल active कार्यक्रम लोड करने के लिए query बदल दी गई है
+            const eventNamesRef = collection(db, "eventNames");
+            const q = query(eventNamesRef, where("isActive", "==", true));
+            const querySnapshot = await getDocs(q);
+
             querySnapshot.forEach((doc) => {
                 const eventName = doc.data().name;
                 const option = document.createElement('option');
