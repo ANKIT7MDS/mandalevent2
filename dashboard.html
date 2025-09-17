@@ -144,6 +144,7 @@
     const db = getFirestore(app);
     const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
     const eventNameMap = {};
+    let activeEventIds = new Set();
     let eventPage = 1, coordPage = 1, reportPage = 1, settingsPage = 1;
     const PAGE_SIZE = 15;
     const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
@@ -160,31 +161,35 @@
     }
 
     async function loadEventNames({ preserveSelection = true } = {}) {
-      const filterEvent = document.getElementById('filterEvent');
-      const previousValue = preserveSelection ? filterEvent.value : "";
-      filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
-      
-      const q = query(collection(db, "eventNames"), where("isActive", "==", true));
-      const snap = await getDocs(q);
-      const sortedDocs = snap.docs.sort((a, b) => (a.data().name || '').localeCompare(b.data().name || '', 'hi'));
-      
-      eventNameMap[""] = 'Unknown';
-      // First, get all names for the map
-      const allEventsSnap = await getDocs(collection(db, "eventNames"));
-      allEventsSnap.docs.forEach(docSnap => {
-        eventNameMap[docSnap.id] = docSnap.data().name || 'Unknown';
-      });
+        const filterEvent = document.getElementById('filterEvent');
+        const previousValue = preserveSelection ? filterEvent.value : "";
 
-      // Then populate the filter dropdown with only active events
-      for (const docSnap of sortedDocs) {
-        const data = docSnap.data();
-        const option = document.createElement('option');
-        option.value = docSnap.id;
-        option.textContent = data.name;
-        filterEvent.appendChild(option);
-      }
-      if (preserveSelection) filterEvent.value = previousValue;
-      await loadEventSettings();
+        const allEventsSnap = await getDocs(collection(db, "eventNames"));
+        const allEvents = allEventsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        allEvents.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'hi'));
+
+        eventNameMap[""] = 'Unknown';
+        activeEventIds.clear();
+        allEvents.forEach(event => {
+            eventNameMap[event.id] = event.name || 'Unknown';
+            if (event.isActive) {
+                activeEventIds.add(event.id);
+            }
+        });
+
+        filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
+        allEvents.forEach(event => {
+            if (event.isActive) {
+                const option = document.createElement('option');
+                option.value = event.id;
+                option.textContent = event.name;
+                filterEvent.appendChild(option);
+            }
+        });
+        
+        if (preserveSelection) filterEvent.value = previousValue;
+        await loadEventSettings();
     }
     
     async function loadEventSettings() {
@@ -223,7 +228,8 @@
 
     window.toggleEventVisibility = async function(eventNameId, isVisible) {
         await updateDoc(doc(db, "eventNames", eventNameId), { isActive: isVisible });
-        await loadEventNames({ preserveSelection: true }); // Refresh dropdown
+        await loadEventNames({ preserveSelection: true }); 
+        await loadListsOnly(); // Refresh all lists to reflect the change
     };
 
     window.addEventName = async function() {
@@ -248,10 +254,7 @@
       if (!confirm("क्या आप वाकई इस कार्यक्रम को हटाना चाहते हैं? इससे जुड़े सभी संयोजक, रिपोर्ट और कार्यक्रम की जानकारी स्थायी रूप से हट जाएगी!")) return;
       
       try {
-        console.log(`Deleting all data for event ID: ${eventNameId}`);
         const batch = writeBatch(db);
-
-        // Delete sub-collections (coordinators, reports)
         const coordinatorsRef = collection(db, `eventNames/${eventNameId}/coordinators`);
         const reportsRef = collection(db, `eventNames/${eventNameId}/reports`);
         const coordinatorsSnap = await getDocs(coordinatorsRef);
@@ -259,12 +262,10 @@
         coordinatorsSnap.forEach(doc => batch.delete(doc.ref));
         reportsSnap.forEach(doc => batch.delete(doc.ref));
         
-        // Delete related entries in root 'events' collection
         const eventsQuery = query(collection(db, "events"), where("eventNameId", "==", eventNameId));
         const eventsSnap = await getDocs(eventsQuery);
         eventsSnap.forEach(doc => batch.delete(doc.ref));
 
-        // Delete the main eventName document
         batch.delete(doc(db, "eventNames", eventNameId));
 
         await batch.commit();
@@ -307,13 +308,16 @@
       const filterMandalVal = document.getElementById('filterMandal').value;
       const searchTerm = document.getElementById('eventSearch').value.toLowerCase();
       
-      const events = await getDocs(collection(db, "events"));
+      const eventsSnap = await getDocs(collection(db, "events"));
       let filtered = [];
-      for (const docSnap of events.docs) {
+      for (const docSnap of eventsSnap.docs) {
         const event = docSnap.data();
+        if (!activeEventIds.has(event.eventNameId)) continue; // Filter by active events
+        
         const eventName = eventNameMap[event.eventNameId] || '';
         if (filterEventId && event.eventNameId !== filterEventId) continue;
         if (filterMandalVal && event.mandal !== filterMandalVal) continue;
+        
         const searchableText = `${eventName} ${event.mandal || ''} ${event.location || ''}`.toLowerCase();
         if (searchTerm && !searchableText.includes(searchTerm)) continue;
         filtered.push({id: docSnap.id, ...event, eventName});
@@ -342,6 +346,8 @@
       const eventNamesSnap = await getDocs(collection(db, "eventNames"));
       for (const eventNameDoc of eventNamesSnap.docs) {
         const eventNameId = eventNameDoc.id;
+        if (!activeEventIds.has(eventNameId)) continue; // Filter by active events
+
         if (filterEventId && eventNameId !== filterEventId) continue;
         const eventName = eventNameDoc.data().name || '';
         const coordsSnap = await getDocs(collection(db, `eventNames/${eventNameId}/coordinators`));
@@ -377,6 +383,8 @@
       const eventNamesSnap = await getDocs(collection(db, "eventNames"));
       for (const eventNameDoc of eventNamesSnap.docs) {
         const eventNameId = eventNameDoc.id;
+        if (!activeEventIds.has(eventNameId)) continue; // Filter by active events
+
         const eventName = eventNameDoc.data().name || '';
         const reportsSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
         for (const docSnap of reportsSnap.docs) {
