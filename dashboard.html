@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <title>डैशबोर्ड (स्थायी समाधान के साथ)</title>
+  <title>डैशबोर्ड (कार्यक्रम प्रबंधन के साथ)</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
@@ -11,10 +11,10 @@
     .top-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .top-bar .left, .top-bar .right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .top-bar select, .top-bar button, .top-bar input[type="text"] { font-size: 1rem; padding: 5px 9px; border-radius: 5px; border: 1.2px solid #ffa726a9; background: #fffaf5; color: #442300; }
-    .top-bar button, .tab-btn, input[type="submit"] { background: #ff9800; color: #fff; font-weight: 600; border: none; cursor: pointer; padding: 7px 14px; border-radius: 6px; margin: 0; transition: background 0.2s; }
-    .top-bar button:hover, .tab-btn.active, .tab-btn:hover, input[type="submit"]:hover { background: #e65100; }
+    .top-bar button, .tab-btn, input[type="submit"], .form-section button { background: #ff9800; color: #fff; font-weight: 600; border: none; cursor: pointer; padding: 7px 14px; border-radius: 6px; margin: 0; transition: background 0.2s; }
+    .top-bar button:hover, .tab-btn.active, .tab-btn:hover, input[type="submit"]:hover, .form-section button:hover { background: #e65100; }
     .pending-mandals { color: #e53935; font-size: 0.98rem; margin-left: 18px; }
-    .tabs { display: flex; gap: 4px; margin: 10px 0 8px 0; justify-content: center; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0 8px 0; justify-content: center; }
     .tab-btn { padding: 7px 20px; border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent; background: #ffe0b2; color: #8d4700; font-weight: 600; font-size: 1.02rem; }
     .tab-btn.active { background: #ff9800; color: #fff; border-bottom: 2px solid #ff9800; }
     .tab-content { display: none; }
@@ -22,7 +22,7 @@
     .search-bar { margin: 8px 0 12px 0; text-align: center; }
     .search-bar input { font-size: 1rem; padding: 6px 12px; border-radius: 6px; border: 1.2px solid #ffa726a9; background: #fffaf5; color: #442300; width: 50%; max-width: 400px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 1.2rem; background: #fff; box-shadow: 0 1px 8px #ffa72611; font-size: 0.99rem; }
-    th, td { border: 1px solid #ffa72655; padding: 6px 7px; text-align: left; }
+    th, td { border: 1px solid #ffa72655; padding: 8px 9px; text-align: left; vertical-align: middle; }
     th { background: #ffb74d; color: #442300; font-weight: bold; }
     tr:nth-child(even) { background: #fff3e0; }
     .action-btn { padding: 4px 10px; border-radius: 6px; font-size: 1.11rem; margin: 0 1px; background: #ff9800; color: #fff; border: none; cursor: pointer; transition: background 0.18s; min-width: 34px; }
@@ -33,12 +33,22 @@
     .report-photos-grid img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
     #imgZoomModal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; }
     #imgZoomModal img { max-width: 95vw; max-height: 93vh; border-radius: 14px; border: 4px solid #fff; box-shadow: 0 0 12px #ff980099; background: #fff; }
+    .form-section { padding: 16px; background: #fffaf5; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffe0b2; }
+    .form-section input[type="text"] { font-size: 1rem; padding: 6px 12px; border-radius: 6px; border: 1.2px solid #ffa726a9; background: #fff; color: #442300; margin-right: 8px; }
+    .toggle-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #4CAF50; }
+    input:checked + .slider:before { transform: translateX(26px); }
+    .pagination-controls { text-align: center; margin-top: 10px; }
+    .pagination-controls button { margin: 0 5px; padding: 5px 10px; }
     @media (max-width: 650px) {
       .container { max-width: 99vw; padding: 4vw 1vw; }
       .top-bar { flex-direction: column; align-items: stretch; gap: 7px; }
       .tabs { flex-direction: column; gap: 1px; }
       .search-bar input { width: 90%; }
-      table, th, td { font-size: 0.94rem; }
+      table, th, td { font-size: 0.94rem; padding: 5px; }
       .report-photos-grid { grid-template-columns: repeat(3, 48px); grid-auto-rows: 48px; max-width: 130px; }
       .report-photos-grid img { width: 46px; height: 46px; }
     }
@@ -55,10 +65,6 @@
       <div class="left">
         <label for="filterEvent">कार्यक्रम:</label>
         <select id="filterEvent"><option value="">सभी कार्यक्रम</option></select>
-        <div id="eventActions" style="display: none; gap: 4px;">
-            <button class="action-btn" id="editEventBtn" title="कार्यक्रम का नाम बदलें" style="font-size:1.1em;padding:2px 8px;">✏️</button>
-            <button class="action-btn delete" id="deleteEventBtn" title="कार्यक्रम हटाएं" style="font-size:1.1em;padding:2px 8px;">❌</button>
-        </div>
         <label for="filterMandal">मंडल:</label>
         <select id="filterMandal"><option value="">सभी मंडल</option></select>
         <span id="pendingMandals" class="pending-mandals"></span>
@@ -66,39 +72,40 @@
       <div class="right">
         <select id="exportDropdown" style="min-width:170px">
           <option value="">डेटा एक्सपोर्ट...</option>
-          <optgroup label="रिपोर्ट सूची">
-            <option value="reports-pdf">PDF (फोटो के साथ)</option>
-            <option value="reports-excel">Excel</option>
-            <option value="reports-jpg">JPG</option>
-          </optgroup>
-          <optgroup label="कार्यक्रम सूची">
-            <option value="events-pdf">PDF</option>
-            <option value="events-excel">Excel</option>
-            <option value="events-jpg">JPG</option>
-          </optgroup>
-          <optgroup label="संयोजक सूची">
-            <option value="coordinators-pdf">PDF</option>
-            <option value="coordinators-excel">Excel</option>
-            <option value="coordinators-jpg">JPG</option>
-          </optgroup>
+          <optgroup label="रिपोर्ट सूची"><option value="reports-pdf">PDF (फोटो के साथ)</option><option value="reports-excel">Excel</option><option value="reports-jpg">JPG</option></optgroup>
+          <optgroup label="कार्यक्रम सूची"><option value="events-pdf">PDF</option><option value="events-excel">Excel</option><option value="events-jpg">JPG</option></optgroup>
+          <optgroup label="संयोजक सूची"><option value="coordinators-pdf">PDF</option><option value="coordinators-excel">Excel</option><option value="coordinators-jpg">JPG</option></optgroup>
         </select>
         <button onclick="handleExport()">डाउनलोड</button>
-        <input type="text" id="newEventName" placeholder="नया कार्यक्रम नाम" style="width:140px;">
-        <button onclick="addEventName()">जोड़ें</button>
       </div>
     </div>
     <div class="tabs">
+      <button class="tab-btn active" id="reportTabBtn" onclick="switchTab('reportsTab')">रिपोर्ट सूची</button>
       <button class="tab-btn" id="eventTabBtn" onclick="switchTab('eventsTab')">कार्यक्रम सूची</button>
       <button class="tab-btn" id="coordinatorTabBtn" onclick="switchTab('coordinatorsTab')">संयोजक सूची</button>
-      <button class="tab-btn active" id="reportTabBtn" onclick="switchTab('reportsTab')">रिपोर्ट सूची</button>
+      <button class="tab-btn" id="settingsTabBtn" onclick="switchTab('settingsTab')">कार्यक्रम प्रबंधन</button>
     </div>
+
+    <div class="tab-content" id="settingsTab">
+        <h2>कार्यक्रम प्रबंधन</h2>
+        <div class="form-section">
+            <input type="text" id="newEventName" placeholder="नया कार्यक्रम नाम" style="width:240px;">
+            <button onclick="addEventName()">नया कार्यक्रम जोड़ें</button>
+        </div>
+        <table>
+            <thead><tr><th>कार्यक्रम का नाम</th><th>फॉर्म में दिखाएँ</th><th>एक्शन</th></tr></thead>
+            <tbody id="eventSettingsList"></tbody>
+        </table>
+        <div id="settingsPagination" class="pagination-controls"></div>
+    </div>
+
     <div class="tab-content" id="eventsTab">
       <div class="search-bar"><input type="text" id="eventSearch" onkeyup="loadEvents()" placeholder="कार्यक्रम, मंडल या स्थान से खोजें..."></div>
       <table>
         <thead><tr><th>कार्यक्रम</th><th>मंडल</th><th>तारीख</th><th>समय</th><th>स्थान</th><th>एक्शन</th></tr></thead>
         <tbody id="eventList"></tbody>
       </table>
-      <div id="eventPagination"></div>
+      <div id="eventPagination" class="pagination-controls"></div>
     </div>
     <div class="tab-content" id="coordinatorsTab">
       <div class="search-bar"><input type="text" id="coordinatorSearch" onkeyup="loadCoordinators()" placeholder="नाम, मंडल या मोबाइल नंबर से खोजें..."></div>
@@ -106,15 +113,15 @@
         <thead><tr><th>कार्यक्रम</th><th>मंडल</th><th>संयोजक</th><th>मोबाइल</th><th>सह-संयोजक 1</th><th>मोबाइल 1</th><th>सह-संयोजक 2</th><th>मोबाइल 2</th><th>एक्शन</th></tr></thead>
         <tbody id="coordinatorList"></tbody>
       </table>
-      <div id="coordPagination"></div>
+      <div id="coordPagination" class="pagination-controls"></div>
     </div>
     <div class="tab-content active" id="reportsTab">
       <div class="search-bar"><input type="text" id="reportSearch" onkeyup="loadReports()" placeholder="मंडल, स्थान, अतिथि या विवरण से खोजें..."></div>
       <table>
-        <thead><tr><th>कार्यक्रम</th><th>मंडल</th><th>स्थान</th><th>तारीख</th><th>उपस्थिति</th><th>विशिष्ट अतिथि</th><th>विवरण</th><th>фोटो</th><th>एक्शन</th></tr></thead>
+        <thead><tr><th>कार्यक्रम</th><th>मंडल</th><th>स्थान</th><th>तारीख</th><th>उपस्थिति</th><th>विशिष्ट अतिथि</th><th>विवरण</th><th>फोटो</th><th>एक्शन</th></tr></thead>
         <tbody id="reportList"></tbody>
       </table>
-      <div id="reportPagination"></div>
+      <div id="reportPagination" class="pagination-controls"></div>
     </div>
   </div>
   <div id="imgZoomModal"><img id="imgZoomModalImg" src=""></div>
@@ -122,7 +129,7 @@
   <!-- Firebase + App JS -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc, query, where, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     
     const firebaseConfig = {
       apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
@@ -137,8 +144,8 @@
     const db = getFirestore(app);
     const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
     const eventNameMap = {};
-    let eventPage = 1, coordPage = 1, reportPage = 1;
-    const PAGE_SIZE = 21;
+    let eventPage = 1, coordPage = 1, reportPage = 1, settingsPage = 1;
+    const PAGE_SIZE = 15;
     const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
     const TELEGRAM_CHAT_ID = "733804072";
     let lastPendingKey = "";
@@ -156,26 +163,75 @@
       const filterEvent = document.getElementById('filterEvent');
       const previousValue = preserveSelection ? filterEvent.value : "";
       filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
-      const snap = await getDocs(collection(db, "eventNames"));
+      
+      const q = query(collection(db, "eventNames"), where("isActive", "==", true));
+      const snap = await getDocs(q);
       const sortedDocs = snap.docs.sort((a, b) => (a.data().name || '').localeCompare(b.data().name || '', 'hi'));
+      
+      eventNameMap[""] = 'Unknown';
+      // First, get all names for the map
+      const allEventsSnap = await getDocs(collection(db, "eventNames"));
+      allEventsSnap.docs.forEach(docSnap => {
+        eventNameMap[docSnap.id] = docSnap.data().name || 'Unknown';
+      });
+
+      // Then populate the filter dropdown with only active events
       for (const docSnap of sortedDocs) {
         const data = docSnap.data();
-        eventNameMap[docSnap.id] = data.name || 'Unknown';
         const option = document.createElement('option');
         option.value = docSnap.id;
         option.textContent = data.name;
         filterEvent.appendChild(option);
       }
       if (preserveSelection) filterEvent.value = previousValue;
+      await loadEventSettings();
     }
+    
+    async function loadEventSettings() {
+        const eventSettingsList = document.getElementById('eventSettingsList');
+        eventSettingsList.innerHTML = '';
+        document.getElementById('settingsPagination').innerHTML = '';
+        const snap = await getDocs(collection(db, "eventNames"));
+        const sortedDocs = snap.docs.sort((a, b) => (a.data().name || '').localeCompare(b.data().name || '', 'hi'));
+
+        const totalPages = Math.max(1, Math.ceil(sortedDocs.length / PAGE_SIZE));
+        settingsPage = Math.min(settingsPage || 1, totalPages);
+        const pageEvents = sortedDocs.slice((settingsPage - 1) * PAGE_SIZE, settingsPage * PAGE_SIZE);
+
+        for (const docSnap of pageEvents) {
+            const data = docSnap.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.name}</td>
+                <td>
+                    <label class="toggle-switch">
+                        <input type="checkbox" onchange="toggleEventVisibility('${docSnap.id}', this.checked)" ${data.isActive ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
+                </td>
+                <td>
+                    <button class="action-btn" onclick="editEventNamePrompt('${docSnap.id}')" title="नाम बदलें">✏️</button>
+                    <button class="action-btn delete" onclick="deleteEventName('${docSnap.id}')" title="हटाएं">🗑️</button>
+                </td>
+            `;
+            eventSettingsList.appendChild(row);
+        }
+        document.getElementById('settingsPagination').innerHTML = `<button onclick="changeSettingsPage(-1)" ${settingsPage===1?'disabled':''}>पिछला</button> ${settingsPage}/${totalPages} <button onclick="changeSettingsPage(1)" ${settingsPage===totalPages?'disabled':''}>अगला</button>`;
+    }
+
+    window.changeSettingsPage = function(diff) { settingsPage = Math.max(1, settingsPage + diff); loadEventSettings(); };
+
+    window.toggleEventVisibility = async function(eventNameId, isVisible) {
+        await updateDoc(doc(db, "eventNames", eventNameId), { isActive: isVisible });
+        await loadEventNames({ preserveSelection: true }); // Refresh dropdown
+    };
 
     window.addEventName = async function() {
       const newEventName = document.getElementById('newEventName').value.trim();
       if (!newEventName) return alert('कार्यक्रम नाम लिखिए!');
-      await addDoc(collection(db, "eventNames"), { name: newEventName });
+      await addDoc(collection(db, "eventNames"), { name: newEventName, isActive: true });
       document.getElementById('newEventName').value = '';
       await loadEventNames({ preserveSelection: true });
-      await loadListsOnly();
     };
     
     window.editEventNamePrompt = async function(eventNameId) {
@@ -189,12 +245,37 @@
     };
 
     window.deleteEventName = async function(eventNameId) {
-      if (confirm("इस कार्यक्रम नाम को हटाने से सम्बंधित सभी संयोजक और रिपोर्ट भी हट जायेंगे!\nपक्का?")) {
-        await deleteDoc(doc(db, "eventNames", eventNameId));
-        document.getElementById('filterEvent').value = ''; 
-        document.getElementById('eventActions').style.display = 'none';
+      if (!confirm("क्या आप वाकई इस कार्यक्रम को हटाना चाहते हैं? इससे जुड़े सभी संयोजक, रिपोर्ट और कार्यक्रम की जानकारी स्थायी रूप से हट जाएगी!")) return;
+      
+      try {
+        console.log(`Deleting all data for event ID: ${eventNameId}`);
+        const batch = writeBatch(db);
+
+        // Delete sub-collections (coordinators, reports)
+        const coordinatorsRef = collection(db, `eventNames/${eventNameId}/coordinators`);
+        const reportsRef = collection(db, `eventNames/${eventNameId}/reports`);
+        const coordinatorsSnap = await getDocs(coordinatorsRef);
+        const reportsSnap = await getDocs(reportsRef);
+        coordinatorsSnap.forEach(doc => batch.delete(doc.ref));
+        reportsSnap.forEach(doc => batch.delete(doc.ref));
+        
+        // Delete related entries in root 'events' collection
+        const eventsQuery = query(collection(db, "events"), where("eventNameId", "==", eventNameId));
+        const eventsSnap = await getDocs(eventsQuery);
+        eventsSnap.forEach(doc => batch.delete(doc.ref));
+
+        // Delete the main eventName document
+        batch.delete(doc(db, "eventNames", eventNameId));
+
+        await batch.commit();
+        alert("कार्यक्रम और उससे जुड़ा सारा डेटा सफलतापूर्वक हटा दिया गया है।");
+        
+        document.getElementById('filterEvent').value = '';
         await loadEventNames({ preserveSelection: false });
         await loadListsOnly();
+      } catch (error) {
+          console.error("Error deleting event data: ", error);
+          alert("डेटा हटाने में त्रुटि हुई। विवरण के लिए कंसोल देखें।");
       }
     };
 
@@ -207,23 +288,14 @@
     });
 
     document.getElementById('filterEvent').addEventListener('change', function(){
-      const selectedEventId = this.value;
-      const eventActionsDiv = document.getElementById('eventActions');
-      if (selectedEventId) {
-        eventActionsDiv.style.display = 'flex';
-        document.getElementById('editEventBtn').onclick = () => editEventNamePrompt(selectedEventId);
-        document.getElementById('deleteEventBtn').onclick = () => deleteEventName(selectedEventId);
-      } else {
-        eventActionsDiv.style.display = 'none';
-      }
       eventPage=1;coordPage=1;reportPage=1;loadListsOnly();
     });
 
     document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
 
     window.switchTab = function(tabId) {
-      ['eventsTab','coordinatorsTab','reportsTab'].forEach(id => document.getElementById(id).classList.remove('active'));
-      ['eventTabBtn','coordinatorTabBtn','reportTabBtn'].forEach(id=>document.getElementById(id).classList.remove('active'));
+      ['eventsTab','coordinatorsTab','reportsTab', 'settingsTab'].forEach(id => document.getElementById(id).classList.remove('active'));
+      ['eventTabBtn','coordinatorTabBtn','reportTabBtn', 'settingsTabBtn'].forEach(id=>document.getElementById(id).classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       document.getElementById(tabId.replace('Tab', 'TabBtn')).classList.add('active');
     }
@@ -253,10 +325,10 @@
       
       for (const event of pageEvents) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${event.eventName}</td><td>${event.mandal || '-'}</td><td>${event.date || '-'}</td><td>${event.time || '-'}</td><td>${event.location || '-'}</td><td><button class="action-btn" onclick="editEvent('${event.id}', '${event.eventNameId}')">✏️</button><button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button></td>`;
+        row.innerHTML = `<td>${event.eventName}</td><td>${event.mandal || '-'}</td><td>${event.date || '-'}</td><td>${event.time || '-'}</td><td>${event.location || '-'}</td><td><button class="action-btn" onclick="editEvent('${event.id}')">✏️</button><button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button></td>`;
         eventList.appendChild(row);
       }
-      document.getElementById('eventPagination').innerHTML = `<div style="text-align:center"><button onclick="changeEventPage(-1)" ${eventPage===1?'disabled':''}>पिछला</button> ${eventPage}/${totalPages} <button onclick="changeEventPage(1)" ${eventPage===totalPages?'disabled':''}>अगला</button></div>`;
+      document.getElementById('eventPagination').innerHTML = `<button onclick="changeEventPage(-1)" ${eventPage===1?'disabled':''}>पिछला</button> ${eventPage}/${totalPages} <button onclick="changeEventPage(1)" ${eventPage===totalPages?'disabled':''}>अगला</button>`;
     }
 
     window.loadCoordinators = async function() {
@@ -291,7 +363,7 @@
         row.innerHTML = `<td>${c.eventName}</td><td>${c.mandal || '-'}</td><td>${c.name || '-'}</td><td>${c.mobile || '-'}</td><td>${c.coCoordName1 || '-'}</td><td>${c.coCoordMobile1 || '-'}</td><td>${c.coCoordName2 || '-'}</td><td>${c.coCoordMobile2 || '-'}</td><td><button class="action-btn" onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button><button class="action-btn delete" onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button></td>`;
         coordinatorList.appendChild(row);
       }
-      document.getElementById('coordPagination').innerHTML = `<div style="text-align:center"><button onclick="changeCoordPage(-1)" ${coordPage===1?'disabled':''}>पिछला</button> ${coordPage}/${totalPages} <button onclick="changeCoordPage(1)" ${coordPage===totalPages?'disabled':''}>अगला</button></div>`;
+      document.getElementById('coordPagination').innerHTML = `<button onclick="changeCoordPage(-1)" ${coordPage===1?'disabled':''}>पिछला</button> ${coordPage}/${totalPages} <button onclick="changeCoordPage(1)" ${coordPage===totalPages?'disabled':''}>अगला</button>`;
     }
 
     window.loadReports = async function() {
@@ -344,14 +416,14 @@
         row.innerHTML = `<td>${r.name}</td><td>${r.mandal || '-'}</td><td>${r.location || '-'}</td><td>${r.date || '-'}</td><td>${r.attendance || '-'}</td><td>${r.guests || '-'}</td><td>${r.details || '-'}</td><td>${photosHTML}</td><td><button class="action-btn" onclick="editReport('${r.eventNameId}','${r.id}')">✏️</button><button class="action-btn delete" onclick="deleteReport('${r.eventNameId}','${r.id}')">🗑️</button></td>`;
         reportList.appendChild(row);
       }
-      document.getElementById('reportPagination').innerHTML = `<div style="text-align:center"><button onclick="changeReportPage(-1)" ${reportPage===1?'disabled':''}>पिछला</button> ${reportPage}/${totalPages} <button onclick="changeReportPage(1)" ${reportPage===totalPages?'disabled':''}>अगला</button></div>`;
+      document.getElementById('reportPagination').innerHTML = `<button onclick="changeReportPage(-1)" ${reportPage===1?'disabled':''}>पिछला</button> ${reportPage}/${totalPages} <button onclick="changeReportPage(1)" ${reportPage===totalPages?'disabled':''}>अगला</button>`;
     }
 
     window.changeEventPage = function(diff) { eventPage = Math.max(1, eventPage + diff); loadEvents(); };
     window.changeCoordPage = function(diff) { coordPage = Math.max(1, coordPage + diff); loadCoordinators(); };
     window.changeReportPage = function(diff) { reportPage = Math.max(1, reportPage + diff); loadReports(); };
     
-    window.editEvent = async function(id, eventNameId) {
+    window.editEvent = async function(id) {
         const docSnap = await getDoc(doc(db, "events", id));
         if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
         const event = docSnap.data();
@@ -387,7 +459,7 @@
         const mandal = prompt("मंडल:", r.mandal || ""); if (mandal === null) return;
         const location = prompt("स्थान:", r.location || ""); if (location === null) return;
         const date = prompt("तारीख:", r.date || ""); if (date === null) return;
-        const attendance = prompt("উपस्थिति:", r.attendance || ""); if (attendance === null) return;
+        const attendance = prompt("उपस्थिति:", r.attendance || ""); if (attendance === null) return;
         const guests = prompt("विशिष्ट अतिथि:", r.guests || ""); if (guests === null) return;
         const details = prompt("विवरण:", r.details || ""); if (details === null) return;
         await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal, location, date, attendance, guests, details });
@@ -549,294 +621,6 @@
         }
     };
   </script>
-
-<!-- @@ADDON:COMMON_HELPERS -->
-<script>
-window.MANDALS = window.MANDALS || [
-  "सीतामऊ","भानपुरा","गरोठ","भागवतगढ़","शामगढ़","दलोदा",
-  "मगरामाता जी","मंदसौर ग्रामीण","मंदसौर उत्तर","मंदसौर दक्षिण",
-  "नाहargarh","सुवासरा","अफजलपुर","तुरकिया","सनावदिया",
-  "बिच्चलाना","झाबुआखेड़ी","खटवासा","पिपलियामंडी","सुवालिया","चिताखेड़ा"
-];
-window.TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
-window.TELEGRAM_CHAT_ID   = "733804072";
-window.sendTelegram = async function(text){
-  try{
-    await fetch("https://api.telegram.org/bot" + window.TELEGRAM_BOT_TOKEN + "/sendMessage", {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ chat_id: window.TELEGRAM_CHAT_ID, text: text, parse_mode: 'Markdown' })
-    });
-  }catch(e){ console.warn(e); }
-};
-window.splitDoneRemaining = function(doneNames){
-  var done = Array.from(new Set((doneNames||[]).filter(Boolean)));
-  var remaining = (window.MANDALS||[]).filter(function(m){ return done.indexOf(m) === -1; });
-  return { done: done, remaining: remaining };
-};
-</script>
-
-<!-- ✅ NEW: Event Dropdown Config Helpers (Firestore: appConfig/eventDropdown) -->
-<script>
-window.getEventDropdownConfig = async function(){
-  try{
-    if (window.getDoc && window.doc && window.db){
-      const snap = await getDoc(doc(db, 'appConfig', 'eventDropdown'));
-      const v = (snap && snap.exists()) ? (snap.data() || {}) : {};
-      return {
-        mode: v.mode === 'prefilled' ? 'prefilled' : 'dropdown',
-        limit: (typeof v.limit === 'number' && v.limit > 0) ? v.limit : 10
-      };
-    }
-  }catch(e){ console.warn('getEventDropdownConfig failed', e); }
-  return { mode:'dropdown', limit:10 };
-};
-
-window.setEventDropdownConfig = async function(cfg){
-  try{
-    if (window.updateDoc && window.doc && window.db){
-      const ref = doc(db, 'appConfig', 'eventDropdown');
-      try{ await updateDoc(ref, cfg); } catch(e){
-        const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-        await setDoc(ref, cfg, { merge:true });
-      }
-    }
-  }catch(e){ console.warn('setEventDropdownConfig failed', e); }
-};
-</script>
-
-<!-- @@ADDON:PLM_DUAL -->
-<div id="plm-toggle"><a href="javascript:void(0)" id="plm-open">Program List Manager</a></div>
-<div id="plm-panel" hidden>
-  <div>Active & Default (eventNames)</div>
-  <div id="plm-list"></div>
-
-  <!-- ✅ NEW: Settings UI added INSIDE panel -->
-  <div id="plm-settings" style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffa726;">
-    <div style="font-weight:600; margin-bottom:6px;">Event Dropdown Settings</div>
-    <label style="margin-right:10px;">
-      Mode:
-      <select id="plm-mode">
-        <option value="dropdown">Dropdown</option>
-        <option value="prefilled">Prefilled (Default only)</option>
-      </select>
-    </label>
-    <label>
-      Limit:
-      <input id="plm-limit" type="number" min="1" step="1" style="width:72px;">
-    </label>
-    <button id="plm-save" class="action-btn" style="margin-left:8px; padding:2px 10px;">सेव</button>
-    <span id="plm-save-msg" style="margin-left:6px; font-size:12px; color:#8d4700;"></span>
-  </div>
-</div>
-
-<script>
-(function(){
-  var panel = document.getElementById('plm-panel');
-  var openBtn = document.getElementById('plm-open');
-  var listEl = document.getElementById('plm-list');
-  if (openBtn){ openBtn.addEventListener('click', function(){ if(panel){ panel.hidden = !panel.hidden; } }); }
-
-  async function fetchRows(){
-    try{
-      if (window.getDocs && window.collection && window.db){
-        const snap = await getDocs(collection(db, 'eventNames'));
-        const rows = [];
-        snap.forEach((d)=>{
-          const v = d.data();
-          rows.push({ id:d.id, name:(v&&v.name)||'—', active:!!(v&&v.active), isDefault:!!(v&&v.isDefault) });
-        });
-        return rows;
-      }
-    }catch(e){ console.warn('PLM v9 fetch failed', e); }
-
-    try{
-      if (window.firebase && firebase.firestore){
-        const rows = [];
-        const snap = await firebase.firestore().collection('eventNames').get();
-        snap.forEach(function(doc){
-          var v = doc.data()||{};
-          rows.push({ id:doc.id, name:v.name||'—', active:!!v.active, isDefault:!!v.isDefault });
-        });
-        return rows;
-      }
-    }catch(e){ console.warn('PLM v8 fetch failed', e); }
-
-    console.warn('No Firestore API detected.');
-    return [];
-  }
-
-  async function setActive(id, on){
-    try{
-      if (window.updateDoc && window.doc && window.db){
-        await updateDoc(doc(db, 'eventNames', id), { active: !!on });
-        return;
-      }
-    }catch(e){}
-    try{
-      if (window.firebase && firebase.firestore){
-        await firebase.firestore().collection('eventNames').doc(id).update({ active: !!on });
-        return;
-      }
-    }catch(e){ console.warn(e); }
-  }
-
-  async function setDefault(id){
-    try{
-      if (window.getDocs && window.collection && window.writeBatch && window.doc && window.db){
-        const snap = await getDocs(collection(db, 'eventNames'));
-        const batch = writeBatch(db);
-        snap.forEach((d)=>{ batch.update(doc(db,'eventNames', d.id), { isDefault: d.id === id }); });
-        await batch.commit();
-        return;
-      }
-    }catch(e){}
-    try{
-      if (window.firebase && firebase.firestore){
-        const db8 = firebase.firestore();
-        const snap = await db8.collection('eventNames').get();
-        const batch = db8.batch();
-        snap.forEach(function(d){ batch.update(db8.collection('eventNames').doc(d.id), { isDefault: d.id === id }); });
-        await batch.commit();
-        return;
-      }
-    }catch(e){ console.warn(e); }
-  }
-
-  function rowHTML(r){
-    return (
-      '<div class="plm-row">' +
-        '<div class="plm-title"><strong>'+ (r.name||'—') +'</strong> <span class="plm-id">'+ r.id +'</span></div>' +
-        '<label><input type="checkbox" class="plm-active" data-id="'+r.id+'" '+(r.active?'checked':'')+'> Active</label>' +
-        '<label><input type="radio" name="plm-default" class="plm-default" data-id="'+r.id+'" '+(r.isDefault?'checked':'')+'> Default</label>' +
-      '</div>'
-    );
-  }
-
-  async function render(){
-    const rows = await fetchRows();
-    listEl.innerHTML = rows.map(rowHTML).join('');
-    Array.prototype.forEach.call(document.querySelectorAll('.plm-active'), function(el){
-      el.addEventListener('change', function(){
-        var id = el.getAttribute('data-id'); setActive(id, el.checked);
-      });
-    });
-    Array.prototype.forEach.call(document.querySelectorAll('.plm-default'), function(el){
-      el.addEventListener('change', function(){
-        var id = el.getAttribute('data-id'); setDefault(id);
-      });
-    });
-    // ✅ Settings init on each render
-    if (typeof initSettings === 'function') initSettings();
-  }
-
-  // ✅ Settings load/save handlers
-  async function initSettings(){
-    try{
-      const cfg = await (window.getEventDropdownConfig ? window.getEventDropdownConfig() : {mode:'dropdown', limit:10});
-      var modeEl = document.getElementById('plm-mode');
-      var limitEl = document.getElementById('plm-limit');
-      var saveBtn = document.getElementById('plm-save');
-      var msgEl = document.getElementById('plm-save-msg');
-      if (!modeEl || !limitEl || !saveBtn) return;
-
-      modeEl.value = cfg.mode || 'dropdown';
-      limitEl.value = cfg.limit || 10;
-
-      saveBtn.onclick = async function(){
-        const mode = modeEl.value === 'prefilled' ? 'prefilled' : 'dropdown';
-        const limit = Math.max(1, parseInt(limitEl.value||'10', 10));
-        await (window.setEventDropdownConfig ? window.setEventDropdownConfig({mode, limit}) : Promise.resolve());
-        msgEl.textContent = 'सेटिंग्स सेव हो गईं';
-        setTimeout(()=>{ msgEl.textContent = ''; }, 1500);
-        // तीनों फॉर्म ड्रॉपडाउन रीलोड
-        ['eventName','coordEventName','reportEventSelect'].forEach(async function(id){
-          var el = document.getElementById(id);
-          if (el && window.loadEventNamesActive) await window.loadEventNamesActive(el);
-        });
-      };
-    }catch(e){ console.warn('initSettings failed', e); }
-  }
-
-  render();
-})();
-</script>
-<!-- @@END:PLM_DUAL -->
-
-<!-- @@ADDON:DROPDOWN_ACTIVE_DEFAULT (DUAL) -->
-<script>
-(function(){
-  async function fetchEventNames(){
-    try{
-      if (window.getDocs && window.collection && window.db){
-        const snap = await getDocs(collection(db, 'eventNames'));
-        const rows = [];
-        snap.forEach(d => {
-          const v = d.data();
-          rows.push({ id: d.id, name: (v&&v.name)||'—', active: !!(v&&v.active), isDefault: !!(v&&v.isDefault) });
-        });
-        return rows;
-      }
-    }catch(e){ console.warn("v9 fetch failed", e); }
-    try{
-      if (window.firebase && firebase.firestore){
-        const rows = [];
-        const snap = await firebase.firestore().collection('eventNames').get();
-        snap.forEach(function(doc){
-          var v = doc.data() || {};
-          rows.push({ id: doc.id, name: v.name || '—', active: !!v.active, isDefault: !!v.isDefault });
-        });
-        return rows;
-      }
-    }catch(e){ console.warn("v8 fetch failed", e); }
-    console.warn("No Firestore API detected for eventNames.");
-    return [];
-  }
-
-  // ✅ UPDATED: Config-aware Active Loader
-  window.loadEventNamesActive = async function(selectEl){
-    try{
-      if (!selectEl) return;
-      const cfg = await (window.getEventDropdownConfig ? window.getEventDropdownConfig() : {mode:'dropdown', limit:10});
-      const rows = await fetchEventNames();
-
-      const actives = rows.filter(r => r.active);
-      const defaultRow = rows.find(r => r.isDefault) || actives[0] || null;
-
-      let options = [];
-      if (cfg.mode === 'prefilled' && defaultRow){
-        options = [defaultRow];
-        selectEl.disabled = true;   // prefilled (locked)
-      } else {
-        const limited = (cfg.limit > 0) ? actives.slice(0, cfg.limit) : actives;
-        options = limited;
-        selectEl.disabled = false;  // user can pick
-      }
-
-      selectEl.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
-      options.forEach(function(r){
-        var opt = document.createElement('option');
-        opt.value = r.id; opt.textContent = r.name;
-        selectEl.appendChild(opt);
-      });
-
-      if (cfg.mode === 'prefilled' && defaultRow){
-        selectEl.value = defaultRow.id;
-      } else if (defaultRow && options.some(o=>o.id===defaultRow.id)){
-        selectEl.value = defaultRow.id;
-      }
-    }catch(e){ console.warn(e); }
-  };
-
-  document.addEventListener('DOMContentLoaded', async function(){
-    var ids = ['eventName','coordEventName','reportEventSelect'];
-    ids.forEach(async function(id){
-      var el = document.getElementById(id);
-      if (el) await window.loadEventNamesActive(el);
-    });
-  });
-})();
-</script>
-
 </body>
 </html>
+
