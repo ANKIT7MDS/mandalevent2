@@ -78,7 +78,19 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडਾ", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+        const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+        
+        const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
+        const TELEGRAM_CHAT_ID = "733804072";
+        async function sendTelegramAlert(text) {
+            try {
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: 'Markdown' })
+                });
+            } catch (e) { console.warn('Telegram error', e); }
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             const reportMandalSelect = document.getElementById('reportMandal');
@@ -95,12 +107,12 @@
             const eventSelect = document.getElementById('reportEventSelect');
             eventSelect.innerHTML = '<option value="">कार्यक्रम का नाम चुनें</option>';
             
-            // केवल active कार्यक्रम लोड करने के लिए query बदल दी गई है
             const eventNamesRef = collection(db, "eventNames");
             const q = query(eventNamesRef, where("isActive", "==", true));
             const querySnapshot = await getDocs(q);
 
-            querySnapshot.forEach((doc) => {
+            const sorted = querySnapshot.docs.sort((a,b)=> (a.data().name||'').localeCompare(b.data().name||'','hi'));
+            sorted.forEach((doc) => {
                 const eventName = doc.data().name;
                 const option = document.createElement('option');
                 option.value = doc.id;
@@ -116,9 +128,12 @@
             submitBtn.disabled = true;
             loadingDiv.style.display = "block";
 
-            const eventNameId = document.getElementById('reportEventSelect').value;
+            const selectedEventOption = document.getElementById('reportEventSelect').options[document.getElementById('reportEventSelect').selectedIndex];
+            const eventNameId = selectedEventOption.value;
+            const eventNameText = selectedEventOption.text;
             const files = document.getElementById('photos').files;
             const photoUrls = [];
+            
             try {
                 for (let file of files) {
                     const storageRef = ref(storage, `reports/${eventNameId}/${Date.now()}_${file.name}`);
@@ -137,14 +152,33 @@
                     photos: photoUrls
                 };
                 await addDoc(collection(db, `eventNames/${eventNameId}/reports`), reportData);
+
+                // शेष मंडलों की जांच और टेलीग्राम अलर्ट
+                const reportsQuery = query(collection(db, `eventNames/${eventNameId}/reports`));
+                const reportsSnap = await getDocs(reportsQuery);
+                const reportedMandals = new Set(reportsSnap.docs.map(doc => doc.data().mandal));
+                const remainingMandals = mandals.filter(m => !reportedMandals.has(m));
+
+                let alertText = `✅ रिपोर्ट: *${eventNameText}*\n\n*मंडल:* ${reportData.mandal} ने रिपोर्ट सबमिट की।\n\n*पूर्ण (${reportedMandals.size}/21) | शेष (${remainingMandals.length})*`;
+                if (remainingMandals.length > 0) {
+                    alertText += `\n\n*शेष मंडल:*\n- ${remainingMandals.join('\n- ')}`;
+                }
+                await sendTelegramAlert(alertText);
+                
+                if (remainingMandals.length === 0) {
+                    await sendTelegramAlert(`🎉 *${eventNameText}*: सभी 21 मंडलों से रिपोर्ट प्राप्त हो गई है!`);
+                }
+
                 alert("रिपोर्ट सबमिट की गई!");
                 document.getElementById('reportForm').reset();
             } catch (error) {
                 alert("Error: " + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                loadingDiv.style.display = "none";
             }
-            submitBtn.disabled = false;
-            loadingDiv.style.display = "none";
         });
     </script>
 </body>
 </html>
+
