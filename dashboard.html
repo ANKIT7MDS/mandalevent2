@@ -2,13 +2,15 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <title>डैशबोर्ड (कार्यक्रम प्रबंधन + सही रिपोर्ट एक्सपोर्ट)</title>
+  <title>डैशबोर्ड (तेज़ मल्टी-पेज PDF + लैंडस्केप)</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <!-- favicon 404 हटाने के लिए -->
+  <link rel="icon" href="data:;base64,=">
   <style>
     body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
     .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px; }
 
-    /* ---- Header visible on page ---- */
+    /* Header (page view) */
     #pdfHeader { text-align:center; margin: 6px 0 18px; }
     #pdfHeader h1 { font-size: 2.2rem; margin: 0; color: #000; font-weight: 700; text-decoration: underline; }
     #pdfHeader h2 { font-size: 1.6rem; margin: 6px 0 0; color: #333; font-weight: 600; }
@@ -57,17 +59,27 @@
     .pagination-controls { text-align: center; margin-top: 10px; }
     .pagination-controls button { margin: 0 5px; padding: 5px 10px; }
 
-    /* ----- HIDDEN EXPORT DOC (केवल एक्सपोर्ट के लिए) ----- */
-    #exportDocRoot { position: fixed; left: -99999px; top: -99999px; width: 900px; background: #fff; padding: 16px; }
+    /* ----- HIDDEN EXPORT DOC (केवल रिपोर्ट एक्सपोर्ट) ----- */
+    #exportDocRoot { position: fixed; left: -99999px; top: -99999px; width: 1100px; background: #fff; padding: 16px; }
     #exportDocRoot .header { text-align: center; margin-bottom: 12px; }
     #exportDocRoot h1 { font-size: 28px; margin: 0; font-weight: 700; text-decoration: underline; }
     #exportDocRoot h2 { font-size: 22px; margin: 6px 0 0; font-weight: 600; }
     #exportDocRoot table { width: 100%; border-collapse: collapse; font-size: 13px; }
     #exportDocRoot th, #exportDocRoot td { border: 1px solid #ccc; padding: 6px; vertical-align: top; }
     #exportDocRoot th { background: #f4f4f4; }
-    #exportDocRoot .photos { display: grid; grid-template-columns: repeat(4, 64px); grid-auto-rows: 64px; gap: 4px; }
+    #exportDocRoot .photos { display: grid; grid-template-columns: repeat(5, 64px); grid-auto-rows: 64px; gap: 4px; }
     #exportDocRoot .photos img { width: 62px; height: 62px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; }
     @media print { #exportDocRoot { position: static; width: auto; } }
+
+    @media (max-width: 650px) {
+      .container { max-width: 99vw; padding: 4vw 1vw; }
+      .top-bar { flex-direction: column; align-items: stretch; gap: 7px; }
+      .tabs { flex-direction: column; gap: 1px; }
+      .search-bar input { width: 90%; }
+      table, th, td { font-size: 0.94rem; padding: 5px; }
+      .report-photos-grid { grid-template-columns: repeat(3, 48px); grid-auto-rows: 48px; max-width: 130px; }
+      .report-photos-grid img { width: 46px; height: 46px; }
+    }
   </style>
 
   <!-- Export libs -->
@@ -78,7 +90,7 @@
 <body>
   <div class="container">
 
-    <!-- PAGE HEADER (दिखने वाला) -->
+    <!-- PAGE HEADER -->
     <div id="pdfHeader">
       <h1>भारतीय जनता पार्टी जिला मंदसौर</h1>
       <h2 id="eventTitle">सभी कार्यक्रम</h2>
@@ -113,6 +125,15 @@
             <option value="coordinators-jpg">JPG</option>
           </optgroup>
         </select>
+
+        <!-- NEW: Fast + Landscape toggles -->
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-left:6px;">
+          <input type="checkbox" id="fastMode" checked> तेज़ मोड
+        </label>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-left:6px;">
+          <input type="checkbox" id="landscapeMode" checked> PDF लैंडस्केप
+        </label>
+
         <button onclick="handleExport()">डाउनलोड</button>
       </div>
     </div>
@@ -170,7 +191,7 @@
 
   </div>
 
-  <!-- HIDDEN EXPORT ROOT (एक्सपोर्ट के समय भरेंगे) -->
+  <!-- HIDDEN EXPORT ROOT -->
   <div id="exportDocRoot" style="display:none;"></div>
 
   <div id="imgZoomModal"><img id="imgZoomModalImg" src=""></div>
@@ -237,7 +258,6 @@
 
       if (preserveSelection) filterEvent.value = previousValue;
 
-      // Header: select के टेक्स्ट से
       const sel = document.getElementById('filterEvent');
       const txt = sel.options[sel.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
       document.getElementById('eventTitle').innerText = sel.value ? txt : "सभी कार्यक्रम";
@@ -355,6 +375,7 @@
       document.getElementById(tabId.replace('Tab','TabBtn')).classList.add('active');
     };
 
+    /* ===== Lists (UI) ===== */
     window.loadEvents = async function() {
       const eventList = document.getElementById('eventList');
       eventList.innerHTML = ''; document.getElementById('eventPagination').innerHTML = '';
@@ -489,49 +510,14 @@
     window.changeCoordPage = function(diff) { coordPage = Math.max(1, coordPage + diff); loadCoordinators(); };
     window.changeReportPage = function(diff) { reportPage = Math.max(1, reportPage + diff); loadReports(); };
 
-    window.editEvent = async function(id) {
-      const docSnap = await getDoc(doc(db, "events", id));
-      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-      const event = docSnap.data();
-      const newMandal = prompt("मंडल:", event.mandal || ""); if (newMandal === null) return;
-      const newDate = prompt("तारीख:", event.date || ""); if (newDate === null) return;
-      const newTime = prompt("समय:", event.time || ""); if (newTime === null) return;
-      const newLocation = prompt("स्थान:", event.location || ""); if (newLocation === null) return;
-      await updateDoc(doc(db, "events", id), { mandal: newMandal, date: newDate, time: newTime, location: newLocation });
-      await loadEvents();
-    };
+    window.editEvent = async function(id) { const docSnap = await getDoc(doc(db, "events", id)); if (!docSnap.exists()) return alert("डेटा नहीं मिला!"); const e = docSnap.data(); const m = prompt("मंडल:", e.mandal || ""); if (m===null) return; const d = prompt("तारीख:", e.date || ""); if (d===null) return; const t = prompt("समय:", e.time || ""); if (t===null) return; const l = prompt("स्थान:", e.location || ""); if (l===null) return; await updateDoc(doc(db, "events", id), { mandal:m, date:d, time:t, location:l }); await loadEvents(); };
     window.deleteEvent = async function(id) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, "events", id)); await loadEvents(); } };
 
-    window.editCoordinator = async function(eventNameId, coordId) {
-      const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
-      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-      const c = docSnap.data();
-      const mandal = prompt("मंडल:", c.mandal || ""); if (mandal === null) return;
-      const name = prompt("संयोजक:", c.name || ""); if (name === null) return;
-      const mobile = prompt("मोबाइल:", c.mobile || ""); if (mobile === null) return;
-      const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || ""); if (coCoordName1 === null) return;
-      const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || ""); if (coCoordMobile1 === null) return;
-      const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || ""); if (coCoordName2 === null) return;
-      const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || ""); if (coCoordMobile2 === null) return;
-      await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), { mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2 });
-      await loadCoordinators();
-    };
+    window.editCoordinator = async function(eventNameId, coordId) { const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId)); if (!docSnap.exists()) return alert("डेटा नहीं मिला!"); const c = docSnap.data(); const m = prompt("मंडल:", c.mandal || ""); if (m===null) return; const n = prompt("संयोजक:", c.name || ""); if (n===null) return; const mb = prompt("मोबाइल:", c.mobile || ""); if (mb===null) return; const n1 = prompt("सह-संयोजक 1:", c.coCoordName1 || ""); if (n1===null) return; const mb1 = prompt("मोबाइल 1:", c.coCoordMobile1 || ""); if (mb1===null) return; const n2 = prompt("सह-संयोजक 2:", c.coCoordName2 || ""); if (n2===null) return; const mb2 = prompt("मोबाइल 2:", c.coCoordMobile2 || ""); if (mb2===null) return; await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), { mandal:m, name:n, mobile:mb, coCoordName1:n1, coCoordMobile1:mb1, coCoordName2:n2, coCoordMobile2:mb2 }); await loadCoordinators(); };
     window.deleteCoordinator = async function(eventNameId, coordId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId)); await loadCoordinators(); } };
 
-    window.editReport = async function(eventNameId, reportId) {
-      const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
-      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-      const r = docSnap.data();
-      const mandal = prompt("मंडल:", r.mandal || ""); if (mandal === null) return;
-      const location = prompt("स्थान:", r.location || ""); if (location === null) return;
-      const date = prompt("तारीख:", r.date || ""); if (date === null) return;
-      const attendance = prompt("उपस्थिति:", r.attendance || ""); if (attendance === null) return;
-      const guests = prompt("विशिष्ट अतिथि:", r.guests || ""); if (guests === null) return;
-      const details = prompt("विवरण:", r.details || ""); if (details === null) return;
-      await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal, location, date, attendance, guests, details });
-      await loadReports();
-    };
-    window.deleteReport = async function(eventNameId, reportId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId)); await loadReports(); } };
+    window.editReport = async function(eventNameId, reportId) { const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId)); if (!docSnap.exists()) return alert("डेटा नहीं मिला!"); const r = docSnap.data(); const m = prompt("मंडल:", r.mandal || ""); if (m===null) return; const loc = prompt("स्थान:", r.location || ""); if (loc===null) return; const d = prompt("तारीख:", r.date || ""); if (d===null) return; const a = prompt("उपस्थिति:", r.attendance || ""); if (a===null) return; const g = prompt("विशिष्ट अतिथि:", r.guests || ""); if (g===null) return; const det = prompt("विवरण:", r.details || ""); if (det===null) return; await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal:m, location:loc, date:d, attendance:a, guests:g, details:det }); await loadReports(); };
+    window.deleteReport = async function(eventNameId, reportId) { if (confirm("পक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId)); await loadReports(); } };
 
     window.zoomImage = function(e, url) { e.preventDefault(); document.getElementById('imgZoomModalImg').src = url; document.getElementById('imgZoomModal').style.display = 'flex'; };
     document.getElementById('imgZoomModal').onclick = function() { this.style.display = 'none'; document.getElementById('imgZoomModalImg').src = ''; };
@@ -540,27 +526,21 @@
     async function loadAll() { await loadEventNames(); await loadListsOnly(); }
     loadAll();
 
-    // ------------ EXPORT UTILITIES (DATA-FIRST for Reports) ------------
+    // --------- DATA-FIRST for Reports ----------
     window.gatherReportsData = async function({onlyForEventId, filterMandalVal, searchTerm}) {
       let all = [];
       if (!onlyForEventId) return all;
-
-      // सिर्फ चुने हुए event की reports
       const reportsSnap = await getDocs(collection(db, `eventNames/${onlyForEventId}/reports`));
       for (const docSnap of reportsSnap.docs) {
         const r = docSnap.data();
         all.push({ id: docSnap.id, ...r });
       }
-
-      // फ़िल्टर (मंडल/सर्च)
       let filtered = all.filter(r => {
         if (filterMandalVal && r.mandal !== filterMandalVal) return false;
         const searchable = `${r.mandal || ''} ${r.location || ''} ${r.guests || ''} ${r.details || ''}`.toLowerCase();
         if (searchTerm && !searchable.includes(searchTerm.toLowerCase())) return false;
         return true;
       });
-
-      // तारीख क्रम (optional): नवीनतम ऊपर
       filtered.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
       return filtered;
     };
@@ -605,7 +585,7 @@
         const tdPhotos = document.createElement('td');
         const photosWrap = document.createElement('div'); photosWrap.className = 'photos';
         if (Array.isArray(r.photos) && r.photos.length) {
-          r.photos.slice(0,8).forEach(url => {
+          r.photos.slice(0,10).forEach(url => {
             const img = document.createElement('img');
             img.src = url;
             photosWrap.appendChild(img);
@@ -624,8 +604,83 @@
     };
   </script>
 
-  <!-- ============== Export Helpers (Canvas + Multi-page) ============== -->
+  <!-- ============== Fast html2canvas + Landscape PDF ============== -->
   <script>
+    /* तेज़/क्वालिटी मोड के लिए स्मार्ट कैनवस */
+    async function html2canvasSmart(element, { fast=false } = {}) {
+      // DOM पेंट के लिए थोड़ा समय
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      if (fast) {
+        // केवल decode; कोई proxy नहीं (बहुत तेज़)
+        await Promise.all(Array.from(element.querySelectorAll('img')).map(img => img.decode?.().catch(()=>{})));
+        return await html2canvas(element, {
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#fff",
+          scale: 1.5,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
+        });
+      }
+
+      // Normal: इमेज को dataURL में बदलें (CORS-safe)
+      const images = Array.from(element.querySelectorAll('img'));
+      const jobs = images.map(async (img) => {
+        if (!img.src) return;
+        try {
+          const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(img.src)}`;
+          const res = await fetch(proxyUrl);
+          const blob = await res.blob();
+          await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onloadend = () => { img.src = reader.result; resolve(); };
+            reader.readAsDataURL(blob);
+          });
+        } catch(e) { /* ignore */ }
+      });
+      await Promise.all(jobs);
+      await Promise.all(images.map(img => img.decode?.().catch(()=>{})));
+
+      return await html2canvas(element, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#fff",
+        scale: 2,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+      });
+    }
+
+    function exportCanvasToPdfMultiPage(canvas, fileName, { landscape=true, margin=18, jpegQuality=0.85 } = {}) {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'pt', format: 'a4' });
+
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+
+      const ratio = (pageW - margin * 2) / canvas.width;
+      const sliceHeightPx = (pageH - margin * 2) / ratio;
+
+      let yPx = 0, pageIndex = 0;
+      while (yPx < canvas.height) {
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width  = canvas.width;
+        sliceCanvas.height = Math.min(sliceHeightPx, canvas.height - yPx);
+
+        const ctx = sliceCanvas.getContext('2d');
+        ctx.drawImage(canvas, 0, -yPx);
+
+        const imgData = sliceCanvas.toDataURL('image/jpeg', jpegQuality);
+        if (pageIndex > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', margin, margin, pageW - margin * 2, sliceCanvas.height * ratio);
+
+        yPx += sliceHeightPx;
+        pageIndex++;
+      }
+      pdf.save(`${fileName}.pdf`);
+    }
+
     function exportTableToExcel(table, title) {
       if (!table) return alert("एक्सेल एक्सपोर्ट के लिए सारणी नहीं मिली!");
       const rows = Array.from(table.querySelectorAll('tr'));
@@ -641,76 +696,13 @@
       XLSX.writeFile(wb, `${title}.xlsx`);
     }
 
-    async function html2canvasWithInlineImages(element) {
-      // सभी <img> को dataURL में बदलें (CORS से बचने के लिए)
-      const images = Array.from(element.querySelectorAll('img'));
-      const originalSrcs = images.map(img => img.src);
-      const jobs = images.map(async (img, i) => {
-        if (!img.src) return;
-        try {
-          const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(img.src)}`;
-          const res = await fetch(proxyUrl);
-          const blob = await res.blob();
-          await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onloadend = () => { img.src = reader.result; resolve(); };
-            reader.readAsDataURL(blob);
-          });
-        } catch (e) {
-          // ignore; leave as-is
-        }
-      });
-      await Promise.all(jobs);
-
-      try {
-        return await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" });
-      } finally {
-        // restore not necessary (element hidden & discarded after export)
-      }
-    }
-
-    function exportCanvasToPdfMultiPage(canvas, fileName) {
-      const { jsPDF } = window.jspdf;
-      const margin = 20; // pt
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-
-      const ratio = (pageW - margin * 2) / canvas.width;
-      const sliceHeightPx = (pageH - margin * 2) / ratio;
-
-      let yPx = 0, pageIndex = 0;
-      while (yPx < canvas.height) {
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = Math.min(sliceHeightPx, canvas.height - yPx);
-        const sliceCtx = sliceCanvas.getContext('2d');
-        sliceCtx.drawImage(canvas, 0, -yPx);
-
-        const imgData = sliceCanvas.toDataURL('image/jpeg', 0.95);
-        if (pageIndex > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', margin, margin, pageW - margin * 2, sliceCanvas.height * ratio);
-        yPx += sliceHeightPx;
-        pageIndex++;
-      }
-      pdf.save(`${fileName}.pdf`);
-    }
-
-    function exportCanvasToJpg(canvas, fileName) {
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/jpeg", 0.9);
-      link.download = `${fileName}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
     window.handleExport = async function() {
       try {
         const value = document.getElementById('exportDropdown').value;
         if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
         const [category, type] = value.split('-');
+        const fast = document.getElementById('fastMode')?.checked;
+        const landscape = document.getElementById('landscapeMode')?.checked;
 
         // ---------- REPORTS: चुने हुए इवेंट की पूरी रिपोर्ट ----------
         if (category === 'reports') {
@@ -724,43 +716,39 @@
 
           alert("रिपोर्ट डेटा इकट्ठा किया जा रहा है…");
 
-          // 1) डेटा इकट्ठा करें (पूरी रिपोर्ट लिस्ट)
-          const rows = await window.gatherReportsData({
-            onlyForEventId: eventId,
-            filterMandalVal: mandalFilter,
-            searchTerm
-          });
-
+          const rows = await window.gatherReportsData({ onlyForEventId: eventId, filterMandalVal: mandalFilter, searchTerm });
           if (!rows.length) { alert("इस चयन के लिए कोई रिपोर्ट नहीं मिली।"); return; }
 
-          // 2) ऑफ़-स्क्रीन डॉक्यूमेंट बनाएं (सिर्फ रिपोर्ट)
           const root = window.buildReportExportDOM({
             partyHeaderText: "भारतीय जनता पार्टी जिला मंदसौर",
             eventNameText: eventText || "चयनित कार्यक्रम",
             rows
           });
 
-          // 3) कैनवस बनाएं
-          const canvas = await html2canvasWithInlineImages(root);
+          // रेंडर टाइम
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          await Promise.all(Array.from(root.querySelectorAll('img')).map(img => img.decode().catch(()=>{})));
 
-          // 4) एक्सपोर्ट
+          const canvas = await html2canvasSmart(root, { fast });
           const fileName = "रिपोर्ट-सूची";
+
           if (type === 'pdf') {
-            exportCanvasToPdfMultiPage(canvas, fileName);
+            exportCanvasToPdfMultiPage(canvas, fileName, { landscape, margin: 18, jpegQuality: fast ? 0.8 : 0.9 });
           } else if (type === 'jpg') {
-            exportCanvasToJpg(canvas, fileName);
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/jpeg", fast ? 0.8 : 0.9);
+            link.download = `${fileName}.jpg`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
           } else if (type === 'excel') {
-            // एक्सेल के लिए इसी ऑफस्क्रीन टेबल से बनाएं
             exportTableToExcel(root.querySelector('table'), fileName);
           }
 
-          // 5) साफ़ करें
           root.style.display = 'none';
           root.innerHTML = '';
           return;
         }
 
-        // ---------- बाकी (Events/Coordinators): स्क्रीन-जैसा ----------
+        // ---------- Events/Coordinators: स्क्रीन-जैसा ----------
         let selector = `.container`;
         let fileName = "";
         let table;
@@ -769,7 +757,6 @@
         else if (category === 'coordinators') { fileName = "संयोजक-सूची"; table = document.querySelector('#coordinatorsTab table'); }
         else { alert("अमान्य एक्सपोर्ट प्रकार।"); return; }
 
-        // PAGE HEADER text refresh
         const sel = document.getElementById('filterEvent');
         const selectedEventText = sel.options[sel.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
         document.getElementById('eventTitle').innerText = sel.value ? selectedEventText : "सभी कार्यक्रम";
@@ -780,9 +767,15 @@
           exportTableToExcel(table, fileName);
         } else {
           const container = document.querySelector(selector);
-          const canvas = await html2canvasWithInlineImages(container);
-          if (type === 'pdf') exportCanvasToPdfMultiPage(canvas, fileName);
-          else if (type === 'jpg') exportCanvasToJpg(canvas, fileName);
+          const canvas = await html2canvasSmart(container, { fast });
+          if (type === 'pdf') {
+            exportCanvasToPdfMultiPage(canvas, fileName, { landscape, margin: 18, jpegQuality: fast ? 0.8 : 0.9 });
+          } else if (type === 'jpg') {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/jpeg", fast ? 0.8 : 0.9);
+            link.download = `${fileName}.jpg`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+          }
         }
 
       } catch (error) {
