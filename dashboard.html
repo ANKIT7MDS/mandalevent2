@@ -2,13 +2,13 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <title>डैशबोर्ड (कार्यक्रम प्रबंधन + मल्टी-पेज PDF)</title>
+  <title>डैशबोर्ड (कार्यक्रम प्रबंधन + सही रिपोर्ट एक्सपोर्ट)</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
-    .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px 18px 10px; }
+    .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px; }
 
-    /* ---- Header for PDF ---- */
+    /* ---- Header visible on page ---- */
     #pdfHeader { text-align:center; margin: 6px 0 18px; }
     #pdfHeader h1 { font-size: 2.2rem; margin: 0; color: #000; font-weight: 700; text-decoration: underline; }
     #pdfHeader h2 { font-size: 1.6rem; margin: 6px 0 0; color: #333; font-weight: 600; }
@@ -38,8 +38,8 @@
     .action-btn.delete:hover { background: #b71c1c; }
     .action-btn:hover { background: #e65100; }
 
-    .report-photos-grid { display: grid; grid-template-columns: repeat(3, 74px); grid-auto-rows: 74px; gap: 6px; max-width: 200px; }
-    .report-photos-grid img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
+    .report-photos-grid { display: grid; grid-template-columns: repeat(3, 74px); grid-auto-rows: 74px; gap: 6px; max-width: 220px; }
+    .report-photos-grid img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1.5px solid #ff9800; cursor: zoom-in; background: #fff7e0; }
 
     #imgZoomModal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; }
     #imgZoomModal img { max-width: 95vw; max-height: 93vh; border-radius: 14px; border: 4px solid #fff; box-shadow: 0 0 12px #ff980099; background: #fff; }
@@ -57,15 +57,17 @@
     .pagination-controls { text-align: center; margin-top: 10px; }
     .pagination-controls button { margin: 0 5px; padding: 5px 10px; }
 
-    @media (max-width: 650px) {
-      .container { max-width: 99vw; padding: 4vw 1vw; }
-      .top-bar { flex-direction: column; align-items: stretch; gap: 7px; }
-      .tabs { flex-direction: column; gap: 1px; }
-      .search-bar input { width: 90%; }
-      table, th, td { font-size: 0.94rem; padding: 5px; }
-      .report-photos-grid { grid-template-columns: repeat(3, 48px); grid-auto-rows: 48px; max-width: 130px; }
-      .report-photos-grid img { width: 46px; height: 46px; }
-    }
+    /* ----- HIDDEN EXPORT DOC (केवल एक्सपोर्ट के लिए) ----- */
+    #exportDocRoot { position: fixed; left: -99999px; top: -99999px; width: 900px; background: #fff; padding: 16px; }
+    #exportDocRoot .header { text-align: center; margin-bottom: 12px; }
+    #exportDocRoot h1 { font-size: 28px; margin: 0; font-weight: 700; text-decoration: underline; }
+    #exportDocRoot h2 { font-size: 22px; margin: 6px 0 0; font-weight: 600; }
+    #exportDocRoot table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    #exportDocRoot th, #exportDocRoot td { border: 1px solid #ccc; padding: 6px; vertical-align: top; }
+    #exportDocRoot th { background: #f4f4f4; }
+    #exportDocRoot .photos { display: grid; grid-template-columns: repeat(4, 64px); grid-auto-rows: 64px; gap: 4px; }
+    #exportDocRoot .photos img { width: 62px; height: 62px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; }
+    @media print { #exportDocRoot { position: static; width: auto; } }
   </style>
 
   <!-- Export libs -->
@@ -76,7 +78,7 @@
 <body>
   <div class="container">
 
-    <!-- ======= PDF Header (Shown in exports) ======= -->
+    <!-- PAGE HEADER (दिखने वाला) -->
     <div id="pdfHeader">
       <h1>भारतीय जनता पार्टी जिला मंदसौर</h1>
       <h2 id="eventTitle">सभी कार्यक्रम</h2>
@@ -93,19 +95,19 @@
         <span id="pendingMandals" class="pending-mandals"></span>
       </div>
       <div class="right">
-        <select id="exportDropdown" style="min-width:170px">
+        <select id="exportDropdown" style="min-width:220px">
           <option value="">डेटा एक्सपोर्ट...</option>
-          <optgroup label="रिपोर्ट सूची">
-            <option value="reports-pdf">PDF (फोटो के साथ)</option>
+          <optgroup label="रिपोर्ट सूची (चुने हुए कार्यक्रम की पूरी)">
+            <option value="reports-pdf">PDF (फोटो सहित)</option>
             <option value="reports-excel">Excel</option>
             <option value="reports-jpg">JPG</option>
           </optgroup>
-          <optgroup label="कार्यक्रम सूची">
+          <optgroup label="कार्यक्रम सूची (स्क्रीन जैसा)">
             <option value="events-pdf">PDF</option>
             <option value="events-excel">Excel</option>
             <option value="events-jpg">JPG</option>
           </optgroup>
-          <optgroup label="संयोजक सूची">
+          <optgroup label="संयोजक सूची (स्क्रीन जैसा)">
             <option value="coordinators-pdf">PDF</option>
             <option value="coordinators-excel">Excel</option>
             <option value="coordinators-jpg">JPG</option>
@@ -156,7 +158,7 @@
       <div id="coordPagination" class="pagination-controls"></div>
     </div>
 
-    <!-- ===== Reports ===== -->
+    <!-- ===== Reports (UI) ===== -->
     <div class="tab-content active" id="reportsTab">
       <div class="search-bar"><input type="text" id="reportSearch" onkeyup="loadReports()" placeholder="मंडल, स्थान, अतिथि या विवरण से खोजें..."></div>
       <table>
@@ -167,6 +169,9 @@
     </div>
 
   </div>
+
+  <!-- HIDDEN EXPORT ROOT (एक्सपोर्ट के समय भरेंगे) -->
+  <div id="exportDocRoot" style="display:none;"></div>
 
   <div id="imgZoomModal"><img id="imgZoomModalImg" src=""></div>
 
@@ -187,7 +192,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+    const mandals = ["भेंसोदा","भानपुरा","गरोठ","मेलखेडा","खड़ावदा","शामगढ़","सुवासरा","बसाई","सीतामऊ","क्यामपुर","सीतामऊ ग्रामीण","गुर्जर बरडिया","धुंधधड़का","बुढा","पिपलिया मंडी","मल्हारगढ़","दलोदा","मगरामाता जी","मंदसौर ग्रामीण","मंदसौर उत्तर","मंदसौर दक्षिण"];
 
     const eventNameMap = {};
     let activeEventIds = new Set();
@@ -232,7 +237,7 @@
 
       if (preserveSelection) filterEvent.value = previousValue;
 
-      // Header में event का नाम: सीधे सेलेक्ट के टेक्स्ट से
+      // Header: select के टेक्स्ट से
       const sel = document.getElementById('filterEvent');
       const txt = sel.options[sel.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
       document.getElementById('eventTitle').innerText = sel.value ? txt : "सभी कार्यक्रम";
@@ -336,7 +341,6 @@
     });
 
     document.getElementById('filterEvent').addEventListener('change', function () {
-      // Header event title update: selected option text
       const txt = this.options[this.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
       document.getElementById('eventTitle').innerText = this.value ? txt : "सभी कार्यक्रम";
       eventPage = 1; coordPage = 1; reportPage = 1; loadListsOnly();
@@ -535,26 +539,101 @@
     async function loadListsOnly() { await Promise.all([loadEvents(), loadCoordinators(), loadReports()]); }
     async function loadAll() { await loadEventNames(); await loadListsOnly(); }
     loadAll();
+
+    // ------------ EXPORT UTILITIES (DATA-FIRST for Reports) ------------
+    window.gatherReportsData = async function({onlyForEventId, filterMandalVal, searchTerm}) {
+      let all = [];
+      if (!onlyForEventId) return all;
+
+      // सिर्फ चुने हुए event की reports
+      const reportsSnap = await getDocs(collection(db, `eventNames/${onlyForEventId}/reports`));
+      for (const docSnap of reportsSnap.docs) {
+        const r = docSnap.data();
+        all.push({ id: docSnap.id, ...r });
+      }
+
+      // फ़िल्टर (मंडल/सर्च)
+      let filtered = all.filter(r => {
+        if (filterMandalVal && r.mandal !== filterMandalVal) return false;
+        const searchable = `${r.mandal || ''} ${r.location || ''} ${r.guests || ''} ${r.details || ''}`.toLowerCase();
+        if (searchTerm && !searchable.includes(searchTerm.toLowerCase())) return false;
+        return true;
+      });
+
+      // तारीख क्रम (optional): नवीनतम ऊपर
+      filtered.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+      return filtered;
+    };
+
+    window.buildReportExportDOM = function({partyHeaderText, eventNameText, rows}) {
+      const root = document.getElementById('exportDocRoot');
+      root.innerHTML = '';
+      root.style.display = 'block';
+
+      const header = document.createElement('div');
+      header.className = 'header';
+      header.innerHTML = `<h1>${partyHeaderText}</h1><h2>${eventNameText}</h2>`;
+      root.appendChild(header);
+
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width:14%">मंडल</th>
+            <th style="width:14%">स्थान</th>
+            <th style="width:10%">तारीख</th>
+            <th style="width:10%">उपस्थिति</th>
+            <th style="width:18%">विशिष्ट अतिथि</th>
+            <th style="width:24%">विवरण</th>
+            <th style="width:10%">फोटो</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+      const tbody = table.querySelector('tbody');
+
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+
+        const tdMandal = document.createElement('td'); tdMandal.textContent = r.mandal || '-';
+        const tdLoc = document.createElement('td'); tdLoc.textContent = r.location || '-';
+        const tdDate = document.createElement('td'); tdDate.textContent = r.date || '-';
+        const tdAtt = document.createElement('td'); tdAtt.textContent = r.attendance || '-';
+        const tdGuests = document.createElement('td'); tdGuests.textContent = r.guests || '-';
+        const tdDetails = document.createElement('td'); tdDetails.textContent = r.details || '-';
+
+        const tdPhotos = document.createElement('td');
+        const photosWrap = document.createElement('div'); photosWrap.className = 'photos';
+        if (Array.isArray(r.photos) && r.photos.length) {
+          r.photos.slice(0,8).forEach(url => {
+            const img = document.createElement('img');
+            img.src = url;
+            photosWrap.appendChild(img);
+          });
+        } else {
+          photosWrap.textContent = '-';
+        }
+        tdPhotos.appendChild(photosWrap);
+
+        [tdMandal, tdLoc, tdDate, tdAtt, tdGuests, tdDetails, tdPhotos].forEach(td => tr.appendChild(td));
+        tbody.appendChild(tr);
+      });
+
+      root.appendChild(table);
+      return root;
+    };
   </script>
 
-  <!-- ============== Export Helpers (Multi-page PDF) ============== -->
+  <!-- ============== Export Helpers (Canvas + Multi-page) ============== -->
   <script>
     function exportTableToExcel(table, title) {
       if (!table) return alert("एक्सेल एक्सपोर्ट के लिए सारणी नहीं मिली!");
       const rows = Array.from(table.querySelectorAll('tr'));
-      let data;
-      if (title.includes("रिपोर्ट")) {
-        data = rows.map(row =>
-          Array.from(row.querySelectorAll("th, td"))
-            .filter(cell => !cell.querySelector('div.report-photos-grid'))
-            .map(cell => cell.innerText)
-        );
-      } else {
-        data = rows.map(row =>
-          Array.from(row.querySelectorAll("th:not(:last-child), td:not(:last-child)"))
-            .map(cell => cell.innerText)
-        );
-      }
+      const data = rows.map(row =>
+        Array.from(row.querySelectorAll("th, td"))
+          .filter(cell => !cell.querySelector('div.report-photos-grid'))
+          .map(cell => cell.innerText)
+      );
       if (data.length < 2) return alert("एक्सेल में एक्सपोर्ट करने के लिए कोई डेटा नहीं है!");
       const ws = XLSX.utils.aoa_to_sheet(data);
       const wb = XLSX.utils.book_new();
@@ -562,48 +641,34 @@
       XLSX.writeFile(wb, `${title}.xlsx`);
     }
 
-    async function captureElementWithImages(selector) {
-      const element = document.querySelector(selector);
-      if (!element) throw new Error("एलिमेंट नहीं मिला!");
-
-      const pagination = element.querySelector('.pagination-controls');
-      const actionButtons = element.querySelectorAll('.action-btn');
-      if (pagination) pagination.style.display = 'none';
-      actionButtons.forEach(btn => btn.style.display = 'none');
-
-      // Convert external images to data URLs to avoid CORS in canvas
+    async function html2canvasWithInlineImages(element) {
+      // सभी <img> को dataURL में बदलें (CORS से बचने के लिए)
       const images = Array.from(element.querySelectorAll('img'));
       const originalSrcs = images.map(img => img.src);
-      const dataUrlPromises = images.map(async (img) => {
+      const jobs = images.map(async (img, i) => {
         if (!img.src) return;
         try {
           const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(img.src)}`;
-          const response = await fetch(proxyUrl);
-          const blob = await response.blob();
-          return new Promise((resolve) => {
+          const res = await fetch(proxyUrl);
+          const blob = await res.blob();
+          await new Promise(resolve => {
             const reader = new FileReader();
             reader.onloadend = () => { img.src = reader.result; resolve(); };
             reader.readAsDataURL(blob);
           });
-        } catch (error) {
-          console.warn(`Could not convert image to data URL: ${img.src}`, error);
-          return Promise.resolve();
+        } catch (e) {
+          // ignore; leave as-is
         }
       });
-      await Promise.all(dataUrlPromises);
+      await Promise.all(jobs);
 
       try {
-        // capture FULL height element (not just viewport)
-        const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" });
-        return canvas;
+        return await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" });
       } finally {
-        if (pagination) pagination.style.display = 'block';
-        actionButtons.forEach(btn => btn.style.display = 'inline-block');
-        images.forEach((img, index) => { img.src = originalSrcs[index]; });
+        // restore not necessary (element hidden & discarded after export)
       }
     }
 
-    // ---- MULTI-PAGE PDF exporter ----
     function exportCanvasToPdfMultiPage(canvas, fileName) {
       const { jsPDF } = window.jspdf;
       const margin = 20; // pt
@@ -612,21 +677,15 @@
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
 
-      // Scale ratio to fit width
       const ratio = (pageW - margin * 2) / canvas.width;
-      const sliceHeightPx = (pageH - margin * 2) / ratio; // how many canvas pixels fit on one PDF page
+      const sliceHeightPx = (pageH - margin * 2) / ratio;
 
-      const ctx = canvas.getContext('2d');
-      let yPx = 0;
-      let pageIndex = 0;
-
+      let yPx = 0, pageIndex = 0;
       while (yPx < canvas.height) {
         const sliceCanvas = document.createElement('canvas');
         sliceCanvas.width = canvas.width;
         sliceCanvas.height = Math.min(sliceHeightPx, canvas.height - yPx);
-
         const sliceCtx = sliceCanvas.getContext('2d');
-        // draw portion of original canvas into slice
         sliceCtx.drawImage(canvas, 0, -yPx);
 
         const imgData = sliceCanvas.toDataURL('image/jpeg', 0.95);
@@ -653,44 +712,82 @@
         if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
         const [category, type] = value.split('-');
 
-        // Export area = पूरा container (ताकि header भी आए)
+        // ---------- REPORTS: चुने हुए इवेंट की पूरी रिपोर्ट ----------
+        if (category === 'reports') {
+          const sel = document.getElementById('filterEvent');
+          const eventId = sel.value;
+          const eventText = sel.options[sel.selectedIndex]?.text?.trim();
+          if (!eventId) { alert("कृपया पहले एक कार्यक्रम चुनें।"); return; }
+
+          const mandalFilter = document.getElementById('filterMandal').value || '';
+          const searchTerm = document.getElementById('reportSearch').value || '';
+
+          alert("रिपोर्ट डेटा इकट्ठा किया जा रहा है…");
+
+          // 1) डेटा इकट्ठा करें (पूरी रिपोर्ट लिस्ट)
+          const rows = await window.gatherReportsData({
+            onlyForEventId: eventId,
+            filterMandalVal: mandalFilter,
+            searchTerm
+          });
+
+          if (!rows.length) { alert("इस चयन के लिए कोई रिपोर्ट नहीं मिली।"); return; }
+
+          // 2) ऑफ़-स्क्रीन डॉक्यूमेंट बनाएं (सिर्फ रिपोर्ट)
+          const root = window.buildReportExportDOM({
+            partyHeaderText: "भारतीय जनता पार्टी जिला मंदसौर",
+            eventNameText: eventText || "चयनित कार्यक्रम",
+            rows
+          });
+
+          // 3) कैनवस बनाएं
+          const canvas = await html2canvasWithInlineImages(root);
+
+          // 4) एक्सपोर्ट
+          const fileName = "रिपोर्ट-सूची";
+          if (type === 'pdf') {
+            exportCanvasToPdfMultiPage(canvas, fileName);
+          } else if (type === 'jpg') {
+            exportCanvasToJpg(canvas, fileName);
+          } else if (type === 'excel') {
+            // एक्सेल के लिए इसी ऑफस्क्रीन टेबल से बनाएं
+            exportTableToExcel(root.querySelector('table'), fileName);
+          }
+
+          // 5) साफ़ करें
+          root.style.display = 'none';
+          root.innerHTML = '';
+          return;
+        }
+
+        // ---------- बाकी (Events/Coordinators): स्क्रीन-जैसा ----------
         let selector = `.container`;
         let fileName = "";
         let table;
 
         if (category === 'events') { fileName = "कार्यक्रम-सूची"; table = document.querySelector('#eventsTab table'); }
         else if (category === 'coordinators') { fileName = "संयोजक-सूची"; table = document.querySelector('#coordinatorsTab table'); }
-        else if (category === 'reports') { fileName = "रिपोर्ट-सूची"; table = document.querySelector('#reportsTab table'); }
         else { alert("अमान्य एक्सपोर्ट प्रकार।"); return; }
 
-        // Export से ठीक पहले header में चुने हुए event का नाम "सीधे select के टेक्स्ट" से सेट/रीफ़्रेश करें
+        // PAGE HEADER text refresh
         const sel = document.getElementById('filterEvent');
-        const selectedEventId = sel.value;
         const selectedEventText = sel.options[sel.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
-        document.getElementById('eventTitle').innerText = selectedEventId ? selectedEventText : "सभी कार्यक्रम";
+        document.getElementById('eventTitle').innerText = sel.value ? selectedEventText : "सभी कार्यक्रम";
 
-        alert("फ़ाइल बनाई जा रही है, कृपया प्रतीक्षा करें...");
+        alert("फ़ाइल बनाई जा रही है…");
 
         if (type === 'excel') {
           exportTableToExcel(table, fileName);
         } else {
-          captureElementWithImages(selector)
-            .then(canvas => {
-              if (type === 'pdf') {
-                // multi-page
-                exportCanvasToPdfMultiPage(canvas, fileName);
-              } else if (type === 'jpg') {
-                exportCanvasToJpg(canvas, fileName);
-              }
-            })
-            .catch(err => {
-              console.error("कैप्चर करने में त्रुटि:", err);
-              alert("फ़ाइल बनाने में त्रुटि हुई।");
-            });
+          const container = document.querySelector(selector);
+          const canvas = await html2canvasWithInlineImages(container);
+          if (type === 'pdf') exportCanvasToPdfMultiPage(canvas, fileName);
+          else if (type === 'jpg') exportCanvasToJpg(canvas, fileName);
         }
+
       } catch (error) {
-        console.error("फाइल बनाने में त्रुटि:", error);
-        alert("फ़ाइल बनाने में एक त्रुटि हुई। अधिक जानकारी के लिए कंसोल देखें।");
+        console.error("Export error:", error);
+        alert("फ़ाइल बनाने में त्रुटि हुई। अधिक जानकारी के लिए कंसोल देखें।");
       }
     };
   </script>
