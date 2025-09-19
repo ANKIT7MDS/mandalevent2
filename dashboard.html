@@ -217,14 +217,12 @@
 
       eventNameMap[""] = 'Unknown';
       activeEventIds.clear();
+      filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
+
       allEvents.forEach(event => {
         eventNameMap[event.id] = event.name || 'Unknown';
-        if (event.isActive) activeEventIds.add(event.id);
-      });
-
-      filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
-      allEvents.forEach(event => {
         if (event.isActive) {
+          activeEventIds.add(event.id);
           const option = document.createElement('option');
           option.value = event.id;
           option.textContent = event.name;
@@ -234,9 +232,10 @@
 
       if (preserveSelection) filterEvent.value = previousValue;
 
-      // Header में event का नाम दिखाएँ
-      const selectedEventId = document.getElementById('filterEvent').value;
-      document.getElementById('eventTitle').innerText = selectedEventId ? eventNameMap[selectedEventId] : "सभी कार्यक्रम";
+      // Header में event का नाम: सीधे सेलेक्ट के टेक्स्ट से
+      const sel = document.getElementById('filterEvent');
+      const txt = sel.options[sel.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
+      document.getElementById('eventTitle').innerText = sel.value ? txt : "सभी कार्यक्रम";
 
       await loadEventSettings();
     }
@@ -336,12 +335,11 @@
       filterMandal.appendChild(opt);
     });
 
-    document.getElementById('filterEvent').addEventListener('change', function(){
-      // Header event title update on selection change
-      const selectedEventId = this.value;
-      document.getElementById('eventTitle').innerText = selectedEventId ? eventNameMap[selectedEventId] : "सभी कार्यक्रम";
-
-      eventPage=1;coordPage=1;reportPage=1;loadListsOnly();
+    document.getElementById('filterEvent').addEventListener('change', function () {
+      // Header event title update: selected option text
+      const txt = this.options[this.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
+      document.getElementById('eventTitle').innerText = this.value ? txt : "सभी कार्यक्रम";
+      eventPage = 1; coordPage = 1; reportPage = 1; loadListsOnly();
     });
 
     document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
@@ -665,10 +663,11 @@
         else if (category === 'reports') { fileName = "रिपोर्ट-सूची"; table = document.querySelector('#reportsTab table'); }
         else { alert("अमान्य एक्सपोर्ट प्रकार।"); return; }
 
-        // Export से ठीक पहले header में चुने हुए event का नाम सेट/रीफ़्रेश करें
-        const selectedEventId = document.getElementById('filterEvent').value;
-        const evTitle = selectedEventId ? (window.eventNameMap ? eventNameMap[selectedEventId] : "चयनित कार्यक्रम") : "सभी कार्यक्रम";
-        document.getElementById('eventTitle').innerText = evTitle || "सभी कार्यक्रम";
+        // Export से ठीक पहले header में चुने हुए event का नाम "सीधे select के टेक्स्ट" से सेट/रीफ़्रेश करें
+        const sel = document.getElementById('filterEvent');
+        const selectedEventId = sel.value;
+        const selectedEventText = sel.options[sel.selectedIndex]?.text?.trim() || "सभी कार्यक्रम";
+        document.getElementById('eventTitle').innerText = selectedEventId ? selectedEventText : "सभी कार्यक्रम";
 
         alert("फ़ाइल बनाई जा रही है, कृपया प्रतीक्षा करें...");
 
