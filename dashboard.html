@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <title>डैशबोर्ड (कार्यक्रम प्रबंधन के साथ)</title>
+  <meta charset="UTF-8" />
+  <title>डैशबोर्ड (कार्यक्रम प्रबंधन + मल्टी-पेज PDF)</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body { background: #fff9f3; color: #222; font-family: 'Noto Sans Devanagari', Arial, sans-serif; margin: 0; padding: 0; }
     .container { max-width: 1200px; margin: 24px auto; background: #fff6ea; border-radius: 14px; box-shadow: 0 2px 16px #ff980020; padding: 18px 10px 18px 10px; }
-    h1 { color: #e65100; text-align: center; margin-bottom: 12px; font-size: 2.1rem; }
+
+    /* ---- Header for PDF ---- */
+    #pdfHeader { text-align:center; margin: 6px 0 18px; }
+    #pdfHeader h1 { font-size: 2.2rem; margin: 0; color: #000; font-weight: 700; text-decoration: underline; }
+    #pdfHeader h2 { font-size: 1.6rem; margin: 6px 0 0; color: #333; font-weight: 600; }
+
+    h1.pageTitle { color: #e65100; text-align: center; margin-bottom: 12px; font-size: 2.1rem; }
     .top-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .top-bar .left, .top-bar .right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .top-bar select, .top-bar button, .top-bar input[type="text"] { font-size: 1rem; padding: 5px 9px; border-radius: 5px; border: 1.2px solid #ffa726a9; background: #fffaf5; color: #442300; }
@@ -21,28 +27,36 @@
     .tab-content.active { display: block; }
     .search-bar { margin: 8px 0 12px 0; text-align: center; }
     .search-bar input { font-size: 1rem; padding: 6px 12px; border-radius: 6px; border: 1.2px solid #ffa726a9; background: #fffaf5; color: #442300; width: 50%; max-width: 400px; }
+
     table { width: 100%; border-collapse: collapse; margin-bottom: 1.2rem; background: #fff; box-shadow: 0 1px 8px #ffa72611; font-size: 0.99rem; }
     th, td { border: 1px solid #ffa72655; padding: 8px 9px; text-align: left; vertical-align: middle; }
     th { background: #ffb74d; color: #442300; font-weight: bold; }
     tr:nth-child(even) { background: #fff3e0; }
+
     .action-btn { padding: 4px 10px; border-radius: 6px; font-size: 1.11rem; margin: 0 1px; background: #ff9800; color: #fff; border: none; cursor: pointer; transition: background 0.18s; min-width: 34px; }
     .action-btn.delete { background: #e53935; }
     .action-btn.delete:hover { background: #b71c1c; }
     .action-btn:hover { background: #e65100; }
+
     .report-photos-grid { display: grid; grid-template-columns: repeat(3, 74px); grid-auto-rows: 74px; gap: 6px; max-width: 200px; }
     .report-photos-grid img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1.5px solid #ff9800; cursor: zoom-in; transition: box-shadow 0.18s; background: #fff7e0; }
+
     #imgZoomModal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; }
     #imgZoomModal img { max-width: 95vw; max-height: 93vh; border-radius: 14px; border: 4px solid #fff; box-shadow: 0 0 12px #ff980099; background: #fff; }
+
     .form-section { padding: 16px; background: #fffaf5; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffe0b2; }
     .form-section input[type="text"] { font-size: 1rem; padding: 6px 12px; border-radius: 6px; border: 1.2px solid #ffa726a9; background: #fff; color: #442300; margin-right: 8px; }
+
     .toggle-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
     .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: #4CAF50; }
     input:checked + .slider:before { transform: translateX(26px); }
+
     .pagination-controls { text-align: center; margin-top: 10px; }
     .pagination-controls button { margin: 0 5px; padding: 5px 10px; }
+
     @media (max-width: 650px) {
       .container { max-width: 99vw; padding: 4vw 1vw; }
       .top-bar { flex-direction: column; align-items: stretch; gap: 7px; }
@@ -53,6 +67,7 @@
       .report-photos-grid img { width: 46px; height: 46px; }
     }
   </style>
+
   <!-- Export libs -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -60,7 +75,15 @@
 </head>
 <body>
   <div class="container">
-    <h1>डैशबोर्ड</h1>
+
+    <!-- ======= PDF Header (Shown in exports) ======= -->
+    <div id="pdfHeader">
+      <h1>भारतीय जनता पार्टी जिला मंदसौर</h1>
+      <h2 id="eventTitle">सभी कार्यक्रम</h2>
+    </div>
+
+    <h1 class="pageTitle">डैशबोर्ड</h1>
+
     <div class="top-bar">
       <div class="left">
         <label for="filterEvent">कार्यक्रम:</label>
@@ -72,13 +95,26 @@
       <div class="right">
         <select id="exportDropdown" style="min-width:170px">
           <option value="">डेटा एक्सपोर्ट...</option>
-          <optgroup label="रिपोर्ट सूची"><option value="reports-pdf">PDF (फोटो के साथ)</option><option value="reports-excel">Excel</option><option value="reports-jpg">JPG</option></optgroup>
-          <optgroup label="कार्यक्रम सूची"><option value="events-pdf">PDF</option><option value="events-excel">Excel</option><option value="events-jpg">JPG</option></optgroup>
-          <optgroup label="संयोजक सूची"><option value="coordinators-pdf">PDF</option><option value="coordinators-excel">Excel</option><option value="coordinators-jpg">JPG</option></optgroup>
+          <optgroup label="रिपोर्ट सूची">
+            <option value="reports-pdf">PDF (फोटो के साथ)</option>
+            <option value="reports-excel">Excel</option>
+            <option value="reports-jpg">JPG</option>
+          </optgroup>
+          <optgroup label="कार्यक्रम सूची">
+            <option value="events-pdf">PDF</option>
+            <option value="events-excel">Excel</option>
+            <option value="events-jpg">JPG</option>
+          </optgroup>
+          <optgroup label="संयोजक सूची">
+            <option value="coordinators-pdf">PDF</option>
+            <option value="coordinators-excel">Excel</option>
+            <option value="coordinators-jpg">JPG</option>
+          </optgroup>
         </select>
         <button onclick="handleExport()">डाउनलोड</button>
       </div>
     </div>
+
     <div class="tabs">
       <button class="tab-btn active" id="reportTabBtn" onclick="switchTab('reportsTab')">रिपोर्ट सूची</button>
       <button class="tab-btn" id="eventTabBtn" onclick="switchTab('eventsTab')">कार्यक्रम सूची</button>
@@ -86,19 +122,21 @@
       <button class="tab-btn" id="settingsTabBtn" onclick="switchTab('settingsTab')">कार्यक्रम प्रबंधन</button>
     </div>
 
+    <!-- ===== Settings ===== -->
     <div class="tab-content" id="settingsTab">
-        <h2>कार्यक्रम प्रबंधन</h2>
-        <div class="form-section">
-            <input type="text" id="newEventName" placeholder="नया कार्यक्रम नाम" style="width:240px;">
-            <button onclick="addEventName()">नया कार्यक्रम जोड़ें</button>
-        </div>
-        <table>
-            <thead><tr><th>कार्यक्रम का नाम</th><th>फॉर्म में दिखाएँ</th><th>एक्शन</th></tr></thead>
-            <tbody id="eventSettingsList"></tbody>
-        </table>
-        <div id="settingsPagination" class="pagination-controls"></div>
+      <h2>कार्यक्रम प्रबंधन</h2>
+      <div class="form-section">
+        <input type="text" id="newEventName" placeholder="नया कार्यक्रम नाम" style="width:240px;">
+        <button onclick="addEventName()">नया कार्यक्रम जोड़ें</button>
+      </div>
+      <table>
+        <thead><tr><th>कार्यक्रम का नाम</th><th>फॉर्म में दिखाएँ</th><th>एक्शन</th></tr></thead>
+        <tbody id="eventSettingsList"></tbody>
+      </table>
+      <div id="settingsPagination" class="pagination-controls"></div>
     </div>
 
+    <!-- ===== Events ===== -->
     <div class="tab-content" id="eventsTab">
       <div class="search-bar"><input type="text" id="eventSearch" onkeyup="loadEvents()" placeholder="कार्यक्रम, मंडल या स्थान से खोजें..."></div>
       <table>
@@ -107,6 +145,8 @@
       </table>
       <div id="eventPagination" class="pagination-controls"></div>
     </div>
+
+    <!-- ===== Coordinators ===== -->
     <div class="tab-content" id="coordinatorsTab">
       <div class="search-bar"><input type="text" id="coordinatorSearch" onkeyup="loadCoordinators()" placeholder="नाम, मंडल या मोबाइल नंबर से खोजें..."></div>
       <table>
@@ -115,6 +155,8 @@
       </table>
       <div id="coordPagination" class="pagination-controls"></div>
     </div>
+
+    <!-- ===== Reports ===== -->
     <div class="tab-content active" id="reportsTab">
       <div class="search-bar"><input type="text" id="reportSearch" onkeyup="loadReports()" placeholder="मंडल, स्थान, अतिथि या विवरण से खोजें..."></div>
       <table>
@@ -123,14 +165,16 @@
       </table>
       <div id="reportPagination" class="pagination-controls"></div>
     </div>
+
   </div>
+
   <div id="imgZoomModal"><img id="imgZoomModalImg" src=""></div>
 
-  <!-- Firebase + App JS -->
+  <!-- ============== Firebase + App JS ============== -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc, query, where, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    
+
     const firebaseConfig = {
       apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
       authDomain: "mandaleventall.firebaseapp.com",
@@ -140,17 +184,20 @@
       appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
       measurementId: "G-2BBZZNRS88"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const mandals = ["भेंसोदा", "भानपुरा", "गरोठ", "मेलखेडा", "खड़ावदा", "शामगढ़", "सुवासरा", "बसाई", "सीतामऊ", "क्यामपुर", "सीतामऊ ग्रामीण", "गुर्जर बरडिया", "धुंधधड़का", "बुढा", "पिपलिया मंडी", "मल्हारगढ़", "दलोदा", "मगरामाता जी", "मंदसौर ग्रामीण", "मंदसौर उत्तर", "मंदसौर दक्षिण"];
+
     const eventNameMap = {};
     let activeEventIds = new Set();
     let eventPage = 1, coordPage = 1, reportPage = 1, settingsPage = 1;
     const PAGE_SIZE = 15;
+
     const TELEGRAM_BOT_TOKEN = "8064306737:AAFvXvc3vIT1kyccGiPbpYGCAr9dgKJcRzw";
     const TELEGRAM_CHAT_ID = "733804072";
     let lastPendingKey = "";
-    
+
     async function sendTelegramAlert(message) {
       try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -161,75 +208,77 @@
     }
 
     async function loadEventNames({ preserveSelection = true } = {}) {
-        const filterEvent = document.getElementById('filterEvent');
-        const previousValue = preserveSelection ? filterEvent.value : "";
+      const filterEvent = document.getElementById('filterEvent');
+      const previousValue = preserveSelection ? filterEvent.value : "";
 
-        const allEventsSnap = await getDocs(collection(db, "eventNames"));
-        const allEvents = allEventsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        allEvents.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'hi'));
+      const allEventsSnap = await getDocs(collection(db, "eventNames"));
+      const allEvents = allEventsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      allEvents.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'hi'));
 
-        eventNameMap[""] = 'Unknown';
-        activeEventIds.clear();
-        allEvents.forEach(event => {
-            eventNameMap[event.id] = event.name || 'Unknown';
-            if (event.isActive) {
-                activeEventIds.add(event.id);
-            }
-        });
+      eventNameMap[""] = 'Unknown';
+      activeEventIds.clear();
+      allEvents.forEach(event => {
+        eventNameMap[event.id] = event.name || 'Unknown';
+        if (event.isActive) activeEventIds.add(event.id);
+      });
 
-        filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
-        allEvents.forEach(event => {
-            if (event.isActive) {
-                const option = document.createElement('option');
-                option.value = event.id;
-                option.textContent = event.name;
-                filterEvent.appendChild(option);
-            }
-        });
-        
-        if (preserveSelection) filterEvent.value = previousValue;
-        await loadEventSettings();
-    }
-    
-    async function loadEventSettings() {
-        const eventSettingsList = document.getElementById('eventSettingsList');
-        eventSettingsList.innerHTML = '';
-        document.getElementById('settingsPagination').innerHTML = '';
-        const snap = await getDocs(collection(db, "eventNames"));
-        const sortedDocs = snap.docs.sort((a, b) => (a.data().name || '').localeCompare(b.data().name || '', 'hi'));
-
-        const totalPages = Math.max(1, Math.ceil(sortedDocs.length / PAGE_SIZE));
-        settingsPage = Math.min(settingsPage || 1, totalPages);
-        const pageEvents = sortedDocs.slice((settingsPage - 1) * PAGE_SIZE, settingsPage * PAGE_SIZE);
-
-        for (const docSnap of pageEvents) {
-            const data = docSnap.data();
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${data.name}</td>
-                <td>
-                    <label class="toggle-switch">
-                        <input type="checkbox" onchange="toggleEventVisibility('${docSnap.id}', this.checked)" ${data.isActive ? 'checked' : ''}>
-                        <span class="slider"></span>
-                    </label>
-                </td>
-                <td>
-                    <button class="action-btn" onclick="editEventNamePrompt('${docSnap.id}')" title="नाम बदलें">✏️</button>
-                    <button class="action-btn delete" onclick="deleteEventName('${docSnap.id}')" title="हटाएं">🗑️</button>
-                </td>
-            `;
-            eventSettingsList.appendChild(row);
+      filterEvent.innerHTML = `<option value="">सभी कार्यक्रम</option>`;
+      allEvents.forEach(event => {
+        if (event.isActive) {
+          const option = document.createElement('option');
+          option.value = event.id;
+          option.textContent = event.name;
+          filterEvent.appendChild(option);
         }
-        document.getElementById('settingsPagination').innerHTML = `<button onclick="changeSettingsPage(-1)" ${settingsPage===1?'disabled':''}>पिछला</button> ${settingsPage}/${totalPages} <button onclick="changeSettingsPage(1)" ${settingsPage===totalPages?'disabled':''}>अगला</button>`;
+      });
+
+      if (preserveSelection) filterEvent.value = previousValue;
+
+      // Header में event का नाम दिखाएँ
+      const selectedEventId = document.getElementById('filterEvent').value;
+      document.getElementById('eventTitle').innerText = selectedEventId ? eventNameMap[selectedEventId] : "सभी कार्यक्रम";
+
+      await loadEventSettings();
+    }
+
+    async function loadEventSettings() {
+      const eventSettingsList = document.getElementById('eventSettingsList');
+      eventSettingsList.innerHTML = '';
+      document.getElementById('settingsPagination').innerHTML = '';
+      const snap = await getDocs(collection(db, "eventNames"));
+      const sortedDocs = snap.docs.sort((a, b) => (a.data().name || '').localeCompare(b.data().name || '', 'hi'));
+
+      const totalPages = Math.max(1, Math.ceil(sortedDocs.length / PAGE_SIZE));
+      settingsPage = Math.min(settingsPage || 1, totalPages);
+      const pageEvents = sortedDocs.slice((settingsPage - 1) * PAGE_SIZE, settingsPage * PAGE_SIZE);
+
+      for (const docSnap of pageEvents) {
+        const data = docSnap.data();
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${data.name}</td>
+          <td>
+            <label class="toggle-switch">
+              <input type="checkbox" onchange="toggleEventVisibility('${docSnap.id}', this.checked)" ${data.isActive ? 'checked' : ''}>
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td>
+            <button class="action-btn" onclick="editEventNamePrompt('${docSnap.id}')" title="नाम बदलें">✏️</button>
+            <button class="action-btn delete" onclick="deleteEventName('${docSnap.id}')" title="हटाएं">🗑️</button>
+          </td>
+        `;
+        eventSettingsList.appendChild(row);
+      }
+      document.getElementById('settingsPagination').innerHTML = `<button onclick="changeSettingsPage(-1)" ${settingsPage===1?'disabled':''}>पिछला</button> ${settingsPage}/${totalPages} <button onclick="changeSettingsPage(1)" ${settingsPage===totalPages?'disabled':''}>अगला</button>`;
     }
 
     window.changeSettingsPage = function(diff) { settingsPage = Math.max(1, settingsPage + diff); loadEventSettings(); };
 
     window.toggleEventVisibility = async function(eventNameId, isVisible) {
-        await updateDoc(doc(db, "eventNames", eventNameId), { isActive: isVisible });
-        await loadEventNames({ preserveSelection: true }); 
-        await loadListsOnly(); // Refresh all lists to reflect the change
+      await updateDoc(doc(db, "eventNames", eventNameId), { isActive: isVisible });
+      await loadEventNames({ preserveSelection: true });
+      await loadListsOnly();
     };
 
     window.addEventName = async function() {
@@ -239,7 +288,7 @@
       document.getElementById('newEventName').value = '';
       await loadEventNames({ preserveSelection: true });
     };
-    
+
     window.editEventNamePrompt = async function(eventNameId) {
       const current = eventNameMap[eventNameId] || '';
       const updated = prompt("नया कार्यक्रम नाम लिखें:", current);
@@ -252,7 +301,7 @@
 
     window.deleteEventName = async function(eventNameId) {
       if (!confirm("क्या आप वाकई इस कार्यक्रम को हटाना चाहते हैं? इससे जुड़े सभी संयोजक, रिपोर्ट और कार्यक्रम की जानकारी स्थायी रूप से हट जाएगी!")) return;
-      
+
       try {
         const batch = writeBatch(db);
         const coordinatorsRef = collection(db, `eventNames/${eventNameId}/coordinators`);
@@ -261,22 +310,21 @@
         const reportsSnap = await getDocs(reportsRef);
         coordinatorsSnap.forEach(doc => batch.delete(doc.ref));
         reportsSnap.forEach(doc => batch.delete(doc.ref));
-        
+
         const eventsQuery = query(collection(db, "events"), where("eventNameId", "==", eventNameId));
         const eventsSnap = await getDocs(eventsQuery);
         eventsSnap.forEach(doc => batch.delete(doc.ref));
 
         batch.delete(doc(db, "eventNames", eventNameId));
-
         await batch.commit();
+
         alert("कार्यक्रम और उससे जुड़ा सारा डेटा सफलतापूर्वक हटा दिया गया है।");
-        
         document.getElementById('filterEvent').value = '';
         await loadEventNames({ preserveSelection: false });
         await loadListsOnly();
       } catch (error) {
-          console.error("Error deleting event data: ", error);
-          alert("डेटा हटाने में त्रुटि हुई। विवरण के लिए कंसोल देखें।");
+        console.error("Error deleting event data: ", error);
+        alert("डेटा हटाने में त्रुटि हुई। विवरण के लिए कंसोल देखें।");
       }
     };
 
@@ -289,17 +337,21 @@
     });
 
     document.getElementById('filterEvent').addEventListener('change', function(){
+      // Header event title update on selection change
+      const selectedEventId = this.value;
+      document.getElementById('eventTitle').innerText = selectedEventId ? eventNameMap[selectedEventId] : "सभी कार्यक्रम";
+
       eventPage=1;coordPage=1;reportPage=1;loadListsOnly();
     });
 
     document.getElementById('filterMandal').addEventListener('change', function(){eventPage=1;coordPage=1;reportPage=1;loadListsOnly();});
 
     window.switchTab = function(tabId) {
-      ['eventsTab','coordinatorsTab','reportsTab', 'settingsTab'].forEach(id => document.getElementById(id).classList.remove('active'));
-      ['eventTabBtn','coordinatorTabBtn','reportTabBtn', 'settingsTabBtn'].forEach(id=>document.getElementById(id).classList.remove('active'));
+      ['eventsTab','coordinatorsTab','reportsTab','settingsTab'].forEach(id => document.getElementById(id).classList.remove('active'));
+      ['eventTabBtn','coordinatorTabBtn','reportTabBtn','settingsTabBtn'].forEach(id=>document.getElementById(id).classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
-      document.getElementById(tabId.replace('Tab', 'TabBtn')).classList.add('active');
-    }
+      document.getElementById(tabId.replace('Tab','TabBtn')).classList.add('active');
+    };
 
     window.loadEvents = async function() {
       const eventList = document.getElementById('eventList');
@@ -307,33 +359,33 @@
       const filterEventId = document.getElementById('filterEvent').value;
       const filterMandalVal = document.getElementById('filterMandal').value;
       const searchTerm = document.getElementById('eventSearch').value.toLowerCase();
-      
+
       const eventsSnap = await getDocs(collection(db, "events"));
       let filtered = [];
       for (const docSnap of eventsSnap.docs) {
         const event = docSnap.data();
-        if (!activeEventIds.has(event.eventNameId)) continue; // Filter by active events
-        
+        if (!activeEventIds.has(event.eventNameId)) continue;
+
         const eventName = eventNameMap[event.eventNameId] || '';
         if (filterEventId && event.eventNameId !== filterEventId) continue;
         if (filterMandalVal && event.mandal !== filterMandalVal) continue;
-        
+
         const searchableText = `${eventName} ${event.mandal || ''} ${event.location || ''}`.toLowerCase();
         if (searchTerm && !searchableText.includes(searchTerm)) continue;
         filtered.push({id: docSnap.id, ...event, eventName});
       }
-      
+
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       eventPage = Math.min(eventPage || 1, totalPages);
       const pageEvents = filtered.slice((eventPage - 1) * PAGE_SIZE, eventPage * PAGE_SIZE);
-      
+
       for (const event of pageEvents) {
         const row = document.createElement('tr');
         row.innerHTML = `<td>${event.eventName}</td><td>${event.mandal || '-'}</td><td>${event.date || '-'}</td><td>${event.time || '-'}</td><td>${event.location || '-'}</td><td><button class="action-btn" onclick="editEvent('${event.id}')">✏️</button><button class="action-btn delete" onclick="deleteEvent('${event.id}')">🗑️</button></td>`;
         eventList.appendChild(row);
       }
       document.getElementById('eventPagination').innerHTML = `<button onclick="changeEventPage(-1)" ${eventPage===1?'disabled':''}>पिछला</button> ${eventPage}/${totalPages} <button onclick="changeEventPage(1)" ${eventPage===totalPages?'disabled':''}>अगला</button>`;
-    }
+    };
 
     window.loadCoordinators = async function() {
       const coordinatorList = document.getElementById('coordinatorList');
@@ -341,21 +393,21 @@
       const filterEventId = document.getElementById('filterEvent').value;
       const filterMandalVal = document.getElementById('filterMandal').value;
       const searchTerm = document.getElementById('coordinatorSearch').value.toLowerCase();
-      
+
       let filtered = [];
       const eventNamesSnap = await getDocs(collection(db, "eventNames"));
       for (const eventNameDoc of eventNamesSnap.docs) {
         const eventNameId = eventNameDoc.id;
-        if (!activeEventIds.has(eventNameId)) continue; // Filter by active events
-
+        if (!activeEventIds.has(eventNameId)) continue;
         if (filterEventId && eventNameId !== filterEventId) continue;
+
         const eventName = eventNameDoc.data().name || '';
         const coordsSnap = await getDocs(collection(db, `eventNames/${eventNameId}/coordinators`));
         for (const docSnap of coordsSnap.docs) {
           const c = docSnap.data();
           if (filterMandalVal && c.mandal !== filterMandalVal) continue;
           const searchableText = `${eventName} ${c.mandal || ''} ${c.name || ''} ${c.mobile || ''} ${c.coCoordName1 || ''} ${c.coCoordMobile1 || ''} ${c.coCoordName2 || ''} ${c.coCoordMobile2 || ''}`.toLowerCase();
-          if(searchTerm && !searchableText.includes(searchTerm)) continue;
+          if (searchTerm && !searchableText.includes(searchTerm)) continue;
           filtered.push({id: docSnap.id, eventNameId, eventName, ...c});
         }
       }
@@ -363,14 +415,14 @@
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       coordPage = Math.min(coordPage || 1, totalPages);
       const pageCoords = filtered.slice((coordPage - 1) * PAGE_SIZE, coordPage * PAGE_SIZE);
-      
+
       for (const c of pageCoords) {
         const row = document.createElement('tr');
         row.innerHTML = `<td>${c.eventName}</td><td>${c.mandal || '-'}</td><td>${c.name || '-'}</td><td>${c.mobile || '-'}</td><td>${c.coCoordName1 || '-'}</td><td>${c.coCoordMobile1 || '-'}</td><td>${c.coCoordName2 || '-'}</td><td>${c.coCoordMobile2 || '-'}</td><td><button class="action-btn" onclick="editCoordinator('${c.eventNameId}','${c.id}')">✏️</button><button class="action-btn delete" onclick="deleteCoordinator('${c.eventNameId}','${c.id}')">🗑️</button></td>`;
         coordinatorList.appendChild(row);
       }
       document.getElementById('coordPagination').innerHTML = `<button onclick="changeCoordPage(-1)" ${coordPage===1?'disabled':''}>पिछला</button> ${coordPage}/${totalPages} <button onclick="changeCoordPage(1)" ${coordPage===totalPages?'disabled':''}>अगला</button>`;
-    }
+    };
 
     window.loadReports = async function() {
       const reportList = document.getElementById('reportList');
@@ -383,7 +435,7 @@
       const eventNamesSnap = await getDocs(collection(db, "eventNames"));
       for (const eventNameDoc of eventNamesSnap.docs) {
         const eventNameId = eventNameDoc.id;
-        if (!activeEventIds.has(eventNameId)) continue; // Filter by active events
+        if (!activeEventIds.has(eventNameId)) continue;
 
         const eventName = eventNameDoc.data().name || '';
         const reportsSnap = await getDocs(collection(db, `eventNames/${eventNameId}/reports`));
@@ -391,30 +443,34 @@
           allReports.push({id: docSnap.id, eventNameId, name: eventName, ...docSnap.data()});
         }
       }
-      
+
       let filtered = allReports.filter(r => {
-          if (filterEventId && r.eventNameId !== filterEventId) return false;
-          if (filterMandalVal && r.mandal !== filterMandalVal) return false;
-          const searchableText = `${r.name} ${r.mandal || ''} ${r.location || ''} ${r.guests || ''} ${r.details || ''}`.toLowerCase();
-          if (searchTerm && !searchableText.includes(searchTerm)) return false;
-          return true;
+        if (filterEventId && r.eventNameId !== filterEventId) return false;
+        if (filterMandalVal && r.mandal !== filterMandalVal) return false;
+        const searchableText = `${r.name} ${r.mandal || ''} ${r.location || ''} ${r.guests || ''} ${r.details || ''}`.toLowerCase();
+        if (searchTerm && !searchableText.includes(searchTerm)) return false;
+        return true;
       });
 
-      const reportedMandals = new Set(allReports.filter(r=> filterEventId ? r.eventNameId === filterEventId : true).map(r => r.mandal));
+      const reportedMandals = new Set(allReports.filter(r => filterEventId ? r.eventNameId === filterEventId : true).map(r => r.mandal));
       let pendingMandals = mandals.filter(m => !reportedMandals.has(m));
       const pendingText = pendingMandals.length ? `रिपोर्ट नहीं: ${pendingMandals.join(", ")}` : 'सभी मंडलों से रिपोर्ट प्राप्त।';
       document.getElementById('pendingMandals').innerText = (filterEventId && pendingMandals.length) ? pendingText : '';
-      
+
       const currentKey = `${filterEventId}-${pendingMandals.join("|")}`;
       if (filterEventId && currentKey !== lastPendingKey) {
         lastPendingKey = currentKey;
-        await sendTelegramAlert(pendingMandals.length ? `🔔 *${eventNameMap[filterEventId]}*: ${pendingMandals.length} मंडल शेष - ${pendingMandals.join(", ")}` : `✅ *${eventNameMap[filterEventId]}*: सभी मंडलों की रिपोर्ट प्राप्त।` );
+        await sendTelegramAlert(
+          pendingMandals.length
+            ? `🔔 *${eventNameMap[filterEventId]}*: ${pendingMandals.length} मंडल शेष - ${pendingMandals.join(", ")}`
+            : `✅ *${eventNameMap[filterEventId]}*: सभी मंडलों की रिपोर्ट प्राप्त।`
+        );
       }
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       reportPage = Math.min(reportPage || 1, totalPages);
       const pageReports = filtered.slice((reportPage - 1) * PAGE_SIZE, reportPage * PAGE_SIZE);
-      
+
       for (const r of pageReports) {
         let photosHTML = "";
         if (Array.isArray(r.photos) && r.photos.length > 0) {
@@ -425,210 +481,219 @@
         reportList.appendChild(row);
       }
       document.getElementById('reportPagination').innerHTML = `<button onclick="changeReportPage(-1)" ${reportPage===1?'disabled':''}>पिछला</button> ${reportPage}/${totalPages} <button onclick="changeReportPage(1)" ${reportPage===totalPages?'disabled':''}>अगला</button>`;
-    }
+    };
 
     window.changeEventPage = function(diff) { eventPage = Math.max(1, eventPage + diff); loadEvents(); };
     window.changeCoordPage = function(diff) { coordPage = Math.max(1, coordPage + diff); loadCoordinators(); };
     window.changeReportPage = function(diff) { reportPage = Math.max(1, reportPage + diff); loadReports(); };
-    
+
     window.editEvent = async function(id) {
-        const docSnap = await getDoc(doc(db, "events", id));
-        if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-        const event = docSnap.data();
-        const newMandal = prompt("मंडल:", event.mandal || ""); if (newMandal === null) return;
-        const newDate = prompt("तारीख:", event.date || ""); if (newDate === null) return;
-        const newTime = prompt("समय:", event.time || ""); if (newTime === null) return;
-        const newLocation = prompt("स्थान:", event.location || ""); if (newLocation === null) return;
-        await updateDoc(doc(db, "events", id), { mandal: newMandal, date: newDate, time: newTime, location: newLocation });
-        await loadEvents();
+      const docSnap = await getDoc(doc(db, "events", id));
+      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
+      const event = docSnap.data();
+      const newMandal = prompt("मंडल:", event.mandal || ""); if (newMandal === null) return;
+      const newDate = prompt("तारीख:", event.date || ""); if (newDate === null) return;
+      const newTime = prompt("समय:", event.time || ""); if (newTime === null) return;
+      const newLocation = prompt("स्थान:", event.location || ""); if (newLocation === null) return;
+      await updateDoc(doc(db, "events", id), { mandal: newMandal, date: newDate, time: newTime, location: newLocation });
+      await loadEvents();
     };
     window.deleteEvent = async function(id) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, "events", id)); await loadEvents(); } };
-    
+
     window.editCoordinator = async function(eventNameId, coordId) {
-        const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
-        if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-        const c = docSnap.data();
-        const mandal = prompt("मंडल:", c.mandal || ""); if (mandal === null) return;
-        const name = prompt("संयोजक:", c.name || ""); if (name === null) return;
-        const mobile = prompt("मोबाइल:", c.mobile || ""); if (mobile === null) return;
-        const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || ""); if (coCoordName1 === null) return;
-        const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || ""); if (coCoordMobile1 === null) return;
-        const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || ""); if (coCoordName2 === null) return;
-        const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || ""); if (coCoordMobile2 === null) return;
-        await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), { mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2 });
-        await loadCoordinators();
+      const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId));
+      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
+      const c = docSnap.data();
+      const mandal = prompt("मंडल:", c.mandal || ""); if (mandal === null) return;
+      const name = prompt("संयोजक:", c.name || ""); if (name === null) return;
+      const mobile = prompt("मोबाइल:", c.mobile || ""); if (mobile === null) return;
+      const coCoordName1 = prompt("सह-संयोजक 1:", c.coCoordName1 || ""); if (coCoordName1 === null) return;
+      const coCoordMobile1 = prompt("मोबाइल 1:", c.coCoordMobile1 || ""); if (coCoordMobile1 === null) return;
+      const coCoordName2 = prompt("सह-संयोजक 2:", c.coCoordName2 || ""); if (coCoordName2 === null) return;
+      const coCoordMobile2 = prompt("मोबाइल 2:", c.coCoordMobile2 || ""); if (coCoordMobile2 === null) return;
+      await updateDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId), { mandal, name, mobile, coCoordName1, coCoordMobile1, coCoordName2, coCoordMobile2 });
+      await loadCoordinators();
     };
     window.deleteCoordinator = async function(eventNameId, coordId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/coordinators`, coordId)); await loadCoordinators(); } };
 
     window.editReport = async function(eventNameId, reportId) {
-        const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
-        if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
-        const r = docSnap.data();
-        const mandal = prompt("मंडल:", r.mandal || ""); if (mandal === null) return;
-        const location = prompt("स्थान:", r.location || ""); if (location === null) return;
-        const date = prompt("तारीख:", r.date || ""); if (date === null) return;
-        const attendance = prompt("उपस्थिति:", r.attendance || ""); if (attendance === null) return;
-        const guests = prompt("विशिष्ट अतिथि:", r.guests || ""); if (guests === null) return;
-        const details = prompt("विवरण:", r.details || ""); if (details === null) return;
-        await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal, location, date, attendance, guests, details });
-        await loadReports();
+      const docSnap = await getDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId));
+      if (!docSnap.exists()) return alert("डेटा नहीं मिला!");
+      const r = docSnap.data();
+      const mandal = prompt("मंडल:", r.mandal || ""); if (mandal === null) return;
+      const location = prompt("स्थान:", r.location || ""); if (location === null) return;
+      const date = prompt("तारीख:", r.date || ""); if (date === null) return;
+      const attendance = prompt("उपस्थिति:", r.attendance || ""); if (attendance === null) return;
+      const guests = prompt("विशिष्ट अतिथि:", r.guests || ""); if (guests === null) return;
+      const details = prompt("विवरण:", r.details || ""); if (details === null) return;
+      await updateDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId), { mandal, location, date, attendance, guests, details });
+      await loadReports();
     };
     window.deleteReport = async function(eventNameId, reportId) { if (confirm("पक्का डिलीट करना है?")) { await deleteDoc(doc(db, `eventNames/${eventNameId}/reports`, reportId)); await loadReports(); } };
-    
+
     window.zoomImage = function(e, url) { e.preventDefault(); document.getElementById('imgZoomModalImg').src = url; document.getElementById('imgZoomModal').style.display = 'flex'; };
     document.getElementById('imgZoomModal').onclick = function() { this.style.display = 'none'; document.getElementById('imgZoomModalImg').src = ''; };
-    
+
     async function loadListsOnly() { await Promise.all([loadEvents(), loadCoordinators(), loadReports()]); }
     async function loadAll() { await loadEventNames(); await loadListsOnly(); }
-    
     loadAll();
   </script>
 
+  <!-- ============== Export Helpers (Multi-page PDF) ============== -->
   <script>
     function exportTableToExcel(table, title) {
-        if (!table) return alert("एक्सेल एक्सपोर्ट के लिए सारणी नहीं मिली!");
-        const rows = Array.from(table.querySelectorAll('tr'));
-        let data;
-        if (title.includes("रिपोर्ट")) {
-            data = rows.map(row => Array.from(row.querySelectorAll("th, td")).filter(cell => !cell.querySelector('div.report-photos-grid')).map(cell => cell.innerText));
-        } else {
-             data = rows.map(row => Array.from(row.querySelectorAll("th:not(:last-child), td:not(:last-child)")).map(cell => cell.innerText));
-        }
-        
-        if (data.length < 2) return alert("एक्सेल में एक्सपोर्ट करने के लिए कोई डेटा नहीं है!");
-        
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, title);
-        XLSX.writeFile(wb, `${title}.xlsx`);
+      if (!table) return alert("एक्सेल एक्सपोर्ट के लिए सारणी नहीं मिली!");
+      const rows = Array.from(table.querySelectorAll('tr'));
+      let data;
+      if (title.includes("रिपोर्ट")) {
+        data = rows.map(row =>
+          Array.from(row.querySelectorAll("th, td"))
+            .filter(cell => !cell.querySelector('div.report-photos-grid'))
+            .map(cell => cell.innerText)
+        );
+      } else {
+        data = rows.map(row =>
+          Array.from(row.querySelectorAll("th:not(:last-child), td:not(:last-child)"))
+            .map(cell => cell.innerText)
+        );
+      }
+      if (data.length < 2) return alert("एक्सेल में एक्सपोर्ट करने के लिए कोई डेटा नहीं है!");
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, title);
+      XLSX.writeFile(wb, `${title}.xlsx`);
     }
 
     async function captureElementWithImages(selector) {
-        const element = document.querySelector(selector);
-        if (!element) throw new Error("एलिमेंट नहीं मिला!");
+      const element = document.querySelector(selector);
+      if (!element) throw new Error("एलिमेंट नहीं मिला!");
 
-        const pagination = element.querySelector('.pagination-controls');
-        const actionButtons = element.querySelectorAll('.action-btn');
-        if (pagination) pagination.style.display = 'none';
-        actionButtons.forEach(btn => btn.style.display = 'none');
+      const pagination = element.querySelector('.pagination-controls');
+      const actionButtons = element.querySelectorAll('.action-btn');
+      if (pagination) pagination.style.display = 'none';
+      actionButtons.forEach(btn => btn.style.display = 'none');
 
-        const images = Array.from(element.querySelectorAll('img'));
-        const originalSrcs = images.map(img => img.src);
-        
-        const dataUrlPromises = images.map(async (img) => {
-            if (!img.src) return;
-            try {
-                const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(img.src)}`;
-                const response = await fetch(proxyUrl);
-                const blob = await response.blob();
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        img.src = reader.result;
-                        resolve();
-                    };
-                    reader.readAsDataURL(blob);
-                });
-            } catch (error) {
-                console.warn(`Could not convert image to data URL: ${img.src}`, error);
-                return Promise.resolve(); 
-            }
-        });
-        
-        await Promise.all(dataUrlPromises);
-
+      // Convert external images to data URLs to avoid CORS in canvas
+      const images = Array.from(element.querySelectorAll('img'));
+      const originalSrcs = images.map(img => img.src);
+      const dataUrlPromises = images.map(async (img) => {
+        if (!img.src) return;
         try {
-            const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" });
-            return canvas;
-        } finally {
-            if (pagination) pagination.style.display = 'block';
-            actionButtons.forEach(btn => btn.style.display = 'inline-block');
-            images.forEach((img, index) => { img.src = originalSrcs[index]; });
+          const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(img.src)}`;
+          const response = await fetch(proxyUrl);
+          const blob = await response.blob();
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => { img.src = reader.result; resolve(); };
+            reader.readAsDataURL(blob);
+          });
+        } catch (error) {
+          console.warn(`Could not convert image to data URL: ${img.src}`, error);
+          return Promise.resolve();
         }
+      });
+      await Promise.all(dataUrlPromises);
+
+      try {
+        // capture FULL height element (not just viewport)
+        const canvas = await html2canvas(element, { useCORS: true, scale: 2, backgroundColor: "#fff" });
+        return canvas;
+      } finally {
+        if (pagination) pagination.style.display = 'block';
+        actionButtons.forEach(btn => btn.style.display = 'inline-block');
+        images.forEach((img, index) => { img.src = originalSrcs[index]; });
+      }
     }
 
-    function exportCanvasToPdf(canvas, fileName) {
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'pt',
-            format: 'a4'
-        });
+    // ---- MULTI-PAGE PDF exporter ----
+    function exportCanvasToPdfMultiPage(canvas, fileName) {
+      const { jsPDF } = window.jspdf;
+      const margin = 20; // pt
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
 
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasAspectRatio = canvas.width / canvas.height;
-        const pageAspectRatio = pdfWidth / pdfHeight;
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
 
-        let imgWidth, imgHeight;
-        if (canvasAspectRatio > pageAspectRatio) {
-            imgWidth = pdfWidth - 40;
-            imgHeight = imgWidth / canvasAspectRatio;
-        } else {
-            imgHeight = pdfHeight - 40;
-            imgWidth = imgHeight * canvasAspectRatio;
-        }
+      // Scale ratio to fit width
+      const ratio = (pageW - margin * 2) / canvas.width;
+      const sliceHeightPx = (pageH - margin * 2) / ratio; // how many canvas pixels fit on one PDF page
 
-        const x = (pdfWidth - imgWidth) / 2;
-        const y = (pdfHeight - imgHeight) / 2;
+      const ctx = canvas.getContext('2d');
+      let yPx = 0;
+      let pageIndex = 0;
 
-        pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
-        pdf.save(`${fileName}.pdf`);
+      while (yPx < canvas.height) {
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = Math.min(sliceHeightPx, canvas.height - yPx);
+
+        const sliceCtx = sliceCanvas.getContext('2d');
+        // draw portion of original canvas into slice
+        sliceCtx.drawImage(canvas, 0, -yPx);
+
+        const imgData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+        if (pageIndex > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', margin, margin, pageW - margin * 2, sliceCanvas.height * ratio);
+        yPx += sliceHeightPx;
+        pageIndex++;
+      }
+      pdf.save(`${fileName}.pdf`);
     }
 
     function exportCanvasToJpg(canvas, fileName) {
-        let link = document.createElement("a");
-        link.href = canvas.toDataURL("image/jpeg", 0.9);
-        link.download = `${fileName}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/jpeg", 0.9);
+      link.download = `${fileName}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
-    
+
     window.handleExport = async function() {
-        try {
-            const value = document.getElementById('exportDropdown').value;
-            if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
-            
-            const [category, type] = value.split('-');
+      try {
+        const value = document.getElementById('exportDropdown').value;
+        if (!value) return alert("कृपया एक्सपोर्ट प्रकार चुनें!");
+        const [category, type] = value.split('-');
 
-            let selector = `#${category}Tab`;
-            let fileName = "";
-            let table = document.querySelector(`${selector} table`);
+        // Export area = पूरा container (ताकि header भी आए)
+        let selector = `.container`;
+        let fileName = "";
+        let table;
 
-            if (category === 'events') fileName = "कार्यक्रम-सूची";
-            else if (category === 'coordinators') fileName = "संयोजक-सूची";
-            else if (category === 'reports') fileName = "रिपोर्ट-सूची";
-            else {
-                alert("अमान्य एक्सपोर्ट प्रकार।");
-                return;
-            }
-            
-            alert("फ़ाइल बनाई जा रही है, कृपया प्रतीक्षा करें...");
+        if (category === 'events') { fileName = "कार्यक्रम-सूची"; table = document.querySelector('#eventsTab table'); }
+        else if (category === 'coordinators') { fileName = "संयोजक-सूची"; table = document.querySelector('#coordinatorsTab table'); }
+        else if (category === 'reports') { fileName = "रिपोर्ट-सूची"; table = document.querySelector('#reportsTab table'); }
+        else { alert("अमान्य एक्सपोर्ट प्रकार।"); return; }
 
-            if (type === 'excel') {
-                exportTableToExcel(table, fileName);
-            } else {
-                captureElementWithImages(selector)
-                    .then(canvas => {
-                        if (type === 'pdf') {
-                            exportCanvasToPdf(canvas, fileName);
-                        } else if (type === 'jpg') {
-                            exportCanvasToJpg(canvas, fileName);
-                        }
-                    })
-                    .catch(err => {
-                        console.error("कैप्चर करने में त्रुटि:", err);
-                        alert("फ़ाइल बनाने में त्रुटि हुई।");
-                    });
-            }
-        } catch (error) {
-            console.error("फाइल बनाने में त्रुटि:", error);
-            alert("फ़ाइल बनाने में एक त्रुटि हुई। अधिक जानकारी के लिए कंसोल देखें।");
+        // Export से ठीक पहले header में चुने हुए event का नाम सेट/रीफ़्रेश करें
+        const selectedEventId = document.getElementById('filterEvent').value;
+        const evTitle = selectedEventId ? (window.eventNameMap ? eventNameMap[selectedEventId] : "चयनित कार्यक्रम") : "सभी कार्यक्रम";
+        document.getElementById('eventTitle').innerText = evTitle || "सभी कार्यक्रम";
+
+        alert("फ़ाइल बनाई जा रही है, कृपया प्रतीक्षा करें...");
+
+        if (type === 'excel') {
+          exportTableToExcel(table, fileName);
+        } else {
+          captureElementWithImages(selector)
+            .then(canvas => {
+              if (type === 'pdf') {
+                // multi-page
+                exportCanvasToPdfMultiPage(canvas, fileName);
+              } else if (type === 'jpg') {
+                exportCanvasToJpg(canvas, fileName);
+              }
+            })
+            .catch(err => {
+              console.error("कैप्चर करने में त्रुटि:", err);
+              alert("फ़ाइल बनाने में त्रुटि हुई।");
+            });
         }
+      } catch (error) {
+        console.error("फाइल बनाने में त्रुटि:", error);
+        alert("फ़ाइल बनाने में एक त्रुटि हुई। अधिक जानकारी के लिए कंसोल देखें।");
+      }
     };
   </script>
 </body>
 </html>
-
