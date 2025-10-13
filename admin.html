@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"><title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- (यहाँ आपका dashboard (5).html का CSS/HTML जैसा है वैसा) -->
+</head>
+<body>
+  <!-- आपका पूरा UI (Settings → eventNames isActive टॉगल, रिपोर्ट/इवेंट/संयोजक सूचियाँ, एक्सपोर्ट आदि) यहाँ पेस्ट करें -->
+  <!-- सिर्फ़ नीचे JS पैच जोड़ें -->
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+  import { getFirestore, doc, getDoc, collection, getDocs, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+    authDomain: "mandaleventall.firebaseapp.com",
+    projectId: "mandaleventall",
+    storageBucket: "mandaleventall.firebasestorage.app",
+    messagingSenderId: "900190130114",
+    appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+    measurementId: "G-2BBZZNRS88"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ===== ROLE GUARD =====
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){ location.href='index-mandal.html'; return; }
+    const u = await getDoc(doc(db,'users',user.uid));
+    if(!u.exists() || u.data().role!=='admin'){ location.href='index-mandal.html'; }
+    // else: आपका पूरा पुराना डैशबोर्ड UI काम करेगा (eventNames isActive टॉगल आदि):contentReference[oaicite:12]{index=12}
+  });
+
+  // ===== APPROVE / REJECT HELPERS (उदाहरण) =====
+  // Approvals के लिए आप अपने टेबल/लिस्ट में बटन पर data-* attributes से type/sid/id पास कर सकते हैं
+  async function approveEvent(docRef){ await updateDoc(docRef, {status:'live'}); }
+  async function rejectEvent(docRef, reason=''){ await updateDoc(docRef, {status:'rejected', rejectReason:reason}); }
+
+  // रिपोर्ट/संयोजक nested collections:
+  // await updateDoc(doc(db, `eventNames/${sid}/reports`, reportId), {status:'live'}) // :contentReference[oaicite:13]{index=13}
+  // await updateDoc(doc(db, `eventNames/${sid}/coordinators`, coordId), {status:'live'}) // :contentReference[oaicite:14]{index=14}
+
+  // TODO: यहाँ अपने existing “load”/“render” फंक्शनों में Approve/Reject बटन को इन helpers से बाँध दें.
+</script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <title>मंडल पोर्टल — लॉगिन + डैशबोर्ड</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{background:#fff9f3;color:#222;font-family:system-ui,'Noto Sans Devanagari',Arial,sans-serif;margin:0}
+    .container{max-width:1100px;margin:20px auto;background:#fff6ea;border-radius:14px;box-shadow:0 2px 16px #ff980020;padding:16px}
+    h1,h2{color:#e65100;margin:.2rem 0 .6rem}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .card{background:#fff;border:1px solid #ffe0b2;border-radius:10px;padding:12px}
+    label{font-weight:600;color:#8d4700;display:block;margin:.4rem 0 .2rem}
+    input,select,textarea,button{font-size:1rem}
+    input,select,textarea{width:100%;padding:8px;border-radius:6px;border:1.2px solid #ffa726a9;background:#fffaf5;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#ff9800;background:#fff7e0}
+    button{background:#ff9800;border:none;color:#fff;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer}
+    button.secondary{background:#8d8d8d} button.danger{background:#e53935} button:hover{background:#e65100}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:.5rem 0}
+    .tab-btn{background:#ffe0b2;color:#8d4700;border:none;padding:8px 14px;border-radius:8px 8px 0 0;font-weight:700;cursor:pointer}
+    .tab-btn.active{background:#ff9800;color:#fff}
+    .tab{display:none;background:#fff;border:1px solid #ffe0b2;border-top:none;border-radius:0 8px 8px 8px;padding:12px}
+    .tab.active{display:block}
+    table{width:100%;border-collapse:collapse;background:#fff;margin:.5rem 0}
+    th,td{border:1px solid #ffa72655;padding:7px;text-align:left} th{background:#ffb74d;color:#442300}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.82rem}
+    .badge.draft{background:#ffe0b2}.badge.pending{background:#fff59d}.badge.live{background:#c8e6c9}
+    .hidden{display:none}.right{margin-left:auto}
+    .toolbar{display:flex;gap:8px;align-items:center;margin:.4rem 0}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>भारतीय जनता पार्टी — मंडल पोर्टल</h1>
+
+  <!-- LOGIN GATE -->
+  <div id="loginGate" class="card">
+    <h2>मंडल अध्यक्ष लॉगिन</h2>
+    <label>मंडल चुनें</label>
+    <select id="selMandal"><option value="">-- मंडल चुनें --</option></select>
+
+    <div id="mandalCard" style="display:none;margin:.6rem 0;padding:.6rem;border:1px dashed #ffcc80;border-radius:8px;background:#fff">
+      <div><b>नाम:</b> <span id="md_name"></span></div>
+      <div><b>मोबाइल:</b> <span id="md_mobile"></span></div>
+      <div style="margin-top:.3rem;color:#8d4700;">आपका स्वागत है! आगे बढ़ने के लिए OTP डालें/भेजें।</div>
+    </div>
+
+    <div id="recaptcha-container" style="margin:.6rem 0"></div>
+    <div class="row" style="align-items:center">
+      <input id="otpInput" placeholder="OTP" style="flex:1 1 220px">
+      <button id="btnSendOtp">OTP भेजें</button>
+      <button id="btnVerify">Verify</button>
+    </div>
+    <div id="gateMsg" style="margin-top:.4rem;color:#8d4700"></div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <div class="row" style="align-items:center">
+      <div><b>लॉगिन:</b> <span id="who"></span></div>
+      <div class="right"><a href="admin.html"><button class="secondary">Admin Dashboard</button></a>
+      <button id="logoutBtn" class="secondary">लॉगआउट</button></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-event">कार्यक्रम जोड़ें</button>
+      <button class="tab-btn" data-tab="tab-report">रिपोर्ट</button>
+      <button class="tab-btn" data-tab="tab-coord">संयोजक</button>
+      <button class="tab-btn" data-tab="tab-my">मेरे सबमिशन / डाउनलोड</button>
+    </div>
+
+    <!-- कार्यक्रम -->
+    <div id="tab-event" class="tab active">
+      <div class="row">
+        <div class="card" style="flex:1 1 340px">
+          <h3>नई प्रविष्टि</h3>
+          <label>कार्यक्रम</label>
+          <select id="ev_eventName"><option value="">कार्यक्रम चुनें</option></select>
+          <label>मंडल</label><input id="ev_mandal" disabled>
+          <label>तारीख</label><input id="ev_date" type="date">
+          <label>समय</label><input id="ev_time" type="time">
+          <label>स्थान</label><input id="ev_location">
+          <div class="row" style="margin-top:.6rem">
+            <button id="ev_saveDraft">Save Draft</button>
+            <button id="ev_submit">Submit for Approval</button>
+          </div>
+          <div id="ev_msg" style="margin-top:.4rem;color:#8d4700"></div>
+        </div>
+        <div class="card" style="flex:1 1 520px">
+          <div class="toolbar">
+            <input id="ev_search" placeholder="खोजें (स्थान/तारीख)">
+            <button id="ev_download" class="secondary">CSV डाउनलोड</button>
+          </div>
+          <table id="ev_table"><thead><tr><th>कार्यक्रम</th><th>तारीख</th><th>समय</th><th>स्थान</th><th>स्थिति</th><th>एक्शन</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- रिपोर्ट -->
+    <div id="tab-report" class="tab">
+      <div class="row">
+        <div class="card" style="flex:1 1 340px">
+          <h3>नई रिपोर्ट</h3>
+          <label>कार्यक्रम</label><select id="rp_eventName"><option value="">कार्यक्रम चुनें</option></select>
+          <label>मंडल</label><input id="rp_mandal" disabled>
+          <label>स्थान</label><input id="rp_location">
+          <label>उपस्थिति</label><input id="rp_attendance" type="number">
+          <label>दिनांक</label><input id="rp_date" type="date">
+          <label>विशिष्ट अतिथि</label><input id="rp_guests">
+          <label>विवरण</label><textarea id="rp_details" rows="3"></textarea>
+          <label>फोटो</label><input id="rp_photo" type="file" accept="image/*">
+          <div class="row" style="margin-top:.6rem">
+            <button id="rp_saveDraft">Save Draft</button>
+            <button id="rp_submit">Submit for Approval</button>
+          </div>
+          <div id="rp_msg" style="margin-top:.4rem;color:#8d4700"></div>
+        </div>
+        <div class="card" style="flex:1 1 520px">
+          <div class="toolbar">
+            <input id="rp_search" placeholder="खोजें (तारीख/उपस्थिति/विवरण)">
+            <button id="rp_download" class="secondary">CSV डाउनलोड</button>
+          </div>
+          <table id="rp_table"><thead><tr><th>कार्यक्रम</th><th>तारीख</th><th>उपस्थिति</th><th>स्थिति</th><th>एक्शन</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- संयोजक -->
+    <div id="tab-coord" class="tab">
+      <div class="row">
+        <div class="card" style="flex:1 1 340px">
+          <h3>संयोजक जोड़ें</h3>
+          <label>कार्यक्रम</label><select id="cd_eventName"><option value="">कार्यक्रम चुनें</option></select>
+          <label>मंडल</label><input id="cd_mandal" disabled>
+          <label>संयोजक</label><input id="cd_name">
+          <label>मोबाइल</label><input id="cd_mobile">
+          <label>सह-संयोजक 1</label><input id="cd_c1">
+          <label>मोबाइल 1</label><input id="cd_c1m">
+          <label>सह-संयोजक 2</label><input id="cd_c2">
+          <label>मोबाइल 2</label><input id="cd_c2m">
+          <div class="row" style="margin-top:.6rem">
+            <button id="cd_saveDraft">Save Draft</button>
+            <button id="cd_submit">Submit for Approval</button>
+          </div>
+          <div id="cd_msg" style="margin-top:.4rem;color:#8d4700"></div>
+        </div>
+        <div class="card" style="flex:1 1 520px">
+          <div class="toolbar">
+            <input id="cd_search" placeholder="खोजें (नाम/मोबाइल)">
+            <button id="cd_download" class="secondary">CSV डाउनलोड</button>
+          </div>
+          <table id="cd_table"><thead><tr><th>कार्यक्रम</th><th>संयोजक</th><th>मोबाइल</th><th>स्थिति</th><th>एक्शन</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- मेरे सबमिशन / डाउनलोड -->
+    <div id="tab-my" class="tab">
+      <div class="row">
+        <div class="card" style="flex:1 1 320px">
+          <h3>मेरे मंडल का सार</h3>
+          <div id="my_stats">लोड हो रहा…</div>
+          <div class="row" style="margin-top:.6rem">
+            <button id="exportAll" class="secondary">मेरी LIVE एंट्री (CSV)</button>
+          </div>
+        </div>
+        <div class="card" style="flex:2 1 520px">
+          <div class="toolbar">
+            <input id="live_search" placeholder="LIVE डेटा खोजें (कार्यक्रम/नाम/विवरण)">
+          </div>
+          <h3>मेरी LIVE एंट्री</h3>
+          <table id="my_live"><thead><tr><th>प्रकार</th><th>कार्यक्रम</th><th>तारीख/नाम</th><th>विवरण</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal (shared) -->
+    <div id="editModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px">
+        <h3 id="em_title" style="margin-top:0">Edit</h3>
+        <div id="em_body"></div>
+        <div class="row" style="justify-content:flex-end;margin-top:10px">
+          <button id="em_cancel" class="secondary">Cancel</button>
+          <button id="em_save">Save</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+  import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, updateDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+
+  // --- Firebase (आपका) ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
+    authDomain: "mandaleventall.firebaseapp.com",
+    projectId: "mandaleventall",
+    storageBucket: "mandaleventall.firebasestorage.app",
+    messagingSenderId: "900190130114",
+    appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
+    measurementId: "G-2BBZZNRS88"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // --- Mandal Directory (तेज़ डेमो; चाहें तो Firestore में रखें) ---
+  const DIRECTORY = {
+    "भेंसोदा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "भानपुरा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "गरोठ": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "मेलखेडा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "खड़ावदा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "शामगढ़": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "सुवासरा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX","+91YYYYYYYYYY"] },
+    "बसाई": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "सीतामऊ": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX","+91YYYYYYYYYY"] },
+    "क्यामपुर": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "सीतामऊ ग्रामीण": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "गुर्जर बरडिया": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "धुंधधड़का": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "बुढा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "पिपलिया मंडी": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "मल्हारगढ़": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "दलोदा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "मगरामाता जी": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "मंदसौर ग्रामीण": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "मंदसौर उत्तर": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
+    "मंदसौर दक्षिण": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] }
+  };
+
+  // --- UI refs ---
+  const loginGate = document.getElementById('loginGate');
+  const appRoot   = document.getElementById('app');
+  const gateMsg   = document.getElementById('gateMsg');
+  const selMandal = document.getElementById('selMandal');
+  const md_name = document.getElementById('md_name');
+  const md_mobile = document.getElementById('md_mobile');
+  const mandalCard = document.getElementById('mandalCard');
+  const who = document.getElementById('who');
+  const otpInput = document.getElementById('otpInput');
+  const btnSendOtp = document.getElementById('btnSendOtp');
+  const btnVerify = document.getElementById('btnVerify');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // tabs
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+  tabBtns.forEach(b=> b.onclick = ()=> {
+    tabBtns.forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
+  });
+
+  // dropdown fill
+  Object.keys(DIRECTORY).forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; selMandal.appendChild(o); });
+
+  selMandal.onchange = ()=>{
+    const d = DIRECTORY[selMandal.value];
+    if(!d){ mandalCard.style.display='none'; return; }
+    md_name.textContent = d.name;
+    md_mobile.textContent = d.phones.join(", ");
+    mandalCard.style.display = 'block';
+  };
+
+  let recaptcha = null, confirmationResult = null, profile = null;
+
+  btnSendOtp.onclick = async ()=>{
+    gateMsg.textContent = "";
+    const d = DIRECTORY[selMandal.value];
+    if(!d){ gateMsg.textContent="कृपया मंडल चुनें"; return; }
+    const phone = d.phones[0];
+    if(!recaptcha){ recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{}); }
+    confirmationResult = await signInWithPhoneNumber(auth, phone, recaptcha);
+    gateMsg.textContent = "OTP भेज दी गई है।";
+  };
+
+  btnVerify.onclick = async ()=>{
+    await confirmationResult.confirm(otpInput.value.trim());
+    gateMsg.textContent = "मोबाइल सत्यापित!";
+  };
+
+  onAuthStateChanged(auth, async(user)=>{
+    if(user){
+      await setDoc(doc(db,'users',user.uid), {
+        role:'mandal_adhyaksh',
+        mandal: selMandal.value,
+        mobile: DIRECTORY[selMandal.value]?.phones?.[0]||user.phoneNumber,
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+
+      const u = await getDoc(doc(db,'users',user.uid));
+      profile = { uid:user.uid, ...(u.exists()?u.data():{}) };
+
+      who.textContent = `${profile.mandal} (${profile.mobile||''})`;
+      loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
+
+      // Prefill मंडल
+      document.getElementById('ev_mandal').value = profile.mandal;
+      document.getElementById('rp_mandal').value = profile.mandal;
+      document.getElementById('cd_mandal').value = profile.mandal;
+
+      await fillActiveEventNames(); // only isActive:true :contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5}
+      await Promise.all([refreshMyEvents(), refreshMyReports(), refreshMyCoords(), refreshMyStats()]);
+    }else{
+      profile=null;
+      appRoot.classList.add('hidden'); loginGate.classList.remove('hidden');
+      gateMsg.textContent="";
+    }
+  });
+
+  logoutBtn.onclick = ()=> signOut(auth);
+
+  // ---- Active Event Names (isActive:true) ----
+  async function fillActiveEventNames(){
+    const snap = await getDocs(collection(db,"eventNames"));
+    const active = snap.docs.map(d=>({id:d.id, ...d.data()}))
+                    .filter(e=>!!e.isActive)   // dropdown control from Admin :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+                    .sort((a,b)=>(a.name||'').localeCompare(b.name||'','hi'));
+    const sels = [ 'ev_eventName', 'rp_eventName', 'cd_eventName' ].map(id=>document.getElementById(id));
+    for(const sel of sels){
+      sel.innerHTML = '<option value="">कार्यक्रम चुनें</option>';
+      active.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; sel.appendChild(o); });
+    }
+  }
+
+  // ---- Helpers ----
+  function badge(status){ const map={draft:'draft',pending_approval:'pending',live:'live'}; const cls=map[status]||'draft'; const lbl=status==='pending_approval'?'pending':(status||'draft'); return `<span class="badge ${cls}">${lbl}</span>`; }
+  function csvDownload(filename, rows){
+    const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
+    const csv = rows.map(r=> r.map(esc).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+  }
+  function filterRows(tbody, q){
+    const term = q.toLowerCase().trim();
+    Array.from(tbody.children).forEach(tr=>{
+      const hit = tr.innerText.toLowerCase().includes(term);
+      tr.style.display = hit ? '' : 'none';
+    });
+  }
+
+  // ====== EVENTS ======
+  const ev = {
+    sel: document.getElementById('ev_eventName'),
+    date: document.getElementById('ev_date'),
+    time: document.getElementById('ev_time'),
+    loc: document.getElementById('ev_location'),
+    msg: document.getElementById('ev_msg'),
+    table: document.querySelector('#ev_table tbody'),
+    search: document.getElementById('ev_search'),
+    dl: document.getElementById('ev_download')
+  };
+  async function saveEvent(status){
+    if(!profile) return;
+    if(!ev.sel.value){ ev.msg.textContent='कार्यक्रम चुनें'; return; }
+    const data = {
+      eventNameId: ev.sel.value, mandal: profile.mandal,
+      date: ev.date.value||'', time: ev.time.value||'', location: ev.loc.value||'',
+      status, createdBy: profile.uid, createdAt: serverTimestamp()
+    };
+    await addDoc(collection(db,'events'), data); // आपकी current schema :contentReference[oaicite:8]{index=8}
+    ev.msg.textContent = status==='draft'?'Draft सेव हुआ':'Approval को भेज दिया गया';
+    await refreshMyEvents();
+  }
+  document.getElementById('ev_saveDraft').onclick = ()=> saveEvent('draft');
+  document.getElementById('ev_submit').onclick    = ()=> saveEvent('pending_approval');
+
+  async function refreshMyEvents(){
+    ev.table.innerHTML='';
+    const snap = await getDocs(collection(db,'events'));
+    const mine = [];
+    snap.forEach(d=>{ const x=d.data(); if(x.createdBy===profile?.uid) mine.push({id:d.id,ref:d.ref,...x}); });
+    mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    mine.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${r.eventNameId}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td><td>${badge(r.status)}</td>
+        <td>${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`;
+      ev.table.appendChild(tr);
+    });
+    ev.search.oninput = ()=> filterRows(ev.table, ev.search.value);
+    ev.dl.onclick = ()=>{
+      const rows = [['eventNameId','date','time','location','status']];
+      mine.forEach(r=> rows.push([r.eventNameId,r.date,r.time,r.location,r.status]));
+      csvDownload('events.csv', rows);
+    };
+    // edit hooks
+    ev.table.querySelectorAll('button.edit').forEach(b=> b.onclick = ()=> openEdit('event', mine.find(x=>x.id===b.dataset.id)));
+  }
+
+  // ====== REPORTS ======
+  const rp = {
+    sel: document.getElementById('rp_eventName'),
+    loc: document.getElementById('rp_location'),
+    att: document.getElementById('rp_attendance'),
+    date: document.getElementById('rp_date'),
+    gst: document.getElementById('rp_guests'),
+    det: document.getElementById('rp_details'),
+    photo: document.getElementById('rp_photo'),
+    msg: document.getElementById('rp_msg'),
+    table: document.querySelector('#rp_table tbody'),
+    search: document.getElementById('rp_search'),
+    dl: document.getElementById('rp_download')
+  };
+  async function saveReport(status){
+    if(!profile) return;
+    if(!rp.sel.value){ rp.msg.textContent='कार्यक्रम चुनें'; return; }
+    let photos=[];
+    if(rp.photo.files?.length){
+      const f=rp.photo.files[0];
+      const sref=ref(storage,`reports/${rp.sel.value}/${Date.now()}_${f.name}`);
+      await uploadBytes(sref,f);
+      const url=await getDownloadURL(sref); photos.push(url);
+    }
+    const data = {
+      eventNameId: rp.sel.value, mandal: profile.mandal,
+      location: rp.loc.value||'', attendance: rp.att.value||'',
+      date: rp.date.value||'', guests: rp.gst.value||'',
+      details: rp.det.value||'', photos,
+      status, createdBy: profile.uid, createdAt: serverTimestamp()
+    };
+    await addDoc(collection(db,`eventNames/${rp.sel.value}/reports`), data); // आपकी current schema :contentReference[oaicite:9]{index=9}
+    rp.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया';
+    rp.photo.value='';
+    await refreshMyReports();
+  }
+  document.getElementById('rp_saveDraft').onclick = ()=> saveReport('draft');
+  document.getElementById('rp_submit').onclick    = ()=> saveReport('pending_approval');
+
+  async function refreshMyReports(){
+    rp.table.innerHTML='';
+    const evNamesSnap = await getDocs(collection(db,'eventNames'));
+    const mine=[];
+    for(const d of evNamesSnap.docs){
+      const sid=d.id;
+      const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
+      rs.forEach(z=>{
+        const r=z.data(); if(r.createdBy===profile?.uid){ mine.push({id:z.id,sid,ref:z.ref,...r}); }
+      });
+    }
+    mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    mine.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${r.sid}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td><td>${badge(r.status)}</td>
+      <td>${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+      rp.table.appendChild(tr);
+    });
+    rp.search.oninput = ()=> filterRows(rp.table, rp.search.value);
+    rp.dl.onclick = ()=>{
+      const rows = [['eventNameId','date','attendance','location','status']];
+      mine.forEach(r=> rows.push([r.sid,r.date,r.attendance,r.location,r.status]));
+      csvDownload('reports.csv', rows);
+    };
+    rp.table.querySelectorAll('button.edit').forEach(b=>{
+      const obj = mine.find(x=> x.id===b.dataset.id && x.sid===b.dataset.sid);
+      b.onclick = ()=> openEdit('report', obj);
+    });
+  }
+
+  // ====== COORDINATORS ======
+  const cd = {
+    sel: document.getElementById('cd_eventName'),
+    name: document.getElementById('cd_name'),
+    mob: document.getElementById('cd_mobile'),
+    c1: document.getElementById('cd_c1'),
+    c1m: document.getElementById('cd_c1m'),
+    c2: document.getElementById('cd_c2'),
+    c2m: document.getElementById('cd_c2m'),
+    msg: document.getElementById('cd_msg'),
+    table: document.querySelector('#cd_table tbody'),
+    search: document.getElementById('cd_search'),
+    dl: document.getElementById('cd_download')
+  };
+  async function saveCoord(status){
+    if(!profile) return;
+    if(!cd.sel.value){ cd.msg.textContent='कार्यक्रम चुनें'; return; }
+    const data = {
+      eventNameId: cd.sel.value, mandal: profile.mandal,
+      name: cd.name.value||'', mobile: cd.mob.value||'',
+      coCoordName1: cd.c1.value||'', coCoordMobile1: cd.c1m.value||'',
+      coCoordName2: cd.c2.value||'', coCoordMobile2: cd.c2m.value||'',
+      status, createdBy: profile.uid, createdAt: serverTimestamp()
+    };
+    await addDoc(collection(db,`eventNames/${cd.sel.value}/coordinators`), data); // आपकी current schema :contentReference[oaicite:10]{index=10}
+    cd.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया';
+    await refreshMyCoords();
+  }
+  document.getElementById('cd_saveDraft').onclick = ()=> saveCoord('draft');
+  document.getElementById('cd_submit').onclick    = ()=> saveCoord('pending_approval');
+
+  async function refreshMyCoords(){
+    cd.table.innerHTML='';
+    const evNamesSnap = await getDocs(collection(db,'eventNames'));
+    const mine=[];
+    for(const d of evNamesSnap.docs){
+      const sid=d.id;
+      const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
+      cs.forEach(z=>{
+        const r=z.data(); if(r.createdBy===profile?.uid){ mine.push({id:z.id,sid,ref:z.ref,...r}); }
+      });
+    }
+    mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    mine.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${r.sid}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td><td>${badge(r.status)}</td>
+      <td>${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+      cd.table.appendChild(tr);
+    });
+    cd.search.oninput = ()=> filterRows(cd.table, cd.search.value);
+    cd.dl.onclick = ()=>{
+      const rows = [['eventNameId','name','mobile','status']];
+      mine.forEach(r=> rows.push([r.sid,r.name,r.mobile,r.status]));
+      csvDownload('coordinators.csv', rows);
+    };
+    cd.table.querySelectorAll('button.edit').forEach(b=>{
+      const obj = mine.find(x=> x.id===b.dataset.id && x.sid===b.dataset.sid);
+      b.onclick = ()=> openEdit('coord', obj);
+    });
+  }
+
+  // ====== MY DASH ======
+  async function refreshMyStats(){
+    let eventsCnt=0,reportsCnt=0,coordsCnt=0;
+    const es=await getDocs(collection(db,'events'));
+    const liveRows=[];
+    es.forEach(d=>{ const x=d.data(); if(x.mandal===profile?.mandal && x.status==='live'){ eventsCnt++; liveRows.push(['कार्यक्रम',x.eventNameId,`${x.date||'-'} ${x.time||''}`,x.location||'-']); }});
+    const evNamesSnap=await getDocs(collection(db,'eventNames'));
+    for(const d of evNamesSnap.docs){
+      const sid=d.id;
+      const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
+      rs.forEach(z=>{ const r=z.data(); if(r.mandal===profile?.mandal && r.status==='live'){ reportsCnt++; liveRows.push(['रिपोर्ट',sid,r.date||'-',r.details||'-']); }});
+      const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
+      cs.forEach(z=>{ const r=z.data(); if(r.mandal===profile?.mandal && r.status==='live'){ coordsCnt++; liveRows.push(['संयोजक',sid,r.name||'-',r.mobile||'-']); }});
+    }
+    document.getElementById('my_stats').innerHTML = `
+      <div>Live कार्यक्रम: <b>${eventsCnt}</b></div>
+      <div>Live रिपोर्ट: <b>${reportsCnt}</b></div>
+      <div>Live संयोजक: <b>${coordsCnt}</b></div>
+    `;
+    const tbody=document.querySelector('#my_live tbody'); tbody.innerHTML='';
+    liveRows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>`; tbody.appendChild(tr); });
+
+    document.getElementById('exportAll').onclick = ()=>{
+      csvDownload('live_all.csv', [['type','program','date/name','details'], ...liveRows]);
+    };
+    document.getElementById('live_search').oninput = (e)=> filterRows(tbody, e.target.value);
+  }
+
+  // ====== EDIT MODAL ======
+  const em = {
+    wrap: document.getElementById('editModal'),
+    title: document.getElementById('em_title'),
+    body: document.getElementById('em_body'),
+    save: document.getElementById('em_save'),
+    cancel: document.getElementById('em_cancel'),
+    ctx: null
+  };
+  function openEdit(type, obj){
+    em.ctx = {type, obj};
+    em.title.textContent = `Edit ${type}`;
+    if(type==='event'){
+      em.body.innerHTML = `
+        <label>तारीख</label><input id="em_date" value="${obj.date||''}">
+        <label>समय</label><input id="em_time" value="${obj.time||''}">
+        <label>स्थान</label><input id="em_loc" value="${obj.location||''}">
+      `;
+    }else if(type==='report'){
+      em.body.innerHTML = `
+        <label>तारीख</label><input id="em_date" value="${obj.date||''}">
+        <label>उपस्थिति</label><input id="em_att" type="number" value="${obj.attendance||''}">
+        <label>स्थान</label><input id="em_loc" value="${obj.location||''}">
+        <label>विवरण</label><textarea id="em_det" rows="3">${obj.details||''}</textarea>
+      `;
+    }else{
+      em.body.innerHTML = `
+        <label>संयोजक</label><input id="em_name" value="${obj.name||''}">
+        <label>मोबाइल</label><input id="em_mob" value="${obj.mobile||''}">
+        <label>सह-संयोजक 1</label><input id="em_c1" value="${obj.coCoordName1||''}">
+        <label>मोबाइल 1</label><input id="em_c1m" value="${obj.coCoordMobile1||''}">
+        <label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}">
+        <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">
+      `;
+    }
+    em.wrap.classList.remove('hidden');
+  }
+  em.cancel.onclick = ()=> em.wrap.classList.add('hidden');
+  em.save.onclick = async ()=>{
+    const {type,obj} = em.ctx||{};
+    if(!type) return;
+    // live पर डायरेक्ट edit नहीं — edit ⇒ pending_approval
+    const base = { status:'pending_approval' };
+    if(type==='event'){
+      await updateDoc(obj.ref, { ...base, date:document.getElementById('em_date').value, time:document.getElementById('em_time').value, location:document.getElementById('em_loc').value });
+      await refreshMyEvents();
+    }else if(type==='report'){
+      await updateDoc(obj.ref, { ...base,
+        date:document.getElementById('em_date').value,
+        attendance:document.getElementById('em_att').value,
+        location:document.getElementById('em_loc').value,
+        details:document.getElementById('em_det').value
+      });
+      await refreshMyReports();
+    }else{
+      await updateDoc(obj.ref, { ...base,
+        name:document.getElementById('em_name').value,
+        mobile:document.getElementById('em_mob').value,
+        coCoordName1:document.getElementById('em_c1').value,
+        coCoordMobile1:document.getElementById('em_c1m').value,
+        coCoordName2:document.getElementById('em_c2').value,
+        coCoordMobile2:document.getElementById('em_c2m').value
+      });
+      await refreshMyCoords();
+    }
+    em.wrap.classList.add('hidden');
+  };
+
+  // PWA SW (optional) — चाहें तो रख लें
+  // if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
+</script>
+</body>
+</html>
