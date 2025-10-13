@@ -12,7 +12,7 @@
     .card{background:#fff;border:1px solid #ffe0b2;border-radius:10px;padding:12px}
     label{font-weight:600;color:#8d4700;display:block;margin:.4rem 0 .2rem}
     input,select,textarea,button{font-size:1rem}
-    input,select,textarea{width:100%;padding:8px;border-radius:6px;border:1.2px solid #ffa726a9;background:#fffaf5;outline:none}
+    input,select,textarea{width:100%;padding:8px;border-radius:6px;border:1.2px solid #ffa726a9;background:#fffaf5}
     input:focus,select:focus,textarea:focus{border-color:#ff9800;background:#fff7e0}
     button{background:#ff9800;border:none;color:#fff;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer}
     button.secondary{background:#8d8d8d} button.danger{background:#e53935} button:hover{background:#e65100}
@@ -45,7 +45,7 @@
       <div style="margin-top:.3rem;color:#8d4700;">आपका स्वागत है! आगे बढ़ने के लिए OTP डालें/भेजें।</div>
     </div>
 
-    <div id="recaptcha-container" style="margin:.6rem 0"></div>
+    <div id="recaptcha-container" style="height:1px;overflow:hidden"></div>
     <div class="row" style="align-items:center">
       <input id="otpInput" placeholder="OTP" style="flex:1 1 220px">
       <button id="btnSendOtp">OTP भेजें</button>
@@ -58,7 +58,7 @@
   <div id="app" class="hidden">
     <div class="row" style="align-items:center">
       <div><b>लॉगिन:</b> <span id="who"></span></div>
-      <div class="right"><a href="admin.html"><button class="secondary">Admin Dashboard</button></a>
+      <div class="right"><a href="admin.html" id="adminLink" class="hidden"><button class="secondary">Admin Dashboard</button></a>
       <button id="logoutBtn" class="secondary">लॉगआउट</button></div>
     </div>
 
@@ -165,16 +165,14 @@
           </div>
         </div>
         <div class="card" style="flex:2 1 520px">
-          <div class="toolbar">
-            <input id="live_search" placeholder="LIVE डेटा खोजें (कार्यक्रम/नाम/विवरण)">
-          </div>
+          <div class="toolbar"><input id="live_search" placeholder="LIVE डेटा खोजें (कार्यक्रम/नाम/विवरण)"></div>
           <h3>मेरी LIVE एंट्री</h3>
           <table id="my_live"><thead><tr><th>प्रकार</th><th>कार्यक्रम</th><th>तारीख/नाम</th><th>विवरण</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- Edit Modal (shared) -->
+    <!-- Edit Modal -->
     <div id="editModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;">
       <div style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px">
         <h3 id="em_title" style="margin-top:0">Edit</h3>
@@ -210,29 +208,32 @@
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // --- Mandal Directory (तेज़ डेमो; चाहें तो Firestore में रखें) ---
+  // --- Master Tester (सभी मंडलों के लिए) ---
+  const MASTER_TESTER = { name:"Ankit Soni", phone:"+919893074891" };
+
+  // --- Directory (PDF से) ---  :contentReference[oaicite:2]{index=2}
   const DIRECTORY = {
-    "भेंसोदा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "भानपुरा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "गरोठ": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "मेलखेडा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "खड़ावदा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "शामगढ़": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "सुवासरा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX","+91YYYYYYYYYY"] },
-    "बसाई": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "सीतामऊ": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX","+91YYYYYYYYYY"] },
-    "क्यामपुर": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "सीतामऊ ग्रामीण": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "गुर्जर बरडिया": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "धुंधधड़का": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "बुढा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "पिपलिया मंडी": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "मल्हारगढ़": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "दलोदा": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "मगरामाता जी": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "मंदसौर ग्रामीण": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "मंदसौर उत्तर": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] },
-    "मंदसौर दक्षिण": { name:"(अध्यक्ष का नाम)", phones:["+91XXXXXXXXXX"] }
+    "भेंसोदा":      { name:"श्री उमेश पारीदार", phones:["+918349035165"] },
+    "भानपुरा":      { name:"श्री आदित्य मंगरोतिया", phones:["+919179885982"] },
+    "गरोठ":         { name:"श्री गोकुलचंद चौरसिया", phones:["+919827493573"] },
+    "खड़ावदा":      { name:"श्री शीताराम चारण", phones:["+919826396638"] },
+    "मेलखेडा":      { name:"श्री महेंद्र पहाड़िया", phones:["+919754473805"] },
+    "शामगढ़":        { name:"श्रीमती नीलकमल मेहता", phones:["+919584127575"] },
+    "सुवासरा":      { name:"श्री दिलीपसिंह तरनोद", phones:["+918959312353","+919302610609"] },
+    "बसाई":         { name:"श्री जुझारसिंह गुर्जर", phones:["+917470494609"] },
+    "सीतामऊ ग्रामीण": { name:"श्री धनुख पारीदार", phones:["+919826333757"] },
+    "सीतामऊ":       { name:"श्री जितेन्द्र बामनिया", phones:["+917067415463","+917049850975"] },
+    "क्यामपुर":      { name:"श्री महेंद्रसिंह गवाड़", phones:["+919926571895"] },
+    "धुंधधड़का":     { name:"श्री राजेश धाकड़", phones:["+919926629819"] },
+    "गुर्जर बरडिया": { name:"श्री भेरलाल जैन", phones:["+919009307527"] },
+    "पिपलिया मंडी":  { name:"श्री राकेश पारीदार", phones:["+918120841685"] },
+    "मल्हारगढ़":     { name:"श्री आशीष विजयवर्गीय", phones:["+919300609496"] },
+    "बुढा":         { name:"श्री सुदर्शन शर्मा", phones:["+917869116615"] },
+    "दलोदा":        { name:"श्री सुमित जैन", phones:["+917000153438"] },
+    "मगरामाता जी":  { name:"श्री गोपाल पारीदार", phones:["+917000422830"] },
+    "मंदसौर ग्रामीण": { name:"श्री नेपालसिंह जाट", phones:["+919009284622"] },
+    "मंदसौर उत्तर":  { name:"श्री अरविंद पारसत", phones:["+919827227627"] },
+    "मंदसौर दक्षिण": { name:"श्री दिनोद डगवार", phones:["+919406869388"] }
   };
 
   // --- UI refs ---
@@ -248,8 +249,9 @@
   const btnSendOtp = document.getElementById('btnSendOtp');
   const btnVerify = document.getElementById('btnVerify');
   const logoutBtn = document.getElementById('logoutBtn');
+  const adminLink = document.getElementById('adminLink');
 
-  // tabs
+  // Tabs
   const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
   tabBtns.forEach(b=> b.onclick = ()=> {
     tabBtns.forEach(x=>x.classList.remove('active'));
@@ -258,370 +260,190 @@
     document.getElementById(b.dataset.tab).classList.add('active');
   });
 
-  // dropdown fill
+  // Dropdown fill
   Object.keys(DIRECTORY).forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; selMandal.appendChild(o); });
 
   selMandal.onchange = ()=>{
     const d = DIRECTORY[selMandal.value];
-    if(!d){ mandalCard.style.display='none'; return; }
-    md_name.textContent = d.name;
-    md_mobile.textContent = d.phones.join(", ");
+    if(!d){ mandalCard.style.display='none'; md_name.textContent=""; md_mobile.textContent=""; return; }
+    md_name.textContent = d.name || "—";
+    md_mobile.textContent = (d.phones||[]).join(", ");
     mandalCard.style.display = 'block';
   };
 
   let recaptcha = null, confirmationResult = null, profile = null;
 
+  // Invisible reCAPTCHA + OTP send
   btnSendOtp.onclick = async ()=>{
     gateMsg.textContent = "";
-    const d = DIRECTORY[selMandal.value];
-    if(!d){ gateMsg.textContent="कृपया मंडल चुनें"; return; }
-    const phone = d.phones[0];
-    if(!recaptcha){ recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{}); }
-    confirmationResult = await signInWithPhoneNumber(auth, phone, recaptcha);
-    gateMsg.textContent = "OTP भेज दी गई है।";
+    const selected = selMandal.value?.trim();
+    let phoneToUse = MASTER_TESTER.phone; // master tester always wins
+    let displayName = MASTER_TESTER.name + " (Master Tester)";
+
+    if(!recaptcha){
+      recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{ size:'invisible', callback:()=>{} });
+    }
+    try{
+      confirmationResult = await signInWithPhoneNumber(auth, phoneToUse, recaptcha);
+      gateMsg.textContent = `OTP भेजी गई: ${phoneToUse}`;
+    }catch(err){
+      gateMsg.textContent = "OTP भेजने में दिक्कत: " + (err?.message||err);
+      console.error(err);
+    }
   };
 
+  // Verify → profile set → unlock UI
   btnVerify.onclick = async ()=>{
-    await confirmationResult.confirm(otpInput.value.trim());
-    gateMsg.textContent = "मोबाइल सत्यापित!";
+    try{
+      await confirmationResult.confirm(otpInput.value.trim());
+      gateMsg.textContent = "मोबाइल सत्यापित!";
+    }catch(err){
+      gateMsg.textContent = "OTP verify विफल: " + (err?.message||err);
+      console.error(err); return;
+    }
   };
 
-  onAuthStateChanged(auth, async(user)=>{
+  onAuthStateChanged(auth, async (user)=>{
     if(user){
-      await setDoc(doc(db,'users',user.uid), {
-        role:'mandal_adhyaksh',
-        mandal: selMandal.value,
-        mobile: DIRECTORY[selMandal.value]?.phones?.[0]||user.phoneNumber,
-        updatedAt: serverTimestamp()
+      const selected = selMandal.value?.trim();
+      const uid = user.uid;
+
+      // Master tester = admin + किसी भी मंडल पर टेस्ट
+      const finalRole  = "admin";
+      const finalMandal= selected || "—";
+      const finalName  = MASTER_TESTER.name;
+      const finalPhone = MASTER_TESTER.phone;
+
+      await setDoc(doc(db,'users',uid), {
+        role: finalRole, mandal: finalMandal, name: finalName, mobile: finalPhone, updatedAt: serverTimestamp()
       }, {merge:true});
 
-      const u = await getDoc(doc(db,'users',user.uid));
-      profile = { uid:user.uid, ...(u.exists()?u.data():{}) };
+      const u = await getDoc(doc(db,'users',uid));
+      profile = { uid, ...(u.exists()?u.data():{}) };
 
-      who.textContent = `${profile.mandal} (${profile.mobile||''})`;
+      who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
+      adminLink.classList.remove('hidden');      // master can see admin
       loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
 
-      // Prefill मंडल
       document.getElementById('ev_mandal').value = profile.mandal;
       document.getElementById('rp_mandal').value = profile.mandal;
       document.getElementById('cd_mandal').value = profile.mandal;
 
-      await fillActiveEventNames(); // only isActive:true :contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5}
+      await fillActiveEventNames();
       await Promise.all([refreshMyEvents(), refreshMyReports(), refreshMyCoords(), refreshMyStats()]);
     }else{
-      profile=null;
-      appRoot.classList.add('hidden'); loginGate.classList.remove('hidden');
-      gateMsg.textContent="";
+      profile=null; appRoot.classList.add('hidden'); loginGate.classList.remove('hidden'); gateMsg.textContent="";
     }
   });
 
   logoutBtn.onclick = ()=> signOut(auth);
 
-  // ---- Active Event Names (isActive:true) ----
+  // Active Event Names (isActive:true)
   async function fillActiveEventNames(){
     const snap = await getDocs(collection(db,"eventNames"));
-    const active = snap.docs.map(d=>({id:d.id, ...d.data()}))
-                    .filter(e=>!!e.isActive)   // dropdown control from Admin :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+    const active = snap.docs.map(d=>({id:d.id, ...d.data()})).filter(e=>!!e.isActive)
                     .sort((a,b)=>(a.name||'').localeCompare(b.name||'','hi'));
-    const sels = [ 'ev_eventName', 'rp_eventName', 'cd_eventName' ].map(id=>document.getElementById(id));
-    for(const sel of sels){
-      sel.innerHTML = '<option value="">कार्यक्रम चुनें</option>';
+    ['ev_eventName','rp_eventName','cd_eventName'].forEach(id=>{
+      const sel=document.getElementById(id); sel.innerHTML='<option value="">कार्यक्रम चुनें</option>';
       active.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; sel.appendChild(o); });
-    }
+    });
   }
 
-  // ---- Helpers ----
+  // Helpers
   function badge(status){ const map={draft:'draft',pending_approval:'pending',live:'live'}; const cls=map[status]||'draft'; const lbl=status==='pending_approval'?'pending':(status||'draft'); return `<span class="badge ${cls}">${lbl}</span>`; }
-  function csvDownload(filename, rows){
-    const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
-    const csv = rows.map(r=> r.map(esc).join(',')).join('\n');
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
-  }
-  function filterRows(tbody, q){
-    const term = q.toLowerCase().trim();
-    Array.from(tbody.children).forEach(tr=>{
-      const hit = tr.innerText.toLowerCase().includes(term);
-      tr.style.display = hit ? '' : 'none';
-    });
-  }
+  function csvDownload(filename, rows){ const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`; const csv=rows.map(r=>r.map(esc).join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); }
+  function filterRows(tbody, q){ const t=q.toLowerCase().trim(); Array.from(tbody.children).forEach(tr=>{ tr.style.display = tr.innerText.toLowerCase().includes(t)?'':''; }); }
 
-  // ====== EVENTS ======
-  const ev = {
-    sel: document.getElementById('ev_eventName'),
-    date: document.getElementById('ev_date'),
-    time: document.getElementById('ev_time'),
-    loc: document.getElementById('ev_location'),
-    msg: document.getElementById('ev_msg'),
-    table: document.querySelector('#ev_table tbody'),
-    search: document.getElementById('ev_search'),
-    dl: document.getElementById('ev_download')
-  };
+  // EVENTS
+  const ev = { sel:ev_eventName, date:ev_date, time:ev_time, loc:ev_location, msg:ev_msg, table:ev_table.querySelector('tbody'), search:ev_search, dl:ev_download };
   async function saveEvent(status){
-    if(!profile) return;
-    if(!ev.sel.value){ ev.msg.textContent='कार्यक्रम चुनें'; return; }
-    const data = {
-      eventNameId: ev.sel.value, mandal: profile.mandal,
-      date: ev.date.value||'', time: ev.time.value||'', location: ev.loc.value||'',
-      status, createdBy: profile.uid, createdAt: serverTimestamp()
-    };
-    await addDoc(collection(db,'events'), data); // आपकी current schema :contentReference[oaicite:8]{index=8}
-    ev.msg.textContent = status==='draft'?'Draft सेव हुआ':'Approval को भेज दिया गया';
-    await refreshMyEvents();
+    if(!profile) return; if(!ev.sel.value){ ev.msg.textContent='कार्यक्रम चुनें'; return; }
+    await addDoc(collection(db,'events'), { eventNameId:ev.sel.value, mandal:profile.mandal, date:ev.date.value||'', time:ev.time.value||'', location:ev.loc.value||'', status, createdBy:profile.uid, createdAt:serverTimestamp() });
+    ev.msg.textContent = status==='draft'?'Draft सेव हुआ':'Approval को भेज दिया गया'; await refreshMyEvents();
   }
-  document.getElementById('ev_saveDraft').onclick = ()=> saveEvent('draft');
-  document.getElementById('ev_submit').onclick    = ()=> saveEvent('pending_approval');
-
+  ev_saveDraft.onclick = ()=> saveEvent('draft'); ev_submit.onclick = ()=> saveEvent('pending_approval');
   async function refreshMyEvents(){
-    ev.table.innerHTML='';
-    const snap = await getDocs(collection(db,'events'));
-    const mine = [];
-    snap.forEach(d=>{ const x=d.data(); if(x.createdBy===profile?.uid) mine.push({id:d.id,ref:d.ref,...x}); });
+    ev.table.innerHTML=''; const snap=await getDocs(collection(db,'events')); const mine=[]; snap.forEach(d=>{ const x=d.data(); if(x.createdBy===profile?.uid) mine.push({id:d.id,ref:d.ref,...x}); });
     mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    mine.forEach(r=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${r.eventNameId}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td><td>${badge(r.status)}</td>
-        <td>${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`;
-      ev.table.appendChild(tr);
-    });
+    mine.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.eventNameId}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td><td>${badge(r.status)}</td><td>${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`; ev.table.appendChild(tr); });
     ev.search.oninput = ()=> filterRows(ev.table, ev.search.value);
-    ev.dl.onclick = ()=>{
-      const rows = [['eventNameId','date','time','location','status']];
-      mine.forEach(r=> rows.push([r.eventNameId,r.date,r.time,r.location,r.status]));
-      csvDownload('events.csv', rows);
-    };
-    // edit hooks
-    ev.table.querySelectorAll('button.edit').forEach(b=> b.onclick = ()=> openEdit('event', mine.find(x=>x.id===b.dataset.id)));
+    ev.dl.onclick = ()=> csvDownload('events.csv',[['event','date','time','location','status'],...mine.map(r=>[r.eventNameId,r.date,r.time,r.location,r.status])]);
+    ev.table.querySelectorAll('button.edit').forEach(b=>{ const obj=mine.find(x=>x.id===b.dataset.id); b.onclick=()=> openEdit('event',obj); });
   }
 
-  // ====== REPORTS ======
-  const rp = {
-    sel: document.getElementById('rp_eventName'),
-    loc: document.getElementById('rp_location'),
-    att: document.getElementById('rp_attendance'),
-    date: document.getElementById('rp_date'),
-    gst: document.getElementById('rp_guests'),
-    det: document.getElementById('rp_details'),
-    photo: document.getElementById('rp_photo'),
-    msg: document.getElementById('rp_msg'),
-    table: document.querySelector('#rp_table tbody'),
-    search: document.getElementById('rp_search'),
-    dl: document.getElementById('rp_download')
-  };
+  // REPORTS
+  const rp = { sel:rp_eventName, loc:rp_location, att:rp_attendance, date:rp_date, gst:rp_guests, det:rp_details, photo:rp_photo, msg:rp_msg, table:rp_table.querySelector('tbody'), search:rp_search, dl:rp_download };
+  rp_saveDraft.onclick = ()=> saveReport('draft'); rp_submit.onclick = ()=> saveReport('pending_approval');
   async function saveReport(status){
-    if(!profile) return;
-    if(!rp.sel.value){ rp.msg.textContent='कार्यक्रम चुनें'; return; }
-    let photos=[];
-    if(rp.photo.files?.length){
-      const f=rp.photo.files[0];
-      const sref=ref(storage,`reports/${rp.sel.value}/${Date.now()}_${f.name}`);
-      await uploadBytes(sref,f);
-      const url=await getDownloadURL(sref); photos.push(url);
-    }
-    const data = {
-      eventNameId: rp.sel.value, mandal: profile.mandal,
-      location: rp.loc.value||'', attendance: rp.att.value||'',
-      date: rp.date.value||'', guests: rp.gst.value||'',
-      details: rp.det.value||'', photos,
-      status, createdBy: profile.uid, createdAt: serverTimestamp()
-    };
-    await addDoc(collection(db,`eventNames/${rp.sel.value}/reports`), data); // आपकी current schema :contentReference[oaicite:9]{index=9}
-    rp.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया';
-    rp.photo.value='';
-    await refreshMyReports();
+    if(!profile) return; if(!rp.sel.value){ rp.msg.textContent='कार्यक्रम चुनें'; return; }
+    let photos=[]; if(rp.photo.files?.length){ const f=rp.photo.files[0]; const sref=ref(storage,`reports/${rp.sel.value}/${Date.now()}_${f.name}`); await uploadBytes(sref,f); photos=[await getDownloadURL(sref)]; }
+    await addDoc(collection(db,`eventNames/${rp.sel.value}/reports`), { eventNameId:rp.sel.value, mandal:profile.mandal, location:rp.loc.value||'', attendance:rp.att.value||'', date:rp.date.value||'', guests:rp.gst.value||'', details:rp.det.value||'', photos, status, createdBy:profile.uid, createdAt:serverTimestamp() });
+    rp.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया'; rp.photo.value=''; await refreshMyReports();
   }
-  document.getElementById('rp_saveDraft').onclick = ()=> saveReport('draft');
-  document.getElementById('rp_submit').onclick    = ()=> saveReport('pending_approval');
-
   async function refreshMyReports(){
-    rp.table.innerHTML='';
-    const evNamesSnap = await getDocs(collection(db,'eventNames'));
-    const mine=[];
-    for(const d of evNamesSnap.docs){
-      const sid=d.id;
-      const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
-      rs.forEach(z=>{
-        const r=z.data(); if(r.createdBy===profile?.uid){ mine.push({id:z.id,sid,ref:z.ref,...r}); }
-      });
-    }
+    rp.table.innerHTML=''; const evNames=await getDocs(collection(db,'eventNames')); const mine=[];
+    for(const d of evNames.docs){ const sid=d.id; const rs=await getDocs(collection(db,`eventNames/${sid}/reports`)); rs.forEach(z=>{ const r=z.data(); if(r.createdBy===profile?.uid) mine.push({id:z.id,sid,ref:z.ref,...r}); }); }
     mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    mine.forEach(r=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${r.sid}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td><td>${badge(r.status)}</td>
-      <td>${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
-      rp.table.appendChild(tr);
-    });
+    mine.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.sid}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td><td>${badge(r.status)}</td><td>${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`; rp.table.appendChild(tr); });
     rp.search.oninput = ()=> filterRows(rp.table, rp.search.value);
-    rp.dl.onclick = ()=>{
-      const rows = [['eventNameId','date','attendance','location','status']];
-      mine.forEach(r=> rows.push([r.sid,r.date,r.attendance,r.location,r.status]));
-      csvDownload('reports.csv', rows);
-    };
-    rp.table.querySelectorAll('button.edit').forEach(b=>{
-      const obj = mine.find(x=> x.id===b.dataset.id && x.sid===b.dataset.sid);
-      b.onclick = ()=> openEdit('report', obj);
-    });
+    rp.dl.onclick = ()=> csvDownload('reports.csv',[['event','date','attendance','location','status'],...mine.map(r=>[r.sid,r.date,r.attendance,r.location,r.status])]);
+    rp.table.querySelectorAll('button.edit').forEach(b=>{ const obj=mine.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('report',obj); });
   }
 
-  // ====== COORDINATORS ======
-  const cd = {
-    sel: document.getElementById('cd_eventName'),
-    name: document.getElementById('cd_name'),
-    mob: document.getElementById('cd_mobile'),
-    c1: document.getElementById('cd_c1'),
-    c1m: document.getElementById('cd_c1m'),
-    c2: document.getElementById('cd_c2'),
-    c2m: document.getElementById('cd_c2m'),
-    msg: document.getElementById('cd_msg'),
-    table: document.querySelector('#cd_table tbody'),
-    search: document.getElementById('cd_search'),
-    dl: document.getElementById('cd_download')
-  };
+  // COORDINATORS
+  const cd = { sel:cd_eventName, name:cd_name, mob:cd_mobile, c1:cd_c1, c1m:cd_c1m, c2:cd_c2, c2m:cd_c2m, msg:cd_msg, table:cd_table.querySelector('tbody'), search:cd_search, dl:cd_download };
+  cd_saveDraft.onclick = ()=> saveCoord('draft'); cd_submit.onclick = ()=> saveCoord('pending_approval');
   async function saveCoord(status){
-    if(!profile) return;
-    if(!cd.sel.value){ cd.msg.textContent='कार्यक्रम चुनें'; return; }
-    const data = {
-      eventNameId: cd.sel.value, mandal: profile.mandal,
-      name: cd.name.value||'', mobile: cd.mob.value||'',
-      coCoordName1: cd.c1.value||'', coCoordMobile1: cd.c1m.value||'',
-      coCoordName2: cd.c2.value||'', coCoordMobile2: cd.c2m.value||'',
-      status, createdBy: profile.uid, createdAt: serverTimestamp()
-    };
-    await addDoc(collection(db,`eventNames/${cd.sel.value}/coordinators`), data); // आपकी current schema :contentReference[oaicite:10]{index=10}
-    cd.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया';
-    await refreshMyCoords();
+    if(!profile) return; if(!cd.sel.value){ cd.msg.textContent='कार्यक्रम चुनें'; return; }
+    await addDoc(collection(db,`eventNames/${cd.sel.value}/coordinators`), { eventNameId:cd.sel.value, mandal:profile.mandal, name:cd.name.value||'', mobile:cd.mob.value||'', coCoordName1:cd.c1.value||'', coCoordMobile1:cd.c1m.value||'', coCoordName2:cd.c2.value||'', coCoordMobile2:cd.c2m.value||'', status, createdBy:profile.uid, createdAt:serverTimestamp() });
+    cd.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया'; await refreshMyCoords();
   }
-  document.getElementById('cd_saveDraft').onclick = ()=> saveCoord('draft');
-  document.getElementById('cd_submit').onclick    = ()=> saveCoord('pending_approval');
-
   async function refreshMyCoords(){
-    cd.table.innerHTML='';
-    const evNamesSnap = await getDocs(collection(db,'eventNames'));
-    const mine=[];
-    for(const d of evNamesSnap.docs){
-      const sid=d.id;
-      const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
-      cs.forEach(z=>{
-        const r=z.data(); if(r.createdBy===profile?.uid){ mine.push({id:z.id,sid,ref:z.ref,...r}); }
-      });
-    }
+    cd.table.innerHTML=''; const evNames=await getDocs(collection(db,'eventNames')); const mine=[];
+    for(const d of evNames.docs){ const sid=d.id; const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`)); cs.forEach(z=>{ const r=z.data(); if(r.createdBy===profile?.uid) mine.push({id:z.id,sid,ref:z.ref,...r}); }); }
     mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    mine.forEach(r=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${r.sid}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td><td>${badge(r.status)}</td>
-      <td>${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
-      cd.table.appendChild(tr);
-    });
+    mine.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.sid}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td><td>${badge(r.status)}</td><td>${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`; cd.table.appendChild(tr); });
     cd.search.oninput = ()=> filterRows(cd.table, cd.search.value);
-    cd.dl.onclick = ()=>{
-      const rows = [['eventNameId','name','mobile','status']];
-      mine.forEach(r=> rows.push([r.sid,r.name,r.mobile,r.status]));
-      csvDownload('coordinators.csv', rows);
-    };
-    cd.table.querySelectorAll('button.edit').forEach(b=>{
-      const obj = mine.find(x=> x.id===b.dataset.id && x.sid===b.dataset.sid);
-      b.onclick = ()=> openEdit('coord', obj);
-    });
+    cd.dl.onclick = ()=> csvDownload('coordinators.csv',[['event','name','mobile','status'],...mine.map(r=>[r.sid,r.name,r.mobile,r.status])]);
+    cd.table.querySelectorAll('button.edit').forEach(b=>{ const obj=mine.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('coord',obj); });
   }
 
-  // ====== MY DASH ======
+  // MY DASH
   async function refreshMyStats(){
-    let eventsCnt=0,reportsCnt=0,coordsCnt=0;
+    let eventsCnt=0,reportsCnt=0,coordsCnt=0; const liveRows=[];
     const es=await getDocs(collection(db,'events'));
-    const liveRows=[];
     es.forEach(d=>{ const x=d.data(); if(x.mandal===profile?.mandal && x.status==='live'){ eventsCnt++; liveRows.push(['कार्यक्रम',x.eventNameId,`${x.date||'-'} ${x.time||''}`,x.location||'-']); }});
-    const evNamesSnap=await getDocs(collection(db,'eventNames'));
-    for(const d of evNamesSnap.docs){
+    const evNames=await getDocs(collection(db,'eventNames'));
+    for(const d of evNames.docs){
       const sid=d.id;
       const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
       rs.forEach(z=>{ const r=z.data(); if(r.mandal===profile?.mandal && r.status==='live'){ reportsCnt++; liveRows.push(['रिपोर्ट',sid,r.date||'-',r.details||'-']); }});
       const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
       cs.forEach(z=>{ const r=z.data(); if(r.mandal===profile?.mandal && r.status==='live'){ coordsCnt++; liveRows.push(['संयोजक',sid,r.name||'-',r.mobile||'-']); }});
     }
-    document.getElementById('my_stats').innerHTML = `
-      <div>Live कार्यक्रम: <b>${eventsCnt}</b></div>
-      <div>Live रिपोर्ट: <b>${reportsCnt}</b></div>
-      <div>Live संयोजक: <b>${coordsCnt}</b></div>
-    `;
-    const tbody=document.querySelector('#my_live tbody'); tbody.innerHTML='';
-    liveRows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>`; tbody.appendChild(tr); });
-
-    document.getElementById('exportAll').onclick = ()=>{
-      csvDownload('live_all.csv', [['type','program','date/name','details'], ...liveRows]);
-    };
-    document.getElementById('live_search').oninput = (e)=> filterRows(tbody, e.target.value);
+    my_stats.innerHTML = `<div>Live कार्यक्रम: <b>${eventsCnt}</b></div><div>Live रिपोर्ट: <b>${reportsCnt}</b></div><div>Live संयोजक: <b>${coordsCnt}</b></div>`;
+    const tbody=my_live.querySelector('tbody'); tbody.innerHTML=''; liveRows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>`; tbody.appendChild(tr); });
+    exportAll.onclick = ()=> csvDownload('live_all.csv',[['type','program','date/name','details'],...liveRows]);
+    live_search.oninput = (e)=> filterRows(tbody, e.target.value);
   }
 
-  // ====== EDIT MODAL ======
-  const em = {
-    wrap: document.getElementById('editModal'),
-    title: document.getElementById('em_title'),
-    body: document.getElementById('em_body'),
-    save: document.getElementById('em_save'),
-    cancel: document.getElementById('em_cancel'),
-    ctx: null
-  };
-  function openEdit(type, obj){
-    em.ctx = {type, obj};
-    em.title.textContent = `Edit ${type}`;
-    if(type==='event'){
-      em.body.innerHTML = `
-        <label>तारीख</label><input id="em_date" value="${obj.date||''}">
-        <label>समय</label><input id="em_time" value="${obj.time||''}">
-        <label>स्थान</label><input id="em_loc" value="${obj.location||''}">
-      `;
-    }else if(type==='report'){
-      em.body.innerHTML = `
-        <label>तारीख</label><input id="em_date" value="${obj.date||''}">
-        <label>उपस्थिति</label><input id="em_att" type="number" value="${obj.attendance||''}">
-        <label>स्थान</label><input id="em_loc" value="${obj.location||''}">
-        <label>विवरण</label><textarea id="em_det" rows="3">${obj.details||''}</textarea>
-      `;
-    }else{
-      em.body.innerHTML = `
-        <label>संयोजक</label><input id="em_name" value="${obj.name||''}">
-        <label>मोबाइल</label><input id="em_mob" value="${obj.mobile||''}">
-        <label>सह-संयोजक 1</label><input id="em_c1" value="${obj.coCoordName1||''}">
-        <label>मोबाइल 1</label><input id="em_c1m" value="${obj.coCoordMobile1||''}">
-        <label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}">
-        <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">
-      `;
-    }
+  // EDIT MODAL
+  const em = { wrap:editModal, title:em_title, body:em_body, save:em_save, cancel:em_cancel, ctx:null };
+  function openEdit(type,obj){
+    em.ctx={type,obj}; em.title.textContent=`Edit ${type}`;
+    if(type==='event'){ em.body.innerHTML=`<label>तारीख</label><input id="em_date" value="${obj.date||''}"><label>समय</label><input id="em_time" value="${obj.time||''}"><label>स्थान</label><input id="em_loc" value="${obj.location||''}">`; }
+    else if(type==='report'){ em.body.innerHTML=`<label>तारीख</label><input id="em_date" value="${obj.date||''}"><label>उपस्थिति</label><input id="em_att" type="number" value="${obj.attendance||''}"><label>स्थान</label><input id="em_loc" value="${obj.location||''}"><label>विवरण</label><textarea id="em_det" rows="3">${obj.details||''}</textarea>`; }
+    else { em.body.innerHTML=`<label>संयोजक</label><input id="em_name" value="${obj.name||''}"><label>मोबाइल</label><input id="em_mob" value="${obj.mobile||''}"><label>सह-संयोजक 1</label><input id="em_c1" value="${obj.coCoordName1||''}"><label>मोबाइल 1</label><input id="em_c1m" value="${obj.coCoordMobile1||''}"><label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}"><label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`; }
     em.wrap.classList.remove('hidden');
   }
   em.cancel.onclick = ()=> em.wrap.classList.add('hidden');
   em.save.onclick = async ()=>{
-    const {type,obj} = em.ctx||{};
-    if(!type) return;
-    // live पर डायरेक्ट edit नहीं — edit ⇒ pending_approval
-    const base = { status:'pending_approval' };
-    if(type==='event'){
-      await updateDoc(obj.ref, { ...base, date:document.getElementById('em_date').value, time:document.getElementById('em_time').value, location:document.getElementById('em_loc').value });
-      await refreshMyEvents();
-    }else if(type==='report'){
-      await updateDoc(obj.ref, { ...base,
-        date:document.getElementById('em_date').value,
-        attendance:document.getElementById('em_att').value,
-        location:document.getElementById('em_loc').value,
-        details:document.getElementById('em_det').value
-      });
-      await refreshMyReports();
-    }else{
-      await updateDoc(obj.ref, { ...base,
-        name:document.getElementById('em_name').value,
-        mobile:document.getElementById('em_mob').value,
-        coCoordName1:document.getElementById('em_c1').value,
-        coCoordMobile1:document.getElementById('em_c1m').value,
-        coCoordName2:document.getElementById('em_c2').value,
-        coCoordMobile2:document.getElementById('em_c2m').value
-      });
-      await refreshMyCoords();
-    }
+    const {type,obj}=em.ctx||{}; if(!type) return; const base={status:'pending_approval'};
+    if(type==='event'){ await updateDoc(obj.ref,{...base,date:em_date.value,time:em_time.value,location:em_loc.value}); await refreshMyEvents(); }
+    else if(type==='report'){ await updateDoc(obj.ref,{...base,date:em_date.value,attendance:em_att.value,location:em_loc.value,details:em_det.value}); await refreshMyReports(); }
+    else { await updateDoc(obj.ref,{...base,name:em_name.value,mobile:em_mob.value,coCoordName1:em_c1.value,coCoordMobile1:em_c1m.value,coCoordName2:em_c2.value,coCoordMobile2:em_c2m.value}); await refreshMyCoords(); }
     em.wrap.classList.add('hidden');
   };
-
-  // PWA SW (optional) — चाहें तो रख लें
-  // if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
 </html>
