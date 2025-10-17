@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <title>मंडल पोर्टल — लॉगिन + डैशबोर्ड (OTP-free)</title>
+  <title>मंडल पोर्टल — OTP-free</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body{background:#fff9f3;color:#222;font-family:system-ui,'Noto Sans Devanagari',Arial,sans-serif;margin:0}
@@ -27,6 +27,16 @@
     .badge.draft{background:#ffe0b2}.badge.pending{background:#fff59d}.badge.live{background:#c8e6c9}.badge.rejected{background:#ffcdd2}
     .hidden{display:none}.right{margin-left:auto}
     .toolbar{display:flex;gap:8px;align-items:center;margin:.4rem 0}
+    /* thumbnails + drawer */
+    .thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; border:1px solid #ffa72655; margin:2px; }
+    .thumb-wrap { display:flex; flex-wrap:wrap; gap:4px; }
+    .drawer { position:fixed; right:0; top:0; bottom:0; width:520px; max-width:92vw;
+      background:#fff; border-left:1px solid #ffe0b2; box-shadow:-6px 0 16px #0001; transform:translateX(100%);
+      transition:.25s transform ease; z-index:9999; display:flex; flex-direction:column; }
+    .drawer.open { transform:translateX(0); }
+    .drawer-head{display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff6ea; border-bottom:1px solid #ffe0b2}
+    .drawer-body{ padding:12px; overflow:auto }
+    .badge.section{background:#e3f2fd; color:#0d47a1}
   </style>
 </head>
 <body>
@@ -194,6 +204,16 @@
       </div>
     </div>
 
+    <!-- EVENT DETAILS DRAWER -->
+    <div id="eventDrawer" class="drawer" aria-hidden="true">
+      <div class="drawer-head">
+        <strong id="dr_title">कार्यक्रम विवरण</strong>
+        <span id="dr_subtitle" style="color:#8d4700"></span>
+        <button id="dr_close" class="right secondary" onclick="closeDrawer()">बंद करें</button>
+      </div>
+      <div class="drawer-body" id="dr_body">लोड हो रहा…</div>
+    </div>
+
   </div><!-- /app -->
 </div>
 
@@ -286,6 +306,30 @@
     });
   }
 
+  // id -> eventName मैप
+  const EVENT_NAME_MAP = new Map();
+  function eventNameOf(x) {
+    const id = typeof x === 'string' ? x : (x?.eventNameId || x?.sid || '');
+    const n1 = id && EVENT_NAME_MAP.get(id);
+    const n2 = typeof x === 'object' ? (x.eventName || x.name) : '';
+    return n1 || n2 || id || '—';
+  }
+  function extractPhotoUrls(r) {
+    const arr = []; const push = v => { if (v && typeof v === 'string') arr.push(v); };
+    if (Array.isArray(r?.photos)) r.photos.forEach(push);
+    if (Array.isArray(r?.photoUrls)) r.photoUrls.forEach(push);
+    if (Array.isArray(r?.images)) r.images.forEach(push);
+    ['imageUrl','photo','url','photoUrl'].forEach(k => push(r?.[k]));
+    return arr;
+  }
+  function renderPhotos(r) {
+    const urls = extractPhotoUrls(r);
+    if (!urls.length) return '';
+    return `<div class="thumb-wrap">` +
+           urls.map(u => `<a href="${u}" target="_blank" rel="noopener"><img class="thumb" src="${u}" alt="photo"></a>`).join('') +
+           `</div>`;
+  }
+
   // Dropdown fill
   Object.keys(DIRECTORY).forEach(m=>{
     const o=document.createElement('option'); o.value=m; o.textContent=m; selMandal.appendChild(o);
@@ -319,7 +363,6 @@
       catch(e){ console.error('Anonymous sign-in failed', e); }
       return;
     }
-    // user मौजूद है; आगे Continue पर profile सेट करेंगे
   });
 
   // Continue: मंडल/मोबाइल चुनकर प्रोफ़ाइल सेट करें
@@ -344,7 +387,6 @@
       profile = payload;
       who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
 
-      // फॉर्म्स में मंडल
       document.getElementById('ev_mandal').value = profile.mandal;
       document.getElementById('rp_mandal').value = profile.mandal;
       document.getElementById('cd_mandal').value = profile.mandal;
@@ -364,11 +406,18 @@
     profile=null; appRoot.classList.add('hidden'); loginGate.classList.remove('hidden'); gateMsg.textContent="";
   });
 
-  // Active event names (isActive==true)
+  // Active event names (isActive==true) + map
   async function fillActiveEventNames(){
+    EVENT_NAME_MAP.clear();
     const snap = await getDocs(collection(db,"eventNames"));
-    const active = snap.docs.map(d=>({id:d.id, ...d.data()})).filter(e=>!!e.isActive)
-                    .sort((a,b)=>(a.name||'').localeCompare(b.name||'','hi'));
+    const active = snap.docs.map(d=>({id:d.id, ...d.data()}))
+                   .filter(e=>!!e.isActive)
+                   .sort((a,b)=>(a.name||'').localeCompare(b.name||'','hi'));
+    snap.forEach(d => {
+      const data = d.data() || {};
+      const n = data.name || data.title || d.id;
+      EVENT_NAME_MAP.set(d.id, n);
+    });
     ['ev_eventName','rp_eventName','cd_eventName'].forEach(id=>{
       const sel=document.getElementById(id); sel.innerHTML='<option value="">कार्यक्रम चुनें</option>';
       active.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; sel.appendChild(o); });
@@ -399,30 +448,36 @@
   async function refreshMyEvents(){
     ev.table.innerHTML='';
     const rows=[];
-    // current
     try{
       const snap=await getDocs(collection(db,'events'));
       snap.forEach(d=>{ const x=d.data(); if (belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)}); });
     }catch(e){ console.warn('events read failed', e); }
-    // legacy: event
     try{
       const snap2=await getDocs(collection(db,'event'));
       snap2.forEach(d=>{ const x=d.data(); if (belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)}); });
     }catch(e){}
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
+      const name = eventNameOf(r);
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${r.eventNameId||r.eventName||'-'}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td>
+      tr.innerHTML=`<td>${name}</td>
+                    <td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>
+                      <button class="secondary" data-view="${r.eventNameId||r.eventName||''}">विवरण</button>
+                      ${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}
+                    </td>`;
       ev.table.appendChild(tr);
     });
     ev.search.oninput = ()=> filterRows(ev.table, ev.search.value);
     ev.dl.onclick = ()=> csvDownload('events.csv',
       [['event','date','time','location','status','mandal'],
-       ...rows.map(r=>[(r.eventNameId||r.eventName||''),r.date||'',r.time||'',r.location||'',r.status||'',r.mandal||''])]);
+       ...rows.map(r=>[eventNameOf(r), r.date||'', r.time||'', r.location||'', r.status||'', r.mandal||''])]);
     ev.table.querySelectorAll('button.edit').forEach(b=>{
       const obj=rows.find(x=>x.id===b.dataset.id); if(obj) b.onclick=()=> openEdit('event',obj);
+    });
+    ev.table.querySelectorAll('button[data-view]').forEach(b=>{
+      const key = b.getAttribute('data-view'); b.onclick = ()=> openDrawerForEvent(key);
     });
   }
 
@@ -445,7 +500,6 @@
   async function refreshMyReports(){
     rp.table.innerHTML='';
     const rows=[];
-    // subcollection
     try{
       const evNames=await getDocs(collection(db,'eventNames'));
       for(const d of evNames.docs){
@@ -454,7 +508,6 @@
         rs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)}); });
       }
     }catch(e){ console.warn('sub reports read failed', e); }
-    // legacy: reports / report
     for(const legacy of ['reports','report']){
       try{
         const lr=await getDocs(collection(db, legacy));
@@ -463,18 +516,25 @@
     }
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
+      const name = eventNameOf(r.sid||r);
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${r.sid}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td>
+      tr.innerHTML=`<td>${name}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>
+                      <button class="secondary" data-view="${r.sid||r.eventNameId||''}">विवरण</button>
+                      ${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}
+                    </td>`;
       rp.table.appendChild(tr);
     });
     rp.search.oninput = ()=> filterRows(rp.table, rp.search.value);
     rp.dl.onclick = ()=> csvDownload('reports.csv',
       [['event','date','attendance','location','status','mandal'],
-       ...rows.map(r=>[r.sid,r.date||'',r.attendance||'',r.location||'',r.status||'',r.mandal||''])]);
+       ...rows.map(r=>[eventNameOf(r.sid||r), r.date||'', r.attendance||'', r.location||'', r.status||'', r.mandal||''])]);
     rp.table.querySelectorAll('button.edit').forEach(b=>{
       const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); if(obj) b.onclick=()=> openEdit('report',obj);
+    });
+    rp.table.querySelectorAll('button[data-view]').forEach(b=>{
+      const key = b.getAttribute('data-view'); b.onclick = ()=> openDrawerForEvent(key);
     });
   }
 
@@ -498,7 +558,6 @@
   async function refreshMyCoords(){
     cd.table.innerHTML='';
     const rows=[];
-    // subcollection
     try{
       const evNames=await getDocs(collection(db,'eventNames'));
       for(const d of evNames.docs){
@@ -507,7 +566,6 @@
         cs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)}); });
       }
     }catch(e){ console.warn('sub coords read failed', e); }
-    // legacy: coordinators / coordinator
     for(const legacy of ['coordinators','coordinator']){
       try{
         const lc=await getDocs(collection(db, legacy));
@@ -516,37 +574,42 @@
     }
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
+      const name = eventNameOf(r.sid||r);
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${r.sid}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td>
+      tr.innerHTML=`<td>${name}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>
+                      <button class="secondary" data-view="${r.sid||r.eventNameId||''}">विवरण</button>
+                      ${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}
+                    </td>`;
       cd.table.appendChild(tr);
     });
     cd.search.oninput = ()=> filterRows(cd.table, cd.search.value);
     cd.dl.onclick = ()=> csvDownload('coordinators.csv',
       [['event','name','mobile','status','mandal'],
-       ...rows.map(r=>[r.sid,r.name||'',r.mobile||'',r.status||'',r.mandal||''])]);
+       ...rows.map(r=>[eventNameOf(r.sid||r), r.name||'', r.mobile||'', r.status||'', r.mandal||''])]);
     cd.table.querySelectorAll('button.edit').forEach(b=>{
       const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); if(obj) b.onclick=()=> openEdit('coord',obj);
+    });
+    cd.table.querySelectorAll('button[data-view]').forEach(b=>{
+      const key = b.getAttribute('data-view'); b.onclick = ()=> openDrawerForEvent(key);
     });
   }
 
   // STATS (मेरे LIVE)
   async function refreshMyStats(){
     let eventsCnt=0,reportsCnt=0,coordsCnt=0; const liveRows=[];
-    // events (new + legacy)
     for (const coll of ['events','event']) {
       try{
         const es=await getDocs(collection(db, coll));
         es.forEach(d=>{
           const x=d.data();
           if (normStatus(x.status)==='live' && belongsToMe(x)) {
-            eventsCnt++; liveRows.push(['कार्यक्रम', x.eventNameId||x.eventName||'-', `${x.date||'-'} ${x.time||''}`, x.location||x.mandal||'-' ]);
+            eventsCnt++; liveRows.push(['कार्यक्रम', eventNameOf(x), `${x.date||'-'} ${x.time||''}`, x.location||x.mandal||'-' ]);
           }
         });
       }catch(e){}
     }
-    // reports (sub + legacy)
     try{
       const evNames=await getDocs(collection(db,'eventNames'));
       for(const d of evNames.docs){
@@ -555,7 +618,7 @@
         rs.forEach(z=>{
           const r=z.data();
           if (normStatus(r.status)==='live' && belongsToMe(r)) {
-            reportsCnt++; liveRows.push(['रिपोर्ट', sid, r.date||'-', r.details||r.mandal||'-' ]);
+            reportsCnt++; liveRows.push(['रिपोर्ट', eventNameOf({eventNameId:sid}), r.date||'-', r.details||r.mandal||'-' ]);
           }
         });
       }
@@ -563,11 +626,10 @@
       lr.forEach(z=>{
         const r=z.data();
         if (normStatus(r.status)==='live' && belongsToMe(r)) {
-          reportsCnt++; liveRows.push(['रिपोर्ट', r.eventNameId||r.eventName||'-', r.date||'-', r.details||r.mandal||'-' ]);
+          reportsCnt++; liveRows.push(['रिपोर्ट', eventNameOf(r), r.date||'-', r.details||r.mandal||'-' ]);
         }
       });
     }catch(e){}
-    // coordinators (sub + legacy)
     try{
       const evNames=await getDocs(collection(db,'eventNames'));
       for(const d of evNames.docs){
@@ -576,7 +638,7 @@
         cs.forEach(z=>{
           const r=z.data();
           if (normStatus(r.status)==='live' && belongsToMe(r)) {
-            coordsCnt++; liveRows.push(['संयोजक', sid, r.name||'-', r.mobile||r.mandal||'-' ]);
+            coordsCnt++; liveRows.push(['संयोजक', eventNameOf({eventNameId:sid}), r.name||'-', r.mobile||r.mandal||'-' ]);
           }
         });
       }
@@ -584,7 +646,7 @@
       lc.forEach(z=>{
         const r=z.data();
         if (normStatus(r.status)==='live' && belongsToMe(r)) {
-          coordsCnt++; liveRows.push(['संयोजक', r.eventNameId||r.eventName||'-', r.name||'-', r.mobile||r.mandal||'-' ]);
+          coordsCnt++; liveRows.push(['संयोजक', eventNameOf(r), r.name||'-', r.mobile||r.mandal||'-' ]);
         }
       });
     }catch(e){}
@@ -604,7 +666,6 @@
     save: document.getElementById('em_save'),
     ctx: null
   };
-
   window.closeEditModal = function () {
     const m = document.getElementById('editModal');
     const body = document.getElementById('em_body');
@@ -636,7 +697,6 @@
     em.wrap.style.display = 'flex';
     const first=em.body.querySelector('input,textarea'); if(first) first.focus();
   }
-
   em.save.onclick = async ()=>{
     const {type,obj}=em.ctx||{}; if(!type){ closeEditModal(); return; }
     try{
@@ -658,6 +718,99 @@
       closeEditModal();
     }
   };
+
+  // ===== Drawer (एक साथ व्यू) =====
+  async function openDrawerForEvent(eventKey){
+    const dr = document.getElementById('eventDrawer');
+    const drTitle = document.getElementById('dr_title');
+    const drSub = document.getElementById('dr_subtitle');
+    const drBody = document.getElementById('dr_body');
+
+    let eventId = null;
+    if (EVENT_NAME_MAP.has(eventKey)) eventId = eventKey;
+    else for (const [id, nm] of EVENT_NAME_MAP.entries()) { if (nm === eventKey) { eventId = id; break; } }
+    const eventName = eventId ? EVENT_NAME_MAP.get(eventId) : (eventKey || '—');
+
+    drTitle.textContent = eventName;
+    drSub.textContent = `• मंडल: ${profile?.mandal||'—'}`;
+    drBody.innerHTML = 'लोड हो रहा…';
+
+    const evRows=[], rpRows=[], cdRows=[];
+    try{
+      const es=await getDocs(collection(db,'events'));
+      es.forEach(d=>{ const x=d.data();
+        if (belongsToMe(x) && (eventId ? x.eventNameId===eventId : eventNameOf(x)===eventName))
+          evRows.push({id:d.id, ...x});
+      });
+      const els=await getDocs(collection(db,'event'));
+      els.forEach(d=>{ const x=d.data();
+        if (belongsToMe(x) && (eventId ? (x.eventNameId===eventId) : eventNameOf(x)===eventName))
+          evRows.push({id:d.id, ...x});
+      });
+    }catch(e){}
+
+    try{
+      if (eventId){
+        const rs=await getDocs(collection(db,`eventNames/${eventId}/reports`));
+        rs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rpRows.push({id:z.id,...r}); });
+      }
+      for(const coll of ['reports','report']){
+        try{
+          const lr=await getDocs(collection(db, coll));
+          lr.forEach(z=>{ const r=z.data();
+            const match = eventId ? (r.eventNameId===eventId) : (eventNameOf(r)===eventName);
+            if (belongsToMe(r) && match) rpRows.push({id:z.id,...r});
+          });
+        }catch(_){}
+      }
+    }catch(e){}
+
+    try{
+      if (eventId){
+        const cs=await getDocs(collection(db,`eventNames/${eventId}/coordinators`));
+        cs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) cdRows.push({id:z.id,...r}); });
+      }
+      for(const coll of ['coordinators','coordinator']){
+        try{
+          const lc=await getDocs(collection(db, coll));
+          lc.forEach(z=>{ const r=z.data();
+            const match = eventId ? (r.eventNameId===eventId) : (eventNameOf(r)===eventName);
+            if (belongsToMe(r) && match) cdRows.push({id:z.id,...r});
+          });
+        }catch(_){}
+      }
+    }catch(e){}
+
+    const evHtml = evRows.length
+      ? `<table><thead><tr><th>तारीख</th><th>समय</th><th>स्थान</th><th>स्थिति</th></tr></thead><tbody>
+           ${evRows.map(r=>`<tr><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td><td>${r.status||'live'}</td></tr>`).join('')}
+         </tbody></table>` : '<div>कोई कार्यक्रम प्रविष्टि नहीं</div>';
+
+    const rpHtml = rpRows.length
+      ? rpRows.map(r=>`<div class="card" style="margin:6px 0">
+          <div><b>दिनांक:</b> ${r.date||'-'} &nbsp; <b>उपस्थिति:</b> ${r.attendance||'-'} &nbsp; <b>स्थिति:</b> ${r.status||'live'}</div>
+          ${r.location?`<div><b>स्थान:</b> ${r.location}</div>`:''}
+          ${r.details?`<div><b>विवरण:</b> ${r.details}</div>`:''}
+          ${renderPhotos(r)}
+        </div>`).join('') : '<div>कोई रिपोर्ट नहीं</div>';
+
+    const cdHtml = cdRows.length
+      ? `<table><thead><tr><th>संयोजक</th><th>मोबाइल</th><th>स्थिति</th></tr></thead><tbody>
+          ${cdRows.map(r=>`<tr><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td><td>${r.status||'live'}</td></tr>`).join('')}
+         </tbody></table>` : '<div>कोई संयोजक प्रविष्टि नहीं</div>';
+
+    drBody.innerHTML = `
+      <div class="badge section">कार्यक्रम</div>
+      ${evHtml}
+      <div class="badge section" style="margin-top:10px">रिपोर्ट्स</div>
+      ${rpHtml}
+      <div class="badge section" style="margin-top:10px">संयोजक</div>
+      ${cdHtml}
+    `;
+    dr.classList.add('open');
+  }
+  function closeDrawer(){ document.getElementById('eventDrawer').classList.remove('open'); }
+
 </script>
 </body>
 </html>
