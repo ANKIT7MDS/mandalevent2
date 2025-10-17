@@ -538,13 +538,16 @@
     ctx: null
   };
 
-  window.closeEditModal = function () {
-    const m = document.getElementById('editModal');
-    const body = document.getElementById('em_body');
-    if (body) body.innerHTML = '';
-    if (m && !m.classList.contains('hidden')) m.classList.add('hidden');
-    em.ctx = null;
-  };
+window.closeEditModal = function () {
+  const m = document.getElementById('editModal');
+  const body = document.getElementById('em_body');
+  if (body) body.innerHTML = '';
+  if (m) {
+    m.style.display = 'none';       // force hide  ✅
+  }
+  em.ctx = null;
+};
+
   window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeEditModal(); });
 
   function openEdit(type,obj){
@@ -566,7 +569,7 @@
                           <label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}">
                           <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`;
     }
-    em.wrap.classList.remove('hidden');
+   em.wrap.style.display = 'flex';  
     const first=em.body.querySelector('input,textarea'); if(first) first.focus();
   }
 
@@ -594,3 +597,4 @@
 </script>
 </body>
 </html>
+
