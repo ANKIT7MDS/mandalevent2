@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <title>मंडल पोर्टल — लॉगिन + डैशबोर्ड</title>
+  <title>मंडल पोर्टल — लॉगिन + डैशबोर्ड (OTP-free)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body{background:#fff9f3;color:#222;font-family:system-ui,'Noto Sans Devanagari',Arial,sans-serif;margin:0}
@@ -33,7 +33,7 @@
 <div class="container">
   <h1>भारतीय जनता पार्टी — मंडल पोर्टल</h1>
 
-  <!-- LOGIN -->
+  <!-- LOGIN (OTP removed) -->
   <div id="loginGate" class="card">
     <h2>मंडल अध्यक्ष लॉगिन</h2>
 
@@ -48,16 +48,13 @@
     <label id="lblPhone" style="display:none">मोबाइल चुनें</label>
     <select id="selPhone" style="display:none"><option value="">-- मोबाइल चुनें --</option></select>
 
-    <div id="recaptcha-container" style="height:1px;overflow:hidden"></div>
-
-    <div class="row" style="align-items:center">
-      <input id="otpInput" placeholder="OTP (टेस्ट: 123456)" style="flex:1 1 220px">
-      <button id="btnSendOtp">OTP भेजें</button>
-      <button id="btnVerify">Verify</button>
+    <div class="row" style="align-items:center;margin-top:.6rem">
+      <button id="btnContinue">जारी रखें</button>
     </div>
+
     <div id="gateMsg" style="margin-top:.4rem;color:#8d4700"></div>
     <div style="margin-top:.3rem;font-size:.9rem;color:#555">
-      टेस्ट मोड: हर चुने हुए नंबर के लिए Firebase → Phone → <b>Test numbers</b> में OTP <b>123456</b> सेट करें। (SMS नहीं जाएगा)
+      <b>टेस्ट मोड:</b> OTP/पासवर्ड की आवश्यकता नहीं है। बस मंडल/मोबाइल चुनें और आगे बढ़ें।
     </div>
   </div>
 
@@ -179,7 +176,7 @@
       </div>
     </div>
 
-    <!-- Edit Modal (force close) -->
+    <!-- Edit Modal -->
     <div id="editModal"
          onclick="if(event.target.id==='editModal') closeEditModal()"
          style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999;">
@@ -202,7 +199,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+  import { getAuth, onAuthStateChanged, signOut, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
   import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
   // ==== CONFIG ====
@@ -215,10 +212,8 @@
     appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
     measurementId: "G-2BBZZNRS88"
   };
-  // टेस्ट OTP (सभी के लिए)
-  const DEFAULT_OTP = '123456';
 
-  // मंडल डायरेक्टरी (आपकी सूची)
+  // मंडल डायरेक्टरी
   const DIRECTORY = {
     "भानपुरा":      { name:"श्री आदित्य मंगरोतिया", phones:["+919179885982"] },
     "भेंसोदा":      { name:"श्री उमेश पारीदार", phones:["+918349035165"] },
@@ -253,15 +248,13 @@
   const appRoot   = document.getElementById('app');
   const gateMsg   = document.getElementById('gateMsg');
   const selMandal = document.getElementById('selMandal');
-  const md_name = document.getElementById('md_name');
+  const md_name   = document.getElementById('md_name');
   const md_mobile = document.getElementById('md_mobile');
-  const mandalCard = document.getElementById('mandalCard');
-  const selPhone = document.getElementById('selPhone');
-  const lblPhone = document.getElementById('lblPhone');
-  const who = document.getElementById('who');
-  const otpInput = document.getElementById('otpInput');
-  const btnSendOtp = document.getElementById('btnSendOtp');
-  const btnVerify = document.getElementById('btnVerify');
+  const mandalCard= document.getElementById('mandalCard');
+  const selPhone  = document.getElementById('selPhone');
+  const lblPhone  = document.getElementById('lblPhone');
+  const who       = document.getElementById('who');
+  const btnContinue = document.getElementById('btnContinue');
   const logoutBtn = document.getElementById('logoutBtn');
 
   // Tabs
@@ -315,80 +308,61 @@
       const o=document.createElement('option'); o.value=p; o.textContent=p; selPhone.appendChild(o);
     });
     selPhone.style.display='block'; lblPhone.style.display='block';
-    otpInput.value = DEFAULT_OTP; // convenience
   };
 
-  let recaptcha = null, confirmationResult = null, profile = null;
+  let profile = null;
 
-  // OTP भेजें → चुने हुए नंबर पर (Test numbers में 123456 रखें)
-  btnSendOtp.onclick = async ()=>{
-    gateMsg.textContent = "";
-    const phoneToUse = selPhone.value?.trim();
-    if(!phoneToUse){ gateMsg.textContent = "पहले मोबाइल चुनें"; return; }
-    try{
-      if(!recaptcha){
-        recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{ size:'invisible' });
-      }
-      confirmationResult = await signInWithPhoneNumber(auth, phoneToUse, recaptcha);
-      gateMsg.textContent = `OTP भेजी गई/टेस्ट: ${phoneToUse}`;
-    }catch(err){
-      const msg = err?.customData?.serverResponse || err?.message || String(err);
-      gateMsg.textContent = "OTP भेजने में दिक्कत: " + msg;
-      console.error(err);
-    }
-  };
-
-  // Verify (123456)
-  btnVerify.onclick = async ()=>{
-    try{
-      await confirmationResult.confirm(otpInput.value.trim());
-      gateMsg.textContent = "मोबाइल सत्यापित!";
-    }catch(err){
-      gateMsg.textContent = "OTP verify विफल: " + (err?.message||err);
-      console.error(err);
-    }
-  };
-
-  // user profile save (सिर्फ मंडल रोल)
-  async function saveUserData(user){
-    const selectedMandal = selMandal.value?.trim() || "—";
-    const selectedPhone  = selPhone.value?.trim()  || "";
-    const payload = {
-      uid: user.uid,
-      role: 'mandal',
-      name: DIRECTORY[selectedMandal]?.name || '—',
-      mobile: selectedPhone,
-      mandal: selectedMandal,
-      verified: true,
-      updatedAt: serverTimestamp()
-    };
-    await setDoc(doc(db,'users', user.uid), payload, { merge:true });
-    return payload;
-  }
-
+  // Anonymous auth: पेज खुलते ही
   onAuthStateChanged(auth, async (user)=>{
-    if(user){
-      try{
-        profile = await saveUserData(user);
-      }catch(e){
-        console.warn("user save failed", e);
-        profile = { uid:user.uid, role:'mandal', name:'—', mobile: selPhone.value||'', mandal: selMandal.value||'—' };
-      }
-      who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
-      loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
+    if (!user) {
+      try { await signInAnonymously(auth); }
+      catch(e){ console.error('Anonymous sign-in failed', e); }
+      return;
+    }
+    // user मौजूद है; आगे Continue पर profile सेट करेंगे
+  });
 
+  // Continue: मंडल/मोबाइल चुनकर प्रोफ़ाइल सेट करें
+  btnContinue.onclick = async ()=>{
+    const mandal = selMandal.value?.trim();
+    const mobile = selPhone.value?.trim();
+    if(!mandal){ gateMsg.textContent = 'पहले मंडल चुनें'; return; }
+    if(!mobile){ gateMsg.textContent = 'मोबाइल चुनें'; return; }
+
+    try{
+      const d = DIRECTORY[mandal] || {};
+      const uid = auth.currentUser?.uid || 'anon';
+      const payload = {
+        uid, role:'mandal',
+        name: d.name || '—',
+        mobile, mandal,
+        verified: true,
+        updatedAt: serverTimestamp()
+      };
+      await setDoc(doc(db,'users', uid), payload, { merge:true });
+
+      profile = payload;
+      who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
+
+      // फॉर्म्स में मंडल
       document.getElementById('ev_mandal').value = profile.mandal;
       document.getElementById('rp_mandal').value = profile.mandal;
       document.getElementById('cd_mandal').value = profile.mandal;
 
+      loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
+
       await fillActiveEventNames();
       await Promise.all([refreshMyEvents(), refreshMyReports(), refreshMyCoords(), refreshMyStats()]);
-    }else{
-      profile=null; appRoot.classList.add('hidden'); loginGate.classList.remove('hidden'); gateMsg.textContent="";
+    }catch(err){
+      gateMsg.textContent = 'आगे बढ़ने में दिक्कत: ' + (err?.message||err);
+      console.error(err);
     }
-  });
+  };
 
-  logoutBtn.onclick = ()=> signOut(auth);
+  // Logout
+  logoutBtn.onclick = ()=> signOut(auth).then(()=>{
+    profile=null; appRoot.classList.add('hidden'); loginGate.classList.remove('hidden'); gateMsg.textContent="";
+  });
 
   // Active event names (isActive==true)
   async function fillActiveEventNames(){
@@ -402,9 +376,8 @@
   }
 
   // ====== पुराना डेटा भी दिखाने के helpers ======
-  const isSuper = () => false; // अभी कोई एडमिन मोड नहीं
+  const isSuper = () => false;
   function belongsToMe(x) {
-    // createdBy ना हो तो mandal से मैच
     return (x?.createdBy === profile?.uid) || (x?.mandal && x.mandal === profile?.mandal);
   }
   function normStatus(s) { return s || 'live'; }
@@ -582,7 +555,7 @@
         rs.forEach(z=>{
           const r=z.data();
           if (normStatus(r.status)==='live' && belongsToMe(r)) {
-            reportsCnt++; liveRows.push(['ரिपोर्ट', sid, r.date||'-', r.details||r.mandal||'-' ]);
+            reportsCnt++; liveRows.push(['रिपोर्ट', sid, r.date||'-', r.details||r.mandal||'-' ]);
           }
         });
       }
@@ -623,7 +596,7 @@
     live_search.oninput = (e)=> filterRows(tbody, e.target.value);
   }
 
-  // ===== Modal helpers (force close) =====
+  // ===== Modal helpers =====
   const em = {
     wrap: document.getElementById('editModal'),
     title: document.getElementById('em_title'),
@@ -652,7 +625,7 @@
                           <label>उपस्थिति</label><input id="em_att" type="number" value="${obj.attendance||''}">
                           <label>स्थान</label><input id="em_loc" value="${obj.location||''}">
                           <label>विवरण</label><textarea id="em_det" rows="3">${obj.details||''}</textarea>`;
-    } else { // coord
+    } else {
       em.body.innerHTML=`<label>संयोजक</label><input id="em_name" value="${obj.name||''}">
                           <label>मोबाइल</label><input id="em_mob" value="${obj.mobile||''}">
                           <label>सह-संयोजक 1</label><input id="em_c1" value="${obj.coCoordName1||''}">
@@ -660,7 +633,7 @@
                           <label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}">
                           <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`;
     }
-    em.wrap.style.display = 'flex'; // show
+    em.wrap.style.display = 'flex';
     const first=em.body.querySelector('input,textarea'); if(first) first.focus();
   }
 
@@ -682,7 +655,7 @@
       alert('सेव में दिक्कत: ' + (err?.message||err));
       console.error(err);
     }finally{
-      closeEditModal(); // हमेशा बंद
+      closeEditModal();
     }
   };
 </script>
