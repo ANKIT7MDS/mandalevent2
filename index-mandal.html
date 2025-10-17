@@ -173,17 +173,20 @@
       </div>
     </div>
 
-    <!-- Edit Modal (मजबूत close handlers के साथ) -->
+    <!-- Edit Modal (HARDCLOSE) -->
     <div id="editModal" class="hidden"
+         onclick="if(event.target.id==='editModal') closeEditModal()"
          style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;">
-      <div id="editModalCard" style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px;position:relative">
-        <button id="em_close" title="Close"
+      <div id="editModalCard"
+           style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px;position:relative">
+        <button id="em_close" type="button" onclick="closeEditModal()"
           style="position:absolute;top:8px;right:8px;background:#eee;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer">✕</button>
+
         <h3 id="em_title" style="margin-top:0">Edit</h3>
         <div id="em_body"></div>
         <div class="row" style="justify-content:flex-end;margin-top:10px">
-          <button id="em_cancel" class="secondary">Cancel</button>
-          <button id="em_save">Save</button>
+          <button id="em_cancel" type="button" class="secondary" onclick="closeEditModal()">Cancel</button>
+          <button id="em_save" type="button">Save</button>
         </div>
       </div>
     </div>
@@ -526,23 +529,24 @@
     live_search.oninput = (e)=> filterRows(tbody, e.target.value);
   }
 
-  // ---- EDIT MODAL (मज़बूत बंद तंत्र) ----
+  // ============ EDIT MODAL (हार्ड-क्लोज़) ============
   const em = {
     wrap: document.getElementById('editModal'),
-    card: document.getElementById('editModalCard'),
     title: document.getElementById('em_title'),
     body: document.getElementById('em_body'),
     save: document.getElementById('em_save'),
-    cancel: document.getElementById('em_cancel'),
-    closeBtn: document.getElementById('em_close'),
     ctx: null
   };
 
-  function closeModal() {
+  window.closeEditModal = function () {
+    const m = document.getElementById('editModal');
+    const body = document.getElementById('em_body');
+    if (body) body.innerHTML = '';
+    if (m && !m.classList.contains('hidden')) m.classList.add('hidden');
     em.ctx = null;
-    em.body.innerHTML = '';
-    em.wrap.classList.add('hidden');
-  }
+  };
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeEditModal(); });
+
   function openEdit(type,obj){
     em.ctx={type,obj}; em.title.textContent=`Edit ${type}`;
     if(type==='event'){
@@ -554,7 +558,7 @@
                           <label>उपस्थिति</label><input id="em_att" type="number" value="${obj.attendance||''}">
                           <label>स्थान</label><input id="em_loc" value="${obj.location||''}">
                           <label>विवरण</label><textarea id="em_det" rows="3">${obj.details||''}</textarea>`;
-    } else {
+    } else { // coord
       em.body.innerHTML=`<label>संयोजक</label><input id="em_name" value="${obj.name||''}">
                           <label>मोबाइल</label><input id="em_mob" value="${obj.mobile||''}">
                           <label>सह-संयोजक 1</label><input id="em_c1" value="${obj.coCoordName1||''}">
@@ -563,16 +567,11 @@
                           <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`;
     }
     em.wrap.classList.remove('hidden');
-    const first = em.body.querySelector('input,textarea'); if (first) first.focus();
+    const first=em.body.querySelector('input,textarea'); if(first) first.focus();
   }
-  // Close bindings
-  em.wrap.addEventListener('click', (e)=>{ if(e.target===em.wrap) closeModal(); });
-  if (em.closeBtn) em.closeBtn.onclick = closeModal;
-  em.cancel.onclick = closeModal;
-  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !em.wrap.classList.contains('hidden')) closeModal(); });
 
   em.save.onclick = async ()=>{
-    const {type,obj}=em.ctx||{}; if(!type) return;
+    const {type,obj}=em.ctx||{}; if(!type){ closeEditModal(); return; }
     try{
       const base={status:'pending_approval'};
       if(type==='event'){
@@ -586,10 +585,10 @@
         await refreshMyCoords();
       }
     }catch(err){
-      alert('सेव करते समय दिक्कत: ' + (err?.message||err));
+      alert('सेव में दिक्कत: ' + (err?.message||err));
       console.error(err);
     }finally{
-      closeModal(); // हमेशा बंद
+      closeEditModal(); // हर हाल में बंद
     }
   };
 </script>
