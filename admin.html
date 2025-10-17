@@ -5,9 +5,10 @@
   <title>Admin Dashboard</title>
   <style>
     body{font-family:system-ui,'Noto Sans Devanagari',Arial,sans-serif;background:#fff9f3;margin:0}
-    .wrap{max-width:1100px;margin:20px auto;background:#fff6ea;border-radius:14px;box-shadow:0 2px 16px #ff980020;padding:16px}
+    .wrap{max-width:1200px;margin:20px auto;background:#fff6ea;border-radius:14px;box-shadow:0 2px 16px #ff980020;padding:16px}
     h1,h2{color:#e65100} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ffa72655;padding:7px} th{background:#ffb74d}
     button{background:#ff9800;border:none;color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer} button.danger{background:#e53935}
+    .toolbar{display:flex;gap:8px;align-items:center;margin:.4rem 0}
   </style>
 </head>
 <body>
@@ -15,7 +16,7 @@
   <h1>एडमिन डैशबोर्ड</h1>
 
   <h2>कार्यक्रम (eventNames) — ड्रॉपडाउन कंट्रोल</h2>
-  <div style="margin:8px 0">
+  <div class="toolbar">
     <input id="newEvName" placeholder="नया कार्यक्रम नाम">
     <button id="addEvBtn">जोड़ें</button>
   </div>
@@ -28,7 +29,7 @@
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-  import { getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
@@ -44,13 +45,13 @@
   const db = getFirestore(app);
 
   onAuthStateChanged(auth, async (user)=>{
-    if(!user){ location.href='index-mandal.html'; return; }
+    if(!user){ location.href='index-mandal-final.html'; return; }
     const u = await getDoc(doc(db,'users',user.uid));
-    if(!u.exists() || u.data().role!=='admin'){ location.href='index-mandal.html'; return; }
+    if(!u.exists() || u.data().role!=='admin'){ location.href='index-mandal-final.html'; return; }
     await Promise.all([loadEventNames(), loadPending()]);
   });
 
-  // eventNames list + toggle + add
+  // Event names table
   const tBody = document.querySelector('#evnames tbody');
   async function loadEventNames(){
     tBody.innerHTML='';
@@ -65,13 +66,16 @@
   }
   document.getElementById('addEvBtn').onclick = async ()=>{
     const name=document.getElementById('newEvName').value.trim(); if(!name) return;
-    await addDoc(collection(db,'eventNames'), {name, isActive:true}); document.getElementById('newEvName').value=''; loadEventNames();
+    await addDoc(collection(db,'eventNames'), {name, isActive:true});
+    document.getElementById('newEvName').value=''; loadEventNames();
   };
 
-  // Pending approvals (events + nested)
+  // Pending approvals
   const pBody = document.querySelector('#pending tbody');
   async function loadPending(){
     pBody.innerHTML='';
+
+    // events
     const es=await getDocs(collection(db,'events'));
     es.forEach(d=>{ const x=d.data(); if(x.status==='pending_approval'){
       const tr=document.createElement('tr');
@@ -82,9 +86,11 @@
       pBody.appendChild(tr);
     }});
 
+    // reports + coordinators
     const evs=await getDocs(collection(db,'eventNames'));
     for(const n of evs.docs){
       const sid=n.id;
+
       const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
       rs.forEach(z=>{ const r=z.data(); if(r.status==='pending_approval'){
         const tr=document.createElement('tr');
@@ -94,6 +100,7 @@
         tr.querySelector('.rj').onclick=()=> updateDoc(z.ref,{status:'rejected'}).then(loadPending);
         pBody.appendChild(tr);
       }});
+
       const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
       cs.forEach(z=>{ const r=z.data(); if(r.status==='pending_approval'){
         const tr=document.createElement('tr');
