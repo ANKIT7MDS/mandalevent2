@@ -1,204 +1,241 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <title>मंडल पोर्टल — OTP-free</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body{background:#fff9f3;color:#222;font-family:system-ui,'Noto Sans Devanagari',Arial,sans-serif;margin:0}
-    .container{max-width:1200px;margin:20px auto;background:#fff6ea;border-radius:14px;box-shadow:0 2px 16px #ff980020;padding:16px}
-    h1,h2{color:#e65100;margin:.2rem 0 .6rem}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .card{background:#fff;border:1px solid #ffe0b2;border-radius:10px;padding:12px}
-    label{font-weight:600;color:#8d4700;display:block;margin:.4rem 0 .2rem}
-    input,select,textarea,button{font-size:1rem}
-    input,select,textarea{width:100%;padding:8px;border-radius:6px;border:1.2px solid #ffa726a9;background:#fffaf5}
-    input:focus,select:focus,textarea:focus{border-color:#ff9800;background:#fff7e0}
-    button{background:#ff9800;border:none;color:#fff;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer}
-    button.secondary{background:#8d8d8d} button.danger{background:#e53935} button:hover{background:#e65100}
-    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:.5rem 0}
-    .tab-btn{background:#ffe0b2;color:#8d4700;border:none;padding:8px 14px;border-radius:8px 8px 0 0;font-weight:700;cursor:pointer}
-    .tab-btn.active{background:#ff9800;color:#fff}
-    .tab{display:none;background:#fff;border:1px solid #ffe0b2;border-top:none;border-radius:0 8px 8px 8px;padding:12px}
-    .tab.active{display:block}
-    table{width:100%;border-collapse:collapse;background:#fff;margin:.5rem 0}
-    th,td{border:1px solid #ffa72655;padding:7px;text-align:left} th{background:#ffb74d;color:#442300}
-    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.82rem}
-    .badge.draft{background:#ffe0b2}.badge.pending{background:#fff59d}.badge.live{background:#c8e6c9}.badge.rejected{background:#ffcdd2}
-    .hidden{display:none}.right{margin-left:auto}
-    .toolbar{display:flex;gap:8px;align-items:center;margin:.4rem 0}
-    /* thumbnails + drawer */
-    .thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; border:1px solid #ffa72655; margin:2px; }
-    .thumb-wrap { display:flex; flex-wrap:wrap; gap:4px; }
-    .drawer { position:fixed; right:0; top:0; bottom:0; width:520px; max-width:92vw;
-      background:#fff; border-left:1px solid #ffe0b2; box-shadow:-6px 0 16px #0001; transform:translateX(100%);
-      transition:.25s transform ease; z-index:9999; display:flex; flex-direction:column; }
-    .drawer.open { transform:translateX(0); }
-    .drawer-head{display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff6ea; border-bottom:1px solid #ffe0b2}
-    .drawer-body{ padding:12px; overflow:auto }
-    .badge.section{background:#e3f2fd; color:#0d47a1}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>मंडल पोर्टल — कार्यक्रम/रिपोर्ट</title>
+
+<style>
+  :root{
+    --bg:#0f1217;         /* dark premium */
+    --panel:#151a22;
+    --soft:#1c2330;
+    --text:#e8eef7;
+    --muted:#a7b3c7;
+    --brand:#ff9800;
+    --brand-2:#ffb74d;
+    --ok:#69db7c;
+    --warn:#ffd43b;
+    --bad:#ff6b6b;
+    --card:#0f1217;
+    --border:#273248;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b0e13,#0f1217 40%);
+       color:var(--text);font:15px/1.5 system-ui,'Noto Sans Devanagari',Arial,sans-serif}
+  .container{max-width:1200px;margin:18px auto;padding:16px}
+  .shell{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:0 10px 40px #0005}
+  .brand{color:var(--brand);font-weight:800}
+  h1{font-size:26px;margin:.2rem 0 1rem}
+  h2{font-size:18px;margin:.4rem 0 .7rem;color:var(--brand-2)}
+  h3{margin:.4rem 0 .5rem}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .card{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:12px}
+  label{display:block;margin:.35rem 0 .2rem;font-weight:700;color:var(--muted)}
+  input,select,textarea,button{font-size:15px}
+  input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#0c1117;color:var(--text)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
+  button{background:var(--brand);border:none;color:#111;padding:9px 14px;border-radius:10px;font-weight:800;cursor:pointer}
+  button.secondary{background:#2e384c;color:var(--text)}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  button.danger{background:var(--bad);color:#fff}
+  .muted{color:var(--muted)}
+  .toolbar{display:flex;gap:8px;align-items:center;margin:.25rem 0}
+  .right{margin-left:auto}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:.6rem 0}
+  .tab-btn{background:#1a2130;border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:10px;font-weight:800}
+  .tab-btn.active{background:var(--brand);color:#111}
+  .tab{display:none;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px}
+  .tab.active{display:block}
+  table{width:100%;border-collapse:collapse;background:var(--soft);border-radius:12px;overflow:hidden}
+  th,td{border-bottom:1px solid var(--border);padding:8px;text-align:left}
+  th{background:#1c2130;color:#d7e2f1}
+  tr:hover td{background:#141a24}
+  .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.82rem}
+  .b-live{background:rgba(105,219,124,.15);color:var(--ok)}
+  .b-pending{background:rgba(255,212,59,.12);color:var(--warn)}
+  .b-draft{background:#243044;color:#9bb0c8}
+  .b-rej{background:rgba(255,107,107,.12);color:var(--bad)}
+  .hidden{display:none}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:840px){ .grid-2{grid-template-columns:1fr} }
+  /* thumbnails + drawer */
+  .thumb { width: 96px; height: 96px; object-fit: cover; border-radius: 10px;
+           border:1px solid var(--border); box-shadow:0 6px 12px #0006; }
+  .thumb-wrap { display:flex; flex-wrap:wrap; gap:8px; }
+  .drawer { position:fixed; right:0; top:0; bottom:0; width:560px; max-width:100vw;
+    background:var(--panel); border-left:1px solid var(--border); box-shadow:-16px 0 40px #0008;
+    transform:translateX(100%); transition:.25s transform ease; z-index:9999; display:flex; flex-direction:column;}
+  .drawer.open { transform:translateX(0); }
+  .drawer-head{display:flex; align-items:center; gap:10px; padding:12px; background:#121822;
+               border-bottom:1px solid var(--border)}
+  .drawer-body{ padding:14px; overflow:auto }
+  .pill{background:#0f1726;color:#9fc5ff;padding:4px 10px;border-radius:999px;font-weight:700}
+  .bar{height:18px;background:linear-gradient(90deg,var(--brand),#ffd166);border-radius:6px}
+  .barrow{display:flex;gap:8px;align-items:center;margin:6px 0}
+  .barlabel{width:90px;color:var(--muted)}
+</style>
 </head>
 <body>
-<div class="container">
-  <h1>भारतीय जनता पार्टी — मंडल पोर्टल</h1>
+<div class="container shell">
+  <h1><span class="brand">भारतीय जनता पार्टी</span> — मंडल पोर्टल</h1>
 
-  <!-- LOGIN (OTP removed) -->
+  <!-- LOGIN -->
   <div id="loginGate" class="card">
     <h2>मंडल अध्यक्ष लॉगिन</h2>
+    <div class="grid-2">
+      <div>
+        <label>मंडल चुनें</label>
+        <select id="selMandal"><option value="">-- मंडल चुनें --</option></select>
 
-    <label>मंडल चुनें</label>
-    <select id="selMandal"><option value="">-- मंडल चुनें --</option></select>
-
-    <div id="mandalCard" style="display:none;margin:.6rem 0;padding:.6rem;border:1px dashed #ffcc80;border-radius:8px;background:#fff">
-      <div><b>नाम:</b> <span id="md_name"></span></div>
-      <div><b>मोबाइल(एक चुनें):</b> <span id="md_mobile"></span></div>
-    </div>
-
-    <label id="lblPhone" style="display:none">मोबाइल चुनें</label>
-    <select id="selPhone" style="display:none"><option value="">-- मोबाइल चुनें --</option></select>
-
-    <div class="row" style="align-items:center;margin-top:.6rem">
-      <button id="btnContinue">जारी रखें</button>
-    </div>
-
-    <div id="gateMsg" style="margin-top:.4rem;color:#8d4700"></div>
-    <div style="margin-top:.3rem;font-size:.9rem;color:#555">
-      <b>टेस्ट मोड:</b> OTP/पासवर्ड की आवश्यकता नहीं है। बस मंडल/मोबाइल चुनें और आगे बढ़ें।
+        <div id="mandalCard" class="card" style="display:none;margin-top:.6rem">
+          <div><b>नाम:</b> <span id="md_name"></span></div>
+          <div><b>मोबाइल(एक चुनें):</b> <span id="md_mobile" class="muted"></span></div>
+        </div>
+      </div>
+      <div>
+       <label id="lblPhone" style="display:none">मोबाइल चुनें</label>
+       <select id="selPhone" style="display:none"><option value="">-- मोबाइल चुनें --</option></select>
+       <div class="toolbar" style="margin-top:10px">
+         <button id="btnContinue">जारी रखें</button>
+         <div class="muted">टेस्ट मोड: OTP/पासवर्ड की आवश्यकता नहीं है।</div>
+       </div>
+       <div id="gateMsg" class="muted"></div>
+      </div>
     </div>
   </div>
 
   <!-- APP -->
   <div id="app" class="hidden">
-    <div class="row" style="align-items:center">
+    <div class="toolbar">
       <div><b>लॉगिन:</b> <span id="who"></span></div>
-      <div class="right">
-        <button id="logoutBtn" class="secondary">लॉगआउट</button>
-      </div>
+      <button id="logoutBtn" class="secondary right">लॉगआउट</button>
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" data-tab="tab-event">कार्यक्रम जोड़ें</button>
-      <button class="tab-btn" data-tab="tab-report">रिपोर्ट</button>
-      <button class="tab-btn" data-tab="tab-coord">संयोजक</button>
-      <button class="tab-btn" data-tab="tab-my">मेरे सबमिशन / डाउनलोड</button>
+      <button class="tab-btn active" data-tab="tab-event">कार्यक्रम दिनांक</button>
+      <button class="tab-btn" data-tab="tab-coord">कार्यक्रम संयोजक</button>
+      <button class="tab-btn" data-tab="tab-report">सम्पन्न कार्यक्रम की रिपोर्ट</button>
+      <button class="tab-btn" data-tab="tab-my">पिछली रिपोर्टिंग एवं कार्यक्रम</button>
     </div>
 
     <!-- EVENT -->
     <div id="tab-event" class="tab active">
-      <div class="row">
-        <div class="card" style="flex:1 1 340px">
+      <div class="grid-2">
+        <div class="card">
           <h3>नई प्रविष्टि</h3>
-          <label>कार्यक्रम</label>
-          <select id="ev_eventName"><option value="">कार्यक्रम चुनें</option></select>
+          <label>कार्यक्रम</label><select id="ev_eventName"><option value="">कार्यक्रम चुनें</option></select>
           <label>मंडल</label><input id="ev_mandal" disabled>
-          <label>तारीख</label><input id="ev_date" type="date">
-          <label>समय</label><input id="ev_time" type="time">
-          <label>स्थान</label><input id="ev_location">
-          <div class="row" style="margin-top:.6rem">
-            <button id="ev_saveDraft">Save Draft</button>
-            <button id="ev_submit">Submit for Approval</button>
+          <div class="row">
+            <div style="flex:1"><label>तारीख</label><input id="ev_date" type="date"></div>
+            <div style="flex:1"><label>समय</label><input id="ev_time" type="time"></div>
           </div>
-          <div id="ev_msg" style="margin-top:.4rem;color:#8d4700"></div>
+          <label>स्थान</label><input id="ev_location">
+          <div class="toolbar">
+            <button id="ev_saveDraft" class="ghost">Draft</button>
+            <button id="ev_submit">Approval को भेजें</button>
+          </div>
+          <div id="ev_msg" class="muted"></div>
         </div>
-        <div class="card" style="flex:1 1 520px">
+        <div class="card">
           <div class="toolbar">
             <input id="ev_search" placeholder="खोजें (स्थान/तारीख)">
-            <button id="ev_download" class="secondary">CSV डाउनलोड</button>
+            <button id="ev_download" class="secondary">CSV</button>
           </div>
           <table id="ev_table"><thead><tr><th>कार्यक्रम</th><th>तारीख</th><th>समय</th><th>स्थान</th><th>स्थिति</th><th>एक्शन</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- REPORT -->
-    <div id="tab-report" class="tab">
-      <div class="row">
-        <div class="card" style="flex:1 1 340px">
-          <h3>नई रिपोर्ट</h3>
-          <label>कार्यक्रम</label><select id="rp_eventName"><option value="">कार्यक्रम चुनें</option></select>
-          <label>मंडल</label><input id="rp_mandal" disabled>
-          <label>स्थान</label><input id="rp_location">
-          <label>उपस्थिति</label><input id="rp_attendance" type="number">
-          <label>दिनांक</label><input id="rp_date" type="date">
-          <label>विशिष्ट अतिथि</label><input id="rp_guests">
-          <label>विवरण</label><textarea id="rp_details" rows="3"></textarea>
-          <div class="row" style="margin-top:.6rem">
-            <button id="rp_saveDraft">Save Draft</button>
-            <button id="rp_submit">Submit for Approval</button>
-          </div>
-          <div id="rp_msg" style="margin-top:.4rem;color:#8d4700"></div>
-        </div>
-        <div class="card" style="flex:1 1 520px">
-          <div class="toolbar">
-            <input id="rp_search" placeholder="खोजें (तारीख/उपस्थिति/विवरण)">
-            <button id="rp_download" class="secondary">CSV डाउनलोड</button>
-          </div>
-          <table id="rp_table"><thead><tr><th>कार्यक्रम</th><th>तारीख</th><th>उपस्थिति</th><th>स्थिति</th><th>एक्शन</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
-    </div>
-
     <!-- COORDINATOR -->
     <div id="tab-coord" class="tab">
-      <div class="row">
-        <div class="card" style="flex:1 1 340px">
+      <div class="grid-2">
+        <div class="card">
           <h3>संयोजक जोड़ें</h3>
           <label>कार्यक्रम</label><select id="cd_eventName"><option value="">कार्यक्रम चुनें</option></select>
           <label>मंडल</label><input id="cd_mandal" disabled>
-          <label>संयोजक</label><input id="cd_name">
+          <label>मुख्य संयोजक</label><input id="cd_name">
           <label>मोबाइल</label><input id="cd_mobile">
           <label>सह-संयोजक 1</label><input id="cd_c1">
           <label>मोबाइल 1</label><input id="cd_c1m">
           <label>सह-संयोजक 2</label><input id="cd_c2">
           <label>मोबाइल 2</label><input id="cd_c2m">
-          <div class="row" style="margin-top:.6rem">
-            <button id="cd_saveDraft">Save Draft</button>
-            <button id="cd_submit">Submit for Approval</button>
+          <div class="toolbar">
+            <button id="cd_saveDraft" class="ghost">Draft</button>
+            <button id="cd_submit">Approval को भेजें</button>
           </div>
-          <div id="cd_msg" style="margin-top:.4rem;color:#8d4700"></div>
+          <div id="cd_msg" class="muted"></div>
         </div>
-        <div class="card" style="flex:1 1 520px">
+        <div class="card">
           <div class="toolbar">
             <input id="cd_search" placeholder="खोजें (नाम/मोबाइल)">
-            <button id="cd_download" class="secondary">CSV डाउनलोड</button>
+            <button id="cd_download" class="secondary">CSV</button>
           </div>
           <table id="cd_table"><thead><tr><th>कार्यक्रम</th><th>संयोजक</th><th>मोबाइल</th><th>स्थिति</th><th>एक्शन</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- MY DASH -->
-    <div id="tab-my" class="tab">
-      <div class="row">
-        <div class="card" style="flex:1 1 320px">
-          <h3>मेरे मंडल का सार</h3>
-          <div id="my_stats">लोड हो रहा…</div>
-          <div class="row" style="margin-top:.6rem">
-            <button id="exportAll" class="secondary">मेरी LIVE एंट्री (CSV)</button>
+    <!-- REPORT -->
+    <div id="tab-report" class="tab">
+      <div class="grid-2">
+        <div class="card">
+          <h3>नई रिपोर्ट</h3>
+          <label>कार्यक्रम</label><select id="rp_eventName"><option value="">कार्यक्रम चुनें</option></select>
+          <label>मंडल</label><input id="rp_mandal" disabled>
+          <label>स्थान</label><input id="rp_location">
+          <div class="row">
+            <div style="flex:1"><label>उपस्थिति</label><input id="rp_attendance" type="number"></div>
+            <div style="flex:1"><label>दिनांक</label><input id="rp_date" type="date"></div>
           </div>
+          <label>विशिष्ट अतिथि</label><input id="rp_guests">
+          <label>विवरण</label><textarea id="rp_details" rows="3"></textarea>
+          <div class="toolbar">
+            <button id="rp_saveDraft" class="ghost">Draft</button>
+            <button id="rp_submit">Approval को भेजें</button>
+          </div>
+          <div id="rp_msg" class="muted"></div>
         </div>
-        <div class="card" style="flex:2 1 520px">
-          <div class="toolbar"><input id="live_search" placeholder="LIVE डेटा खोजें (कार्यक्रम/नाम/विवरण)"></div>
-          <h3>मेरी LIVE एंट्री</h3>
-          <table id="my_live"><thead><tr><th>प्रकार</th><th>कार्यक्रम</th><th>तारीख/नाम</th><th>विवरण</th></tr></thead><tbody></tbody></table>
+        <div class="card">
+          <div class="toolbar">
+            <input id="rp_search" placeholder="खोजें (तारीख/उपस्थिति/विवरण)">
+            <button id="rp_download" class="secondary">CSV</button>
+          </div>
+          <table id="rp_table"><thead><tr><th>कार्यक्रम</th><th>तारीख</th><th>उपस्थिति</th><th>स्थिति</th><th>एक्शन</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY SUBMISSIONS + ANALYTICS -->
+    <div id="tab-my" class="tab">
+      <div class="grid-2">
+        <div class="card">
+          <h3>Analytics (माह-वार)</h3>
+          <div id="ana_wrap"></div>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <h3 style="margin:0">मेरी LIVE एंट्री</h3>
+            <input id="live_search" class="right" placeholder="खोजें (कार्यक्रम/नाम/विवरण)">
+            <button id="exportAll" class="secondary">CSV</button>
+          </div>
+          <table id="my_live"><thead><tr><th>प्रकार</th><th>कार्यक्रम</th><th>तारीख/नाम</th><th>विवरण</th><th>एडिट</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModal"
-         onclick="if(event.target.id==='editModal') closeEditModal()"
+    <div id="editModal" onclick="if(event.target.id==='editModal') window.closeEditModal()"
          style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999;">
       <div id="editModalCard"
-           style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px;position:relative">
-        <button id="em_close" type="button" onclick="closeEditModal()"
-          style="position:absolute;top:8px;right:8px;background:#eee;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer">✕</button>
+           style="background:#0f141c;color:#e8eef7;padding:16px;border:1px solid #273248;border-radius:12px;min-width:320px;max-width:560px;position:relative">
+        <button id="em_close" type="button" onclick="window.closeEditModal()"
+          style="position:absolute;top:8px;right:8px;background:#192132;border:1px solid #273248;color:#ccd8ea;border-radius:50%;width:30px;height:30px;cursor:pointer">✕</button>
 
         <h3 id="em_title" style="margin-top:0">Edit</h3>
         <div id="em_body"></div>
-        <div class="row" style="justify-content:flex-end;margin-top:10px">
-          <button id="em_cancel" type="button" class="secondary" onclick="closeEditModal()">Cancel</button>
+        <div class="toolbar" style="justify-content:flex-end;margin-top:10px">
+          <button id="em_cancel" type="button" class="secondary" onclick="window.closeEditModal()">Cancel</button>
           <button id="em_save" type="button">Save</button>
         </div>
       </div>
@@ -208,8 +245,8 @@
     <div id="eventDrawer" class="drawer" aria-hidden="true">
       <div class="drawer-head">
         <strong id="dr_title">कार्यक्रम विवरण</strong>
-        <span id="dr_subtitle" style="color:#8d4700"></span>
-        <button id="dr_close" class="right secondary" onclick="closeDrawer()">बंद करें</button>
+        <span id="dr_subtitle" class="muted"></span>
+        <button id="dr_close" class="right secondary" onclick="window.closeDrawer()">बंद करें</button>
       </div>
       <div class="drawer-body" id="dr_body">लोड हो रहा…</div>
     </div>
@@ -222,7 +259,7 @@
   import { getAuth, onAuthStateChanged, signOut, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
   import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // ==== CONFIG ====
+  /* ---------- Firebase ---------- */
   const firebaseConfig = {
     apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
     authDomain: "mandaleventall.firebaseapp.com",
@@ -232,8 +269,11 @@
     appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
     measurementId: "G-2BBZZNRS88"
   };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // मंडल डायरेक्टरी
+  /* ---------- मंडल डायरेक्टरी ---------- */
   const DIRECTORY = {
     "भानपुरा":      { name:"श्री आदित्य मंगरोतिया", phones:["+919179885982"] },
     "भेंसोदा":      { name:"श्री उमेश पारीदार", phones:["+918349035165"] },
@@ -258,15 +298,9 @@
     "मंदसौर दक्षिण": { name:"श्री दिनोद डगवार", phones:["+919406869388"] }
   };
 
-  // ==== INIT ====
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  // ==== UI REFS ====
+  /* ---------- UI Refs ---------- */
   const loginGate = document.getElementById('loginGate');
   const appRoot   = document.getElementById('app');
-  const gateMsg   = document.getElementById('gateMsg');
   const selMandal = document.getElementById('selMandal');
   const md_name   = document.getElementById('md_name');
   const md_mobile = document.getElementById('md_mobile');
@@ -275,18 +309,16 @@
   const lblPhone  = document.getElementById('lblPhone');
   const who       = document.getElementById('who');
   const btnContinue = document.getElementById('btnContinue');
+  const gateMsg   = document.getElementById('gateMsg');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  // Tabs
-  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
-  tabBtns.forEach(b=> b.onclick = ()=> {
+  const tabBtns = [...document.querySelectorAll('.tab-btn')];
+  tabBtns.forEach(b=> b.onclick = ()=>{
     tabBtns.forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.getElementById(b.dataset.tab).classList.add('active');
+    b.classList.add('active'); document.getElementById(b.dataset.tab).classList.add('active');
   });
 
-  // CSV helpers
   function csvDownload(filename, rows){
     const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`;
     const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
@@ -294,386 +326,315 @@
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
   }
   function badge(status){
-    const map={draft:'draft',pending_approval:'pending',live:'live',rejected:'rejected'};
-    const cls=map[status]||'draft';
-    const lbl=status==='pending_approval'?'pending':(status||'draft');
+    const m={draft:'b-draft',pending_approval:'b-pending',live:'b-live',rejected:'b-rej'};
+    const cls=m[status]||'b-draft'; const lbl=status==='pending_approval'?'pending':(status||'draft');
     return `<span class="badge ${cls}">${lbl}</span>`;
   }
-  function filterRows(tbody, q){
-    const t=q.toLowerCase().trim();
-    Array.from(tbody.children).forEach(tr=>{
-      tr.style.display = tr.innerText.toLowerCase().includes(t)?'':'none';
-    });
-  }
+  function filterRows(tb,q){const t=q.toLowerCase().trim();[...tb.children].forEach(tr=>tr.style.display=tr.innerText.toLowerCase().includes(t)?'':'none');}
 
-  // id -> eventName मैप
+  /* ---------- Event name map ---------- */
   const EVENT_NAME_MAP = new Map();
-  function eventNameOf(x) {
-    const id = typeof x === 'string' ? x : (x?.eventNameId || x?.sid || '');
+  function eventNameOf(x){
+    const id = typeof x==='string' ? x : (x?.eventNameId||x?.sid||'');
     const n1 = id && EVENT_NAME_MAP.get(id);
-    const n2 = typeof x === 'object' ? (x.eventName || x.name) : '';
+    const n2 = typeof x==='object' ? (x.eventName||x.name) : '';
     return n1 || n2 || id || '—';
   }
-  function extractPhotoUrls(r) {
-    const arr = []; const push = v => { if (v && typeof v === 'string') arr.push(v); };
+  function extractPhotoUrls(r){
+    const arr=[]; const push=v=>{if(v && typeof v==='string') arr.push(v);};
     if (Array.isArray(r?.photos)) r.photos.forEach(push);
     if (Array.isArray(r?.photoUrls)) r.photoUrls.forEach(push);
     if (Array.isArray(r?.images)) r.images.forEach(push);
-    ['imageUrl','photo','url','photoUrl'].forEach(k => push(r?.[k]));
+    ['imageUrl','photo','url','photoUrl'].forEach(k=>push(r?.[k]));
     return arr;
   }
-  function renderPhotos(r) {
-    const urls = extractPhotoUrls(r);
-    if (!urls.length) return '';
-    return `<div class="thumb-wrap">` +
-           urls.map(u => `<a href="${u}" target="_blank" rel="noopener"><img class="thumb" src="${u}" alt="photo"></a>`).join('') +
-           `</div>`;
+  function renderPhotos(r){
+    const urls=extractPhotoUrls(r); if(!urls.length) return '';
+    return `<div class="thumb-wrap">` + urls.map(u=>`<a href="${u}" target="_blank"><img class="thumb" src="${u}"></a>`).join('') + `</div>`;
   }
 
-  // Dropdown fill
-  Object.keys(DIRECTORY).forEach(m=>{
-    const o=document.createElement('option'); o.value=m; o.textContent=m; selMandal.appendChild(o);
-  });
+  /* ---------- Login selectors ---------- */
+  Object.keys(DIRECTORY).forEach(m=>{const o=document.createElement('option'); o.value=m;o.textContent=m; selMandal.appendChild(o);});
   selMandal.onchange = ()=>{
-    const d = DIRECTORY[selMandal.value];
-    if(!d){
-      mandalCard.style.display='none';
-      md_name.textContent=""; md_mobile.textContent="";
-      selPhone.style.display='none'; lblPhone.style.display='none';
-      selPhone.innerHTML = '<option value="">-- मोबाइल चुनें --</option>';
-      return;
-    }
-    md_name.textContent = d.name || "—";
-    md_mobile.textContent = (d.phones||[]).join(", ");
-    mandalCard.style.display = 'block';
-
-    selPhone.innerHTML = '<option value="">-- मोबाइल चुनें --</option>';
-    (d.phones||[]).forEach(p=>{
-      const o=document.createElement('option'); o.value=p; o.textContent=p; selPhone.appendChild(o);
-    });
-    selPhone.style.display='block'; lblPhone.style.display='block';
+    const d=DIRECTORY[selMandal.value];
+    mandalCard.style.display = d ? 'block' : 'none';
+    if(!d){ selPhone.style.display=lblPhone.style.display='none'; selPhone.innerHTML='<option value="">-- मोबाइल चुनें --</option>'; return; }
+    md_name.textContent=d.name||'—'; md_mobile.textContent=(d.phones||[]).join(', ');
+    selPhone.innerHTML='<option value="">-- मोबाइल चुनें --</option>'; (d.phones||[]).forEach(p=>{const o=document.createElement('option'); o.value=p; o.textContent=p; selPhone.appendChild(o);});
+    selPhone.style.display=lblPhone.style.display='block';
   };
 
-  let profile = null;
-
-  // Anonymous auth: पेज खुलते ही
-  onAuthStateChanged(auth, async (user)=>{
-    if (!user) {
-      try { await signInAnonymously(auth); }
-      catch(e){ console.error('Anonymous sign-in failed', e); }
-      return;
-    }
-  });
-
-  // Continue: मंडल/मोबाइल चुनकर प्रोफ़ाइल सेट करें
+  let profile=null;
+  onAuthStateChanged(auth, async (user)=>{ if(!user){ try{await signInAnonymously(auth);}catch(e){console.error(e);} }});
   btnContinue.onclick = async ()=>{
-    const mandal = selMandal.value?.trim();
-    const mobile = selPhone.value?.trim();
-    if(!mandal){ gateMsg.textContent = 'पहले मंडल चुनें'; return; }
-    if(!mobile){ gateMsg.textContent = 'मोबाइल चुनें'; return; }
-
+    const mandal=selMandal.value?.trim(), mobile=selPhone.value?.trim();
+    if(!mandal){ gateMsg.textContent='पहले मंडल चुनें'; return; }
+    if(!mobile){ gateMsg.textContent='मोबाइल चुनें'; return; }
     try{
-      const d = DIRECTORY[mandal] || {};
-      const uid = auth.currentUser?.uid || 'anon';
-      const payload = {
-        uid, role:'mandal',
-        name: d.name || '—',
-        mobile, mandal,
-        verified: true,
-        updatedAt: serverTimestamp()
-      };
-      await setDoc(doc(db,'users', uid), payload, { merge:true });
-
-      profile = payload;
-      who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
-
-      document.getElementById('ev_mandal').value = profile.mandal;
-      document.getElementById('rp_mandal').value = profile.mandal;
-      document.getElementById('cd_mandal').value = profile.mandal;
-
+      const d=DIRECTORY[mandal]||{}; const uid=auth.currentUser?.uid||'anon';
+      const payload={uid,role:'mandal',name:d.name||'—',mobile,mandal,verified:true,updatedAt:serverTimestamp()};
+      await setDoc(doc(db,'users',uid),payload,{merge:true});
+      profile=payload; who.textContent=`${profile.mandal} • ${profile.name} • ${profile.mobile}`;
+      ev_mandal.value=rp_mandal.value=cd_mandal.value=profile.mandal;
       loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
-
       await fillActiveEventNames();
       await Promise.all([refreshMyEvents(), refreshMyReports(), refreshMyCoords(), refreshMyStats()]);
-    }catch(err){
-      gateMsg.textContent = 'आगे बढ़ने में दिक्कत: ' + (err?.message||err);
-      console.error(err);
-    }
+    }catch(err){ gateMsg.textContent='दिक्कत: '+(err?.message||err); }
   };
+  logoutBtn.onclick = ()=> signOut(auth).then(()=>{profile=null; appRoot.classList.add('hidden'); loginGate.classList.remove('hidden')});
 
-  // Logout
-  logoutBtn.onclick = ()=> signOut(auth).then(()=>{
-    profile=null; appRoot.classList.add('hidden'); loginGate.classList.remove('hidden'); gateMsg.textContent="";
-  });
-
-  // Active event names (isActive==true) + map
   async function fillActiveEventNames(){
     EVENT_NAME_MAP.clear();
-    const snap = await getDocs(collection(db,"eventNames"));
-    const active = snap.docs.map(d=>({id:d.id, ...d.data()}))
-                   .filter(e=>!!e.isActive)
-                   .sort((a,b)=>(a.name||'').localeCompare(b.name||'','hi'));
-    snap.forEach(d => {
-      const data = d.data() || {};
-      const n = data.name || data.title || d.id;
-      EVENT_NAME_MAP.set(d.id, n);
-    });
+    const snap=await getDocs(collection(db,'eventNames'));
+    const active=snap.docs.map(d=>({id:d.id,...d.data()})).filter(e=>!!e.isActive)
+      .sort((a,b)=>(a.name||'').localeCompare(b.name||'','hi'));
+    snap.forEach(d=>{const n=(d.data()?.name||d.data()?.title||d.id); EVENT_NAME_MAP.set(d.id,n);});
     ['ev_eventName','rp_eventName','cd_eventName'].forEach(id=>{
       const sel=document.getElementById(id); sel.innerHTML='<option value="">कार्यक्रम चुनें</option>';
-      active.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; sel.appendChild(o); });
+      active.forEach(e=>{const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; sel.appendChild(o);});
     });
   }
 
-  // ====== पुराना डेटा भी दिखाने के helpers ======
-  const isSuper = () => false;
-  function belongsToMe(x) {
-    return (x?.createdBy === profile?.uid) || (x?.mandal && x.mandal === profile?.mandal);
-  }
-  function normStatus(s) { return s || 'live'; }
+  const isSuper=()=>false;
+  const belongsToMe=x=>(x?.createdBy===profile?.uid)||(x?.mandal===profile?.mandal);
+  const normStatus=s=>s||'live';
 
-  // EVENTS (new + legacy)
-  const ev = { sel:ev_eventName, date:ev_date, time:ev_time, loc:ev_location, msg:ev_msg, table:ev_table.querySelector('tbody'), search:ev_search, dl:ev_download };
-  async function saveEvent(status){
-    if(!profile) return; if(!ev.sel.value){ ev.msg.textContent='कार्यक्रम चुनें'; return; }
-    await addDoc(collection(db,'events'), {
-      eventNameId:ev.sel.value, mandal:profile.mandal, date:ev.date.value||'', time:ev.time.value||'',
-      location:ev.loc.value||'', status, createdBy:profile.uid, createdAt:serverTimestamp()
-    });
-    ev.msg.textContent = status==='draft'?'Draft सेव हुआ':'Approval को भेज दिया गया';
-    await refreshMyEvents();
-  }
+  /* ---------- EVENTS ---------- */
+  const ev={sel:ev_eventName,date:ev_date,time:ev_time,loc:ev_location,msg:ev_msg,
+            table:ev_table.querySelector('tbody'),search:ev_search,dl:ev_download};
   ev_saveDraft.onclick = ()=> saveEvent('draft');
   ev_submit.onclick   = ()=> saveEvent('pending_approval');
-
+  async function saveEvent(status){
+    if(!profile) return; if(!ev.sel.value){ev.msg.textContent='कार्यक्रम चुनें';return;}
+    await addDoc(collection(db,'events'),{eventNameId:ev.sel.value,mandal:profile.mandal,date:ev.date.value||'',time:ev.time.value||'',
+      location:ev.loc.value||'',status,createdBy:profile.uid,createdAt:serverTimestamp()});
+    ev.msg.textContent=status==='draft'?'Draft सेव हुआ':'Approval को भेज दिया गया'; await refreshMyEvents();
+  }
   async function refreshMyEvents(){
-    ev.table.innerHTML='';
-    const rows=[];
-    try{
-      const snap=await getDocs(collection(db,'events'));
-      snap.forEach(d=>{ const x=d.data(); if (belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)}); });
-    }catch(e){ console.warn('events read failed', e); }
-    try{
-      const snap2=await getDocs(collection(db,'event'));
-      snap2.forEach(d=>{ const x=d.data(); if (belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)}); });
-    }catch(e){}
+    ev.table.innerHTML=''; const rows=[];
+    try{const s=await getDocs(collection(db,'events')); s.forEach(d=>{const x=d.data(); if(belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)})});}catch{}
+    try{const s=await getDocs(collection(db,'event')); s.forEach(d=>{const x=d.data(); if(belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)})});}catch{}
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
-      const name = eventNameOf(r);
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${name}</td>
-                    <td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td>
+      tr.innerHTML=`<td>${eventNameOf(r)}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td>
                     <td>${badge(r.status)}</td>
                     <td>
                       <button class="secondary" data-view="${r.eventNameId||r.eventName||''}">विवरण</button>
-                      ${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}
+                      ${r.status!=='live'?'<button class="ghost edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}
+                      <button class="ghost" data-pdf="event" data-id="${r.id}">PDF</button>
                     </td>`;
       ev.table.appendChild(tr);
     });
-    ev.search.oninput = ()=> filterRows(ev.table, ev.search.value);
-    ev.dl.onclick = ()=> csvDownload('events.csv',
-      [['event','date','time','location','status','mandal'],
-       ...rows.map(r=>[eventNameOf(r), r.date||'', r.time||'', r.location||'', r.status||'', r.mandal||''])]);
+    ev.search.oninput=()=>filterRows(ev.table,ev.search.value);
+    ev.dl.onclick=()=>csvDownload('events.csv',[['event','date','time','location','status','mandal'],
+      ...rows.map(r=>[eventNameOf(r),r.date||'',r.time||'',r.location||'',r.status||'',r.mandal||''])]);
     ev.table.querySelectorAll('button.edit').forEach(b=>{
       const obj=rows.find(x=>x.id===b.dataset.id); if(obj) b.onclick=()=> openEdit('event',obj);
     });
     ev.table.querySelectorAll('button[data-view]').forEach(b=>{
-      const key = b.getAttribute('data-view'); b.onclick = ()=> openDrawerForEvent(key);
+      const key=b.getAttribute('data-view'); b.onclick=()=> openDrawerForEvent(key);
+    });
+    ev.table.querySelectorAll('button[data-pdf]').forEach(b=>{
+      const obj=rows.find(x=>x.id===b.dataset.id); if(obj) b.onclick=()=> makePDF('event',obj);
     });
   }
 
-  // REPORTS (sub + legacy)
-  const rp = { sel:rp_eventName, loc:rp_location, att:rp_attendance, date:rp_date, gst:rp_guests, det:rp_details, msg:rp_msg, table:rp_table.querySelector('tbody'), search:rp_search, dl:rp_download };
-  rp_saveDraft.onclick = ()=> saveReport('draft');
-  rp_submit.onclick   = ()=> saveReport('pending_approval');
-
+  /* ---------- REPORTS ---------- */
+  const rp={sel:rp_eventName,loc:rp_location,att:rp_attendance,date:rp_date,gst:rp_guests,det:rp_details,msg:rp_msg,
+            table:rp_table.querySelector('tbody'),search:rp_search,dl:rp_download};
+  rp_saveDraft.onclick=()=>saveReport('draft'); rp_submit.onclick=()=>saveReport('pending_approval');
   async function saveReport(status){
-    if(!profile) return; if(!rp.sel.value){ rp.msg.textContent='कार्यक्रम चुनें'; return; }
-    await addDoc(collection(db,`eventNames/${rp.sel.value}/reports`), {
-      eventNameId:rp.sel.value, mandal:profile.mandal, location:rp.loc.value||'',
-      attendance:rp.att.value||'', date:rp.date.value||'', guests:rp.gst.value||'',
-      details:rp.det.value||'', status, createdBy:profile.uid, createdAt:serverTimestamp()
+    if(!profile) return; if(!rp.sel.value){rp.msg.textContent='कार्यक्रम चुनें';return;}
+    await addDoc(collection(db,`eventNames/${rp.sel.value}/reports`),{
+      eventNameId:rp.sel.value,mandal:profile.mandal,location:rp.loc.value||'',attendance:rp.att.value||'',
+      date:rp.date.value||'',guests:rp.gst.value||'',details:rp.det.value||'',status,createdBy:profile.uid,createdAt:serverTimestamp()
     });
-    rp.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया';
-    await refreshMyReports();
+    rp.msg.textContent=status==='draft'?'Draft सेव':'Approval को भेज दिया गया'; await refreshMyReports();
   }
-
   async function refreshMyReports(){
-    rp.table.innerHTML='';
-    const rows=[];
+    rp.table.innerHTML=''; const rows=[];
     try{
-      const evNames=await getDocs(collection(db,'eventNames'));
-      for(const d of evNames.docs){
-        const sid=d.id;
+      const evs=await getDocs(collection(db,'eventNames'));
+      for(const d of evs.docs){ const sid=d.id;
         const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
-        rs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)}); });
+        rs.forEach(z=>{const r=z.data(); if(belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)})});
       }
-    }catch(e){ console.warn('sub reports read failed', e); }
+    }catch{}
     for(const legacy of ['reports','report']){
-      try{
-        const lr=await getDocs(collection(db, legacy));
-        lr.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid:(r.eventNameId||r.eventName||'—'),ref:z.ref,...r,status:normStatus(r.status)}); });
-      }catch(e){}
+      try{const lr=await getDocs(collection(db,legacy));
+        lr.forEach(z=>{const r=z.data(); if(belongsToMe(r)) rows.push({id:z.id,sid:(r.eventNameId||r.eventName||'—'),ref:z.ref,...r,status:normStatus(r.status)})});
+      }catch{}
     }
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
-      const name = eventNameOf(r.sid||r);
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${name}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td>
+      tr.innerHTML=`<td>${eventNameOf(r.sid||r)}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td>
                     <td>${badge(r.status)}</td>
                     <td>
                       <button class="secondary" data-view="${r.sid||r.eventNameId||''}">विवरण</button>
-                      ${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}
+                      ${r.status!=='live'?'<button class="ghost edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}
+                      <button class="ghost" data-pdf="report" data-id="${r.id}" data-sid="${r.sid||''}">PDF</button>
                     </td>`;
       rp.table.appendChild(tr);
     });
-    rp.search.oninput = ()=> filterRows(rp.table, rp.search.value);
-    rp.dl.onclick = ()=> csvDownload('reports.csv',
-      [['event','date','attendance','location','status','mandal'],
-       ...rows.map(r=>[eventNameOf(r.sid||r), r.date||'', r.attendance||'', r.location||'', r.status||'', r.mandal||''])]);
+    rp.search.oninput=()=>filterRows(rp.table,rp.search.value);
+    rp.dl.onclick=()=>csvDownload('reports.csv',[['event','date','attendance','location','status','mandal'],
+      ...rows.map(r=>[eventNameOf(r.sid||r),r.date||'',r.attendance||'',r.location||'',r.status||'',r.mandal||''])]);
     rp.table.querySelectorAll('button.edit').forEach(b=>{
       const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); if(obj) b.onclick=()=> openEdit('report',obj);
     });
     rp.table.querySelectorAll('button[data-view]').forEach(b=>{
-      const key = b.getAttribute('data-view'); b.onclick = ()=> openDrawerForEvent(key);
+      const key=b.getAttribute('data-view'); b.onclick=()=> openDrawerForEvent(key);
+    });
+    rp.table.querySelectorAll('button[data-pdf]').forEach(b=>{
+      const obj=rows.find(x=>x.id===b.dataset.id && (x.sid||'')===b.dataset.sid); if(obj) b.onclick=()=> makePDF('report',obj);
     });
   }
 
-  // COORDINATORS (sub + legacy)
-  const cd = { sel:cd_eventName, name:cd_name, mob:cd_mobile, c1:cd_c1, c1m:cd_c1m, c2:cd_c2, c2m:cd_c2m, msg:cd_msg, table:cd_table.querySelector('tbody'), search:cd_search, dl:cd_download };
-  cd_saveDraft.onclick = ()=> saveCoord('draft');
-  cd_submit.onclick   = ()=> saveCoord('pending_approval');
-
+  /* ---------- COORDINATORS ---------- */
+  const cd={sel:cd_eventName,name:cd_name,mob:cd_mobile,c1:cd_c1,c1m:cd_c1m,c2:cd_c2,c2m:cd_c2m,msg:cd_msg,
+            table:cd_table.querySelector('tbody'),search:cd_search,dl:cd_download};
+  cd_saveDraft.onclick=()=>saveCoord('draft'); cd_submit.onclick=()=>saveCoord('pending_approval');
   async function saveCoord(status){
-    if(!profile) return; if(!cd.sel.value){ cd.msg.textContent='कार्यक्रम चुनें'; return; }
-    await addDoc(collection(db,`eventNames/${cd.sel.value}/coordinators`), {
-      eventNameId:cd.sel.value, mandal:profile.mandal, name:cd.name.value||'', mobile:cd.mob.value||'',
-      coCoordName1:cd.c1.value||'', coCoordMobile1:cd.c1m.value||'',
-      coCoordName2:cd.c2.value||'', coCoordMobile2:cd.c2m.value||'',
-      status, createdBy:profile.uid, createdAt:serverTimestamp()
+    if(!profile) return; if(!cd.sel.value){cd.msg.textContent='कार्यक्रम चुनें';return;}
+    await addDoc(collection(db,`eventNames/${cd.sel.value}/coordinators`),{
+      eventNameId:cd.sel.value,mandal:profile.mandal,name:cd.name.value||'',mobile:cd.mob.value||'',
+      coCoordName1:cd.c1.value||'',coCoordMobile1:cd.c1m.value||'',coCoordName2:cd.c2.value||'',coCoordMobile2:cd.c2m.value||'',
+      status,createdBy:profile.uid,createdAt:serverTimestamp()
     });
-    cd.msg.textContent = status==='draft'?'Draft सेव':'Approval को भेज दिया गया';
-    await refreshMyCoords();
+    cd.msg.textContent=status==='draft'?'Draft सेव':'Approval को भेज दिया गया'; await refreshMyCoords();
   }
-
   async function refreshMyCoords(){
-    cd.table.innerHTML='';
-    const rows=[];
+    cd.table.innerHTML=''; const rows=[];
     try{
-      const evNames=await getDocs(collection(db,'eventNames'));
-      for(const d of evNames.docs){
-        const sid=d.id;
+      const evs=await getDocs(collection(db,'eventNames'));
+      for(const d of evs.docs){ const sid=d.id;
         const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
-        cs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)}); });
+        cs.forEach(z=>{const r=z.data(); if(belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)})});
       }
-    }catch(e){ console.warn('sub coords read failed', e); }
+    }catch{}
     for(const legacy of ['coordinators','coordinator']){
-      try{
-        const lc=await getDocs(collection(db, legacy));
-        lc.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid:(r.eventNameId||r.eventName||'—'),ref:z.ref,...r,status:normStatus(r.status)}); });
-      }catch(e){}
+      try{const lc=await getDocs(collection(db,legacy));
+        lc.forEach(z=>{const r=z.data(); if(belongsToMe(r)) rows.push({id:z.id,sid:(r.eventNameId||r.eventName||'—'),ref:z.ref,...r,status:normStatus(r.status)})});
+      }catch{}
     }
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
-      const name = eventNameOf(r.sid||r);
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${name}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td>
+      tr.innerHTML=`<td>${eventNameOf(r.sid||r)}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td>
                     <td>${badge(r.status)}</td>
                     <td>
                       <button class="secondary" data-view="${r.sid||r.eventNameId||''}">विवरण</button>
-                      ${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}
+                      ${r.status!=='live'?'<button class="ghost edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}
+                      <button class="ghost" data-pdf="coord" data-id="${r.id}" data-sid="${r.sid||''}">PDF</button>
                     </td>`;
       cd.table.appendChild(tr);
     });
-    cd.search.oninput = ()=> filterRows(cd.table, cd.search.value);
-    cd.dl.onclick = ()=> csvDownload('coordinators.csv',
-      [['event','name','mobile','status','mandal'],
-       ...rows.map(r=>[eventNameOf(r.sid||r), r.name||'', r.mobile||'', r.status||'', r.mandal||''])]);
+    cd.search.oninput=()=>filterRows(cd.table,cd.search.value);
+    cd.dl.onclick=()=>csvDownload('coordinators.csv',[['event','name','mobile','status','mandal'],
+      ...rows.map(r=>[eventNameOf(r.sid||r),r.name||'',r.mobile||'',r.status||'',r.mandal||''])]);
     cd.table.querySelectorAll('button.edit').forEach(b=>{
       const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); if(obj) b.onclick=()=> openEdit('coord',obj);
     });
     cd.table.querySelectorAll('button[data-view]').forEach(b=>{
-      const key = b.getAttribute('data-view'); b.onclick = ()=> openDrawerForEvent(key);
+      const key=b.getAttribute('data-view'); b.onclick=()=> openDrawerForEvent(key);
+    });
+    cd.table.querySelectorAll('button[data-pdf]').forEach(b=>{
+      const obj=rows.find(x=>x.id===b.dataset.id && (x.sid||'')===b.dataset.sid); if(obj) b.onclick=()=> makePDF('coord',obj);
     });
   }
 
-  // STATS (मेरे LIVE)
+  /* ---------- Analytics + My Live ---------- */
   async function refreshMyStats(){
     let eventsCnt=0,reportsCnt=0,coordsCnt=0; const liveRows=[];
-    for (const coll of ['events','event']) {
+    const byMonth=(map,label)=>{ map[label]=(map[label]||0)+1; };
+    const MEvents={}, MReports={};
+
+    for(const coll of ['events','event']){
       try{
-        const es=await getDocs(collection(db, coll));
+        const es=await getDocs(collection(db,coll));
         es.forEach(d=>{
-          const x=d.data();
-          if (normStatus(x.status)==='live' && belongsToMe(x)) {
-            eventsCnt++; liveRows.push(['कार्यक्रम', eventNameOf(x), `${x.date||'-'} ${x.time||''}`, x.location||x.mandal||'-' ]);
+          const x=d.data(); if(normStatus(x.status)==='live' && belongsToMe(x)){
+            eventsCnt++; liveRows.push(['कार्यक्रम',eventNameOf(x),`${x.date||'-'} ${x.time||''}`,x.location||x.mandal||'-','event',d.id]);
+            if(x.date){ byMonth(MEvents, x.date.slice(0,7)); }
           }
         });
-      }catch(e){}
+      }catch{}
     }
     try{
-      const evNames=await getDocs(collection(db,'eventNames'));
-      for(const d of evNames.docs){
+      const evs=await getDocs(collection(db,'eventNames'));
+      for(const d of evs.docs){
         const sid=d.id;
         const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
         rs.forEach(z=>{
-          const r=z.data();
-          if (normStatus(r.status)==='live' && belongsToMe(r)) {
-            reportsCnt++; liveRows.push(['रिपोर्ट', eventNameOf({eventNameId:sid}), r.date||'-', r.details||r.mandal||'-' ]);
+          const r=z.data(); if(normStatus(r.status)==='live' && belongsToMe(r)){
+            reportsCnt++; liveRows.push(['रिपोर्ट',eventNameOf({eventNameId:sid}),r.date||'-',r.details||r.mandal||'-','report',z.id,sid]);
+            if(r.date) byMonth(MReports, r.date.slice(0,7));
           }
         });
       }
       const lr=await getDocs(collection(db,'reports'));
-      lr.forEach(z=>{
-        const r=z.data();
-        if (normStatus(r.status)==='live' && belongsToMe(r)) {
-          reportsCnt++; liveRows.push(['रिपोर्ट', eventNameOf(r), r.date||'-', r.details||r.mandal||'-' ]);
-        }
-      });
-    }catch(e){}
+      lr.forEach(z=>{ const r=z.data(); if(normStatus(r.status)==='live' && belongsToMe(r)){
+        reportsCnt++; liveRows.push(['रिपोर्ट',eventNameOf(r),r.date||'-',r.details||r.mandal||'-','report',z.id]);
+        if(r.date) byMonth(MReports,r.date.slice(0,7));
+      }});
+    }catch{}
     try{
-      const evNames=await getDocs(collection(db,'eventNames'));
-      for(const d of evNames.docs){
+      const evs=await getDocs(collection(db,'eventNames'));
+      for(const d of evs.docs){
         const sid=d.id;
         const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
         cs.forEach(z=>{
-          const r=z.data();
-          if (normStatus(r.status)==='live' && belongsToMe(r)) {
-            coordsCnt++; liveRows.push(['संयोजक', eventNameOf({eventNameId:sid}), r.name||'-', r.mobile||r.mandal||'-' ]);
+          const r=z.data(); if(normStatus(r.status)==='live' && belongsToMe(r)){
+            coordsCnt++; liveRows.push(['संयोजक',eventNameOf({eventNameId:sid}),r.name||'-',r.mobile||r.mandal||'-','coord',z.id,sid]);
           }
         });
       }
-      const lc=await getDocs(collection(db,'coordinators'));
-      lc.forEach(z=>{
-        const r=z.data();
-        if (normStatus(r.status)==='live' && belongsToMe(r)) {
-          coordsCnt++; liveRows.push(['संयोजक', eventNameOf(r), r.name||'-', r.mobile||r.mandal||'-' ]);
-        }
-      });
-    }catch(e){}
+    }catch{}
 
-    my_stats.innerHTML = `<div>Live कार्यक्रम: <b>${eventsCnt}</b></div><div>Live रिपोर्ट: <b>${reportsCnt}</b></div><div>Live संयोजक: <b>${coordsCnt}</b></div>`;
+    /* Live table + edit hooks */
     const tbody=my_live.querySelector('tbody'); tbody.innerHTML='';
-    liveRows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>`; tbody.appendChild(tr); });
-    exportAll.onclick = ()=> csvDownload('live_all.csv',[['type','program','col3','col4'],...liveRows]);
-    live_search.oninput = (e)=> filterRows(tbody, e.target.value);
+    liveRows.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>
+                    <td><button class="ghost" data-type="${r[4]}" data-id="${r[5]||''}" data-sid="${r[6]||''}">Edit</button></td>`;
+      tbody.appendChild(tr);
+    });
+    my_live.querySelectorAll('button[data-type]').forEach(b=>{
+      const typ=b.dataset.type,id=b.dataset.id,sid=b.dataset.sid||'';
+      b.onclick=()=>{
+        let pool=[];
+        if(typ==='event') refreshMyEvents().then(()=>{}); // user will edit from listing
+        if(typ==='report') refreshMyReports().then(()=>{});
+        if(typ==='coord') refreshMyCoords().then(()=>{});
+        alert('ऊपर संबंधित टैब में Edit बटन से बदलिए—यह शॉर्टकट था।');
+      };
+    });
+    exportAll.onclick=()=>csvDownload('live_all.csv',[['type','program','c3','c4'],...liveRows.map(r=>r.slice(0,4))]);
+    live_search.oninput=(e)=>filterRows(tbody,e.target.value);
+
+    /* Analytics render */
+    function bars(map,title,colorBrand=true){
+      const keys=Object.keys(map).sort(); if(!keys.length) return `<div class="muted">डेटा नहीं</div>`;
+      const max=Math.max(...keys.map(k=>map[k]));
+      return `<div class="pill" style="margin-bottom:8px">${title}</div>`+
+        keys.map(k=>{
+          const w=Math.max(8, Math.round((map[k]/max)*100));
+          return `<div class="barrow">
+                    <div class="barlabel">${k}</div>
+                    <div class="bar" style="width:${w}%;${colorBrand?'':'background:linear-gradient(90deg,#69db7c,#b2f2bb)'}"></div>
+                    <div style="width:40px;text-align:right">${map[k]}</div>
+                  </div>`;
+        }).join('');
+    }
+    ana_wrap.innerHTML = `${bars(MEvents,'कार्यक्रम (माहवार)')}${bars(MReports,'रिपोर्ट (माहवार)',false)}`;
   }
 
-  // ===== Modal helpers =====
-  const em = {
-    wrap: document.getElementById('editModal'),
-    title: document.getElementById('em_title'),
-    body: document.getElementById('em_body'),
-    save: document.getElementById('em_save'),
-    ctx: null
-  };
-  window.closeEditModal = function () {
-    const m = document.getElementById('editModal');
-    const body = document.getElementById('em_body');
-    if (body) body.innerHTML = '';
-    if (m) m.style.display = 'none';
-    em.ctx = null;
-  };
-  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeEditModal(); });
+  /* ---------- Edit Modal ---------- */
+  const em={wrap:editModal,title:em_title,body:em_body,save:em_save,ctx:null};
+  window.closeEditModal=function(){ em.body.innerHTML=''; em.wrap.style.display='none'; em.ctx=null; };
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape') window.closeEditModal(); });
 
   function openEdit(type,obj){
     em.ctx={type,obj}; em.title.textContent=`Edit ${type}`;
@@ -681,12 +642,12 @@
       em.body.innerHTML=`<label>तारीख</label><input id="em_date" value="${obj.date||''}">
                           <label>समय</label><input id="em_time" value="${obj.time||''}">
                           <label>स्थान</label><input id="em_loc" value="${obj.location||''}">`;
-    } else if(type==='report'){
+    }else if(type==='report'){
       em.body.innerHTML=`<label>तारीख</label><input id="em_date" value="${obj.date||''}">
                           <label>उपस्थिति</label><input id="em_att" type="number" value="${obj.attendance||''}">
                           <label>स्थान</label><input id="em_loc" value="${obj.location||''}">
                           <label>विवरण</label><textarea id="em_det" rows="3">${obj.details||''}</textarea>`;
-    } else {
+    }else{
       em.body.innerHTML=`<label>संयोजक</label><input id="em_name" value="${obj.name||''}">
                           <label>मोबाइल</label><input id="em_mob" value="${obj.mobile||''}">
                           <label>सह-संयोजक 1</label><input id="em_c1" value="${obj.coCoordName1||''}">
@@ -694,122 +655,143 @@
                           <label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}">
                           <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`;
     }
-    em.wrap.style.display = 'flex';
-    const first=em.body.querySelector('input,textarea'); if(first) first.focus();
+    em.wrap.style.display='flex'; const first=em.body.querySelector('input,textarea'); if(first) first.focus();
   }
-  em.save.onclick = async ()=>{
-    const {type,obj}=em.ctx||{}; if(!type){ closeEditModal(); return; }
+  em.save.onclick=async()=>{
+    const {type,obj}=em.ctx||{}; if(!type){window.closeEditModal(); return;}
     try{
       const base={status:'pending_approval'};
       if(type==='event'){
-        await updateDoc(obj.ref,{...base,date:em_date.value,time:em_time.value,location:em_loc.value});
-        await refreshMyEvents();
-      } else if(type==='report'){
-        await updateDoc(obj.ref,{...base,date:em_date.value,attendance:em_att.value,location:em_loc.value,details:em_det.value});
-        await refreshMyReports();
-      } else {
-        await updateDoc(obj.ref,{...base,name:em_name.value,mobile:em_mob.value,coCoordName1:em_c1.value,coCoordMobile1:em_c1m.value,coCoordName2:em_c2.value,coCoordMobile2:em_c2m.value});
-        await refreshMyCoords();
+        await updateDoc(obj.ref,{...base,date:em_date.value,time:em_time.value,location:em_loc.value}); await refreshMyEvents();
+      }else if(type==='report'){
+        await updateDoc(obj.ref,{...base,date:em_date.value,attendance:em_att.value,location:em_loc.value,details:em_det.value}); await refreshMyReports();
+      }else{
+        await updateDoc(obj.ref,{...base,name:em_name.value,mobile:em_mob.value,coCoordName1:em_c1.value,coCoordMobile1:em_c1m.value,coCoordName2:em_c2.value,coCoordMobile2:em_c2m.value}); await refreshMyCoords();
       }
-    }catch(err){
-      alert('सेव में दिक्कत: ' + (err?.message||err));
-      console.error(err);
-    }finally{
-      closeEditModal();
-    }
+    }catch(err){ alert('सेव में दिक्कत: '+(err?.message||err)); } finally{ window.closeEditModal(); }
   };
 
-  // ===== Drawer (एक साथ व्यू) =====
+  /* ---------- Drawer (विवरण + PDF) ---------- */
   async function openDrawerForEvent(eventKey){
-    const dr = document.getElementById('eventDrawer');
-    const drTitle = document.getElementById('dr_title');
-    const drSub = document.getElementById('dr_subtitle');
-    const drBody = document.getElementById('dr_body');
-
-    let eventId = null;
-    if (EVENT_NAME_MAP.has(eventKey)) eventId = eventKey;
-    else for (const [id, nm] of EVENT_NAME_MAP.entries()) { if (nm === eventKey) { eventId = id; break; } }
-    const eventName = eventId ? EVENT_NAME_MAP.get(eventId) : (eventKey || '—');
-
-    drTitle.textContent = eventName;
-    drSub.textContent = `• मंडल: ${profile?.mandal||'—'}`;
-    drBody.innerHTML = 'लोड हो रहा…';
+    const dr=eventDrawer, drTitle=dr_title, drSub=dr_subtitle, drBody=dr_body;
+    let eventId=null; if(EVENT_NAME_MAP.has(eventKey)) eventId=eventKey; else for(const [id,nm] of EVENT_NAME_MAP.entries()){ if(nm===eventKey){eventId=id;break;} }
+    const eventName = eventId ? EVENT_NAME_MAP.get(eventId) : (eventKey||'—');
+    drTitle.textContent=eventName; drSub.textContent=`• मंडल: ${profile?.mandal||'—'}`; drBody.innerHTML='लोड हो रहा…'; dr.setAttribute('aria-hidden','false');
 
     const evRows=[], rpRows=[], cdRows=[];
     try{
       const es=await getDocs(collection(db,'events'));
-      es.forEach(d=>{ const x=d.data();
-        if (belongsToMe(x) && (eventId ? x.eventNameId===eventId : eventNameOf(x)===eventName))
-          evRows.push({id:d.id, ...x});
-      });
+      es.forEach(d=>{const x=d.data(); if(belongsToMe(x) && (eventId ? x.eventNameId===eventId : eventNameOf(x)===eventName)) evRows.push({id:d.id,...x});});
       const els=await getDocs(collection(db,'event'));
-      els.forEach(d=>{ const x=d.data();
-        if (belongsToMe(x) && (eventId ? (x.eventNameId===eventId) : eventNameOf(x)===eventName))
-          evRows.push({id:d.id, ...x});
-      });
-    }catch(e){}
-
+      els.forEach(d=>{const x=d.data(); if(belongsToMe(x) && (eventId ? x.eventNameId===eventId : eventNameOf(x)===eventName)) evRows.push({id:d.id,...x});});
+    }catch{}
     try{
-      if (eventId){
+      if(eventId){
         const rs=await getDocs(collection(db,`eventNames/${eventId}/reports`));
-        rs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rpRows.push({id:z.id,...r}); });
+        rs.forEach(z=>{const r=z.data(); if(belongsToMe(r)) rpRows.push({id:z.id,...r});});
       }
       for(const coll of ['reports','report']){
         try{
-          const lr=await getDocs(collection(db, coll));
-          lr.forEach(z=>{ const r=z.data();
-            const match = eventId ? (r.eventNameId===eventId) : (eventNameOf(r)===eventName);
-            if (belongsToMe(r) && match) rpRows.push({id:z.id,...r});
-          });
-        }catch(_){}
+          const lr=await getDocs(collection(db,coll));
+          lr.forEach(z=>{const r=z.data(); const match=eventId?(r.eventNameId===eventId):(eventNameOf(r)===eventName); if(belongsToMe(r)&&match) rpRows.push({id:z.id,...r});});
+        }catch{}
       }
-    }catch(e){}
-
+    }catch{}
     try{
-      if (eventId){
+      if(eventId){
         const cs=await getDocs(collection(db,`eventNames/${eventId}/coordinators`));
-        cs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) cdRows.push({id:z.id,...r}); });
+        cs.forEach(z=>{const r=z.data(); if(belongsToMe(r)) cdRows.push({id:z.id,...r});});
       }
       for(const coll of ['coordinators','coordinator']){
         try{
-          const lc=await getDocs(collection(db, coll));
-          lc.forEach(z=>{ const r=z.data();
-            const match = eventId ? (r.eventNameId===eventId) : (eventNameOf(r)===eventName);
-            if (belongsToMe(r) && match) cdRows.push({id:z.id,...r});
-          });
-        }catch(_){}
+          const lc=await getDocs(collection(db,coll));
+          lc.forEach(z=>{const r=z.data(); const match=eventId?(r.eventNameId===eventId):(eventNameOf(r)===eventName); if(belongsToMe(r)&&match) cdRows.push({id:z.id,...r});});
+        }catch{}
       }
-    }catch(e){}
+    }catch{}
 
     const evHtml = evRows.length
       ? `<table><thead><tr><th>तारीख</th><th>समय</th><th>स्थान</th><th>स्थिति</th></tr></thead><tbody>
-           ${evRows.map(r=>`<tr><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td><td>${r.status||'live'}</td></tr>`).join('')}
-         </tbody></table>` : '<div>कोई कार्यक्रम प्रविष्टि नहीं</div>';
+          ${evRows.map(r=>`<tr><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td><td>${r.status||'live'}</td></tr>`).join('')}
+         </tbody></table>`
+      : '<div class="muted">कोई कार्यक्रम प्रविष्टि नहीं</div>';
 
     const rpHtml = rpRows.length
-      ? rpRows.map(r=>`<div class="card" style="margin:6px 0">
+      ? rpRows.map(r=>`<div class="card" style="margin:8px 0">
           <div><b>दिनांक:</b> ${r.date||'-'} &nbsp; <b>उपस्थिति:</b> ${r.attendance||'-'} &nbsp; <b>स्थिति:</b> ${r.status||'live'}</div>
           ${r.location?`<div><b>स्थान:</b> ${r.location}</div>`:''}
           ${r.details?`<div><b>विवरण:</b> ${r.details}</div>`:''}
           ${renderPhotos(r)}
-        </div>`).join('') : '<div>कोई रिपोर्ट नहीं</div>';
+        </div>`).join('')
+      : '<div class="muted">कोई रिपोर्ट नहीं</div>';
 
     const cdHtml = cdRows.length
       ? `<table><thead><tr><th>संयोजक</th><th>मोबाइल</th><th>स्थिति</th></tr></thead><tbody>
           ${cdRows.map(r=>`<tr><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td><td>${r.status||'live'}</td></tr>`).join('')}
-         </tbody></table>` : '<div>कोई संयोजक प्रविष्टि नहीं</div>';
+         </tbody></table>`
+      : '<div class="muted">कोई संयोजक प्रविष्टि नहीं</div>';
 
     drBody.innerHTML = `
-      <div class="badge section">कार्यक्रम</div>
-      ${evHtml}
-      <div class="badge section" style="margin-top:10px">रिपोर्ट्स</div>
-      ${rpHtml}
-      <div class="badge section" style="margin-top:10px">संयोजक</div>
-      ${cdHtml}
+      <div class="pill">कार्यक्रम</div> ${evHtml}
+      <div class="pill" style="margin-top:10px">रिपोर्ट्स</div> ${rpHtml}
+      <div class="pill" style="margin-top:10px">संयोजक</div> ${cdHtml}
+      <div class="toolbar" style="margin-top:10px">
+        <button class="ghost" onclick="window.drawerPDF('${eventName}')">PDF डाउनलोड</button>
+      </div>
     `;
     dr.classList.add('open');
   }
-  function closeDrawer(){ document.getElementById('eventDrawer').classList.remove('open'); }
+  function closeDrawer(){ const dr=eventDrawer; dr.classList.remove('open'); dr.setAttribute('aria-hidden','true'); }
+  window.closeDrawer = closeDrawer;  // <-- fix for scope
+
+  /* Drawer PDF (print) */
+  window.drawerPDF = (title)=>{
+    const html = `
+      <html><head><title>${title} - विवरण</title>
+      <style>
+        body{font:14px/1.5 system-ui; padding:12px}
+        h2{margin:0 0 8px}
+        table{width:100%; border-collapse:collapse; margin:8px 0}
+        th,td{border:1px solid #ccc; padding:6px}
+        .thumb{width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd;margin:2px}
+      </style></head>
+      <body>
+        <h2>${title} — विवरण</h2>
+        ${dr_body.innerHTML.replaceAll('class="thumb"', 'class="thumb"')}
+      </body></html>`;
+    const w=window.open('','_blank','width=900,height=700'); w.document.write(html); w.document.close(); w.focus(); w.print();
+  };
+
+  /* Per item PDF (event/report/coord) */
+  function makePDF(type,obj){
+    const nm=eventNameOf(obj.sid||obj);
+    let body='';
+    if(type==='event'){
+      body=`<table><tr><th>कार्यक्रम</th><td>${nm}</td></tr>
+                   <tr><th>तारीख</th><td>${obj.date||'-'}</td></tr>
+                   <tr><th>समय</th><td>${obj.time||'-'}</td></tr>
+                   <tr><th>स्थान</th><td>${obj.location||'-'}</td></tr></table>`;
+    }else if(type==='report'){
+      body=`<table><tr><th>कार्यक्रम</th><td>${nm}</td></tr>
+                   <tr><th>दिनांक</th><td>${obj.date||'-'}</td></tr>
+                   <tr><th>उपस्थिति</th><td>${obj.attendance||'-'}</td></tr>
+                   <tr><th>स्थान</th><td>${obj.location||'-'}</td></tr>
+                   <tr><th>विवरण</th><td>${obj.details||'-'}</td></tr></table>
+            ${renderPhotos(obj)}`;
+    }else{
+      body=`<table><tr><th>कार्यक्रम</th><td>${nm}</td></tr>
+                   <tr><th>मुख्य संयोजक</th><td>${obj.name||'-'}</td></tr>
+                   <tr><th>मोबाइल</th><td>${obj.mobile||'-'}</td></tr>
+                   <tr><th>Co-1</th><td>${obj.coCoordName1||'-'} (${obj.coCoordMobile1||'-'})</td></tr>
+                   <tr><th>Co-2</th><td>${obj.coCoordName2||'-'} (${obj.coCoordMobile2||'-'})</td></tr></table>`;
+    }
+    const html=`<html><head><title>${nm} - ${type}</title>
+      <style>body{font:14px/1.5 system-ui;padding:12px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ccc;padding:6px}
+      .thumb{width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd;margin:2px}</style></head>
+      <body><h2>${nm} — ${type}</h2>${body}</body></html>`;
+    const w=window.open('','_blank','width=900,height=700'); w.document.write(html); w.document.close(); w.focus(); w.print();
+  }
+  window.makePDF=makePDF;
 
 </script>
 </body>
