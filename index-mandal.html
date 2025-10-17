@@ -51,13 +51,13 @@
     <div id="recaptcha-container" style="height:1px;overflow:hidden"></div>
 
     <div class="row" style="align-items:center">
-      <input id="otpInput" placeholder="OTP (डिफ़ॉल्ट: 123456)" style="flex:1 1 220px">
+      <input id="otpInput" placeholder="OTP (टेस्ट: 123456)" style="flex:1 1 220px">
       <button id="btnSendOtp">OTP भेजें</button>
       <button id="btnVerify">Verify</button>
     </div>
     <div id="gateMsg" style="margin-top:.4rem;color:#8d4700"></div>
     <div style="margin-top:.3rem;font-size:.9rem;color:#555">
-      टेस्ट मोड: सभी मंडलों के लिए OTP <b>123456</b>, Super Admin के लिए <b>654321</b> (Firebase → Phone → Test numbers में जोड़ें)
+      टेस्ट मोड: हर चुने हुए नंबर के लिए Firebase → Phone → <b>Test numbers</b> में OTP <b>123456</b> सेट करें। (SMS नहीं जाएगा)
     </div>
   </div>
 
@@ -66,7 +66,6 @@
     <div class="row" style="align-items:center">
       <div><b>लॉगिन:</b> <span id="who"></span></div>
       <div class="right">
-        <a href="admin.html" id="adminLink" class="hidden"><button class="secondary">Admin Dashboard</button></a>
         <button id="logoutBtn" class="secondary">लॉगआउट</button>
       </div>
     </div>
@@ -207,7 +206,6 @@
   import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
   // ==== CONFIG ====
-  // Firebase project
   const firebaseConfig = {
     apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
     authDomain: "mandaleventall.firebaseapp.com",
@@ -217,12 +215,10 @@
     appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
     measurementId: "G-2BBZZNRS88"
   };
-  // Default OTP (सब मंडलों के लिए टेस्टिंग)
+  // टेस्ट OTP (सभी के लिए)
   const DEFAULT_OTP = '123456';
-  // Super Admin (ALL डेटा)
-  const SUPER_ADMIN = { name: "Ankit Soni", phone: "+919893074891", OTP: "654321" };
 
-  // मंडल डायरेक्टरी (नंबर डालें)
+  // मंडल डायरेक्टरी (आपकी सूची)
   const DIRECTORY = {
     "भानपुरा":      { name:"श्री आदित्य मंगरोतिया", phones:["+919179885982"] },
     "भेंसोदा":      { name:"श्री उमेश पारीदार", phones:["+918349035165"] },
@@ -267,7 +263,6 @@
   const btnSendOtp = document.getElementById('btnSendOtp');
   const btnVerify = document.getElementById('btnVerify');
   const logoutBtn = document.getElementById('logoutBtn');
-  const adminLink = document.getElementById('adminLink');
 
   // Tabs
   const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
@@ -319,19 +314,13 @@
     (d.phones||[]).forEach(p=>{
       const o=document.createElement('option'); o.value=p; o.textContent=p; selPhone.appendChild(o);
     });
-    // Super Admin नंबर को भी allow (optional)
-    if (!d.phones?.includes(SUPER_ADMIN.phone)) {
-      const oa=document.createElement('option'); oa.value=SUPER_ADMIN.phone; oa.textContent=SUPER_ADMIN.phone+' (Admin)';
-      selPhone.appendChild(oa);
-    }
     selPhone.style.display='block'; lblPhone.style.display='block';
-    // convenience: OTP box में default भर दें
-    otpInput.value = DEFAULT_OTP;
+    otpInput.value = DEFAULT_OTP; // convenience
   };
 
   let recaptcha = null, confirmationResult = null, profile = null;
 
-  // OTP भेजें → चुने हुए नंबर पर (test numbers में SMS नहीं जाएगा)
+  // OTP भेजें → चुने हुए नंबर पर (Test numbers में 123456 रखें)
   btnSendOtp.onclick = async ()=>{
     gateMsg.textContent = "";
     const phoneToUse = selPhone.value?.trim();
@@ -341,7 +330,7 @@
         recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{ size:'invisible' });
       }
       confirmationResult = await signInWithPhoneNumber(auth, phoneToUse, recaptcha);
-      gateMsg.textContent = `OTP भेजी गई/टेस्ट-OTP: ${phoneToUse}`;
+      gateMsg.textContent = `OTP भेजी गई/टेस्ट: ${phoneToUse}`;
     }catch(err){
       const msg = err?.customData?.serverResponse || err?.message || String(err);
       gateMsg.textContent = "OTP भेजने में दिक्कत: " + msg;
@@ -349,7 +338,7 @@
     }
   };
 
-  // Verify (test numbers के लिए DEFAULT_OTP / admin के लिए SUPER_ADMIN.OTP)
+  // Verify (123456)
   btnVerify.onclick = async ()=>{
     try{
       await confirmationResult.confirm(otpInput.value.trim());
@@ -360,20 +349,16 @@
     }
   };
 
-  // user profile save (role तय)
+  // user profile save (सिर्फ मंडल रोल)
   async function saveUserData(user){
     const selectedMandal = selMandal.value?.trim() || "—";
     const selectedPhone  = selPhone.value?.trim()  || "";
-    const typedOtp       = otpInput.value?.trim();
-
-    const isSuper = (selectedPhone === SUPER_ADMIN.phone && typedOtp === SUPER_ADMIN.OTP);
-
     const payload = {
       uid: user.uid,
-      role: isSuper ? 'admin' : 'mandal',
-      name: isSuper ? SUPER_ADMIN.name : (DIRECTORY[selectedMandal]?.name || '—'),
+      role: 'mandal',
+      name: DIRECTORY[selectedMandal]?.name || '—',
       mobile: selectedPhone,
-      mandal: isSuper ? 'ALL' : selectedMandal,
+      mandal: selectedMandal,
       verified: true,
       updatedAt: serverTimestamp()
     };
@@ -390,9 +375,8 @@
         profile = { uid:user.uid, role:'mandal', name:'—', mobile: selPhone.value||'', mandal: selMandal.value||'—' };
       }
       who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
-      if (profile.role === 'admin') adminLink.classList.remove('hidden');
-
       loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
+
       document.getElementById('ev_mandal').value = profile.mandal;
       document.getElementById('rp_mandal').value = profile.mandal;
       document.getElementById('cd_mandal').value = profile.mandal;
@@ -417,9 +401,15 @@
     });
   }
 
-  const isSuper = ()=> profile?.role === 'admin';
+  // ====== पुराना डेटा भी दिखाने के helpers ======
+  const isSuper = () => false; // अभी कोई एडमिन मोड नहीं
+  function belongsToMe(x) {
+    // createdBy ना हो तो mandal से मैच
+    return (x?.createdBy === profile?.uid) || (x?.mandal && x.mandal === profile?.mandal);
+  }
+  function normStatus(s) { return s || 'live'; }
 
-  // EVENTS
+  // EVENTS (new + legacy)
   const ev = { sel:ev_eventName, date:ev_date, time:ev_time, loc:ev_location, msg:ev_msg, table:ev_table.querySelector('tbody'), search:ev_search, dl:ev_download };
   async function saveEvent(status){
     if(!profile) return; if(!ev.sel.value){ ev.msg.textContent='कार्यक्रम चुनें'; return; }
@@ -435,33 +425,35 @@
 
   async function refreshMyEvents(){
     ev.table.innerHTML='';
-    const snap=await getDocs(collection(db,'events'));
     const rows=[];
-    snap.forEach(d=>{
-      const x=d.data();
-      if (isSuper() || x.createdBy===profile?.uid) rows.push({id:d.id,ref:d.ref,...x});
-    });
+    // current
+    try{
+      const snap=await getDocs(collection(db,'events'));
+      snap.forEach(d=>{ const x=d.data(); if (belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)}); });
+    }catch(e){ console.warn('events read failed', e); }
+    // legacy: event
+    try{
+      const snap2=await getDocs(collection(db,'event'));
+      snap2.forEach(d=>{ const x=d.data(); if (belongsToMe(x)) rows.push({id:d.id,ref:d.ref,...x,status:normStatus(x.status)}); });
+    }catch(e){}
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${r.eventNameId}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td>
+      tr.innerHTML=`<td>${r.eventNameId||r.eventName||'-'}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${(!isSuper() && r.status!=='live')?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`;
       ev.table.appendChild(tr);
     });
     ev.search.oninput = ()=> filterRows(ev.table, ev.search.value);
-    ev.dl.onclick = ()=> csvDownload('events'+(isSuper()?'_ALL':'')+'.csv',
+    ev.dl.onclick = ()=> csvDownload('events.csv',
       [['event','date','time','location','status','mandal'],
-       ...rows.map(r=>[r.eventNameId,r.date,r.time,r.location,r.status,r.mandal||''])]);
-
-    if (!isSuper()) {
-      ev.table.querySelectorAll('button.edit').forEach(b=>{
-        const obj=rows.find(x=>x.id===b.dataset.id); b.onclick=()=> openEdit('event',obj);
-      });
-    }
+       ...rows.map(r=>[(r.eventNameId||r.eventName||''),r.date||'',r.time||'',r.location||'',r.status||'',r.mandal||''])]);
+    ev.table.querySelectorAll('button.edit').forEach(b=>{
+      const obj=rows.find(x=>x.id===b.dataset.id); if(obj) b.onclick=()=> openEdit('event',obj);
+    });
   }
 
-  // REPORTS
+  // REPORTS (sub + legacy)
   const rp = { sel:rp_eventName, loc:rp_location, att:rp_attendance, date:rp_date, gst:rp_guests, det:rp_details, msg:rp_msg, table:rp_table.querySelector('tbody'), search:rp_search, dl:rp_download };
   rp_saveDraft.onclick = ()=> saveReport('draft');
   rp_submit.onclick   = ()=> saveReport('pending_approval');
@@ -479,37 +471,41 @@
 
   async function refreshMyReports(){
     rp.table.innerHTML='';
-    const evNames=await getDocs(collection(db,'eventNames'));
     const rows=[];
-    for(const d of evNames.docs){
-      const sid=d.id;
-      const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
-      rs.forEach(z=>{
-        const r=z.data();
-        if (isSuper() || r.createdBy===profile?.uid) rows.push({id:z.id,sid,ref:z.ref,...r});
-      });
+    // subcollection
+    try{
+      const evNames=await getDocs(collection(db,'eventNames'));
+      for(const d of evNames.docs){
+        const sid=d.id;
+        const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
+        rs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)}); });
+      }
+    }catch(e){ console.warn('sub reports read failed', e); }
+    // legacy: reports / report
+    for(const legacy of ['reports','report']){
+      try{
+        const lr=await getDocs(collection(db, legacy));
+        lr.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid:(r.eventNameId||r.eventName||'—'),ref:z.ref,...r,status:normStatus(r.status)}); });
+      }catch(e){}
     }
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
       const tr=document.createElement('tr');
       tr.innerHTML=`<td>${r.sid}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${(!isSuper() && r.status!=='live')?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
       rp.table.appendChild(tr);
     });
     rp.search.oninput = ()=> filterRows(rp.table, rp.search.value);
-    rp.dl.onclick = ()=> csvDownload('reports'+(isSuper()?'_ALL':'')+'.csv',
+    rp.dl.onclick = ()=> csvDownload('reports.csv',
       [['event','date','attendance','location','status','mandal'],
-       ...rows.map(r=>[r.sid,r.date,r.attendance,r.location,r.status,r.mandal||''])]);
-
-    if (!isSuper()) {
-      rp.table.querySelectorAll('button.edit').forEach(b=>{
-        const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('report',obj);
-      });
-    }
+       ...rows.map(r=>[r.sid,r.date||'',r.attendance||'',r.location||'',r.status||'',r.mandal||''])]);
+    rp.table.querySelectorAll('button.edit').forEach(b=>{
+      const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); if(obj) b.onclick=()=> openEdit('report',obj);
+    });
   }
 
-  // COORDINATORS
+  // COORDINATORS (sub + legacy)
   const cd = { sel:cd_eventName, name:cd_name, mob:cd_mobile, c1:cd_c1, c1m:cd_c1m, c2:cd_c2, c2m:cd_c2m, msg:cd_msg, table:cd_table.querySelector('tbody'), search:cd_search, dl:cd_download };
   cd_saveDraft.onclick = ()=> saveCoord('draft');
   cd_submit.onclick   = ()=> saveCoord('pending_approval');
@@ -528,67 +524,102 @@
 
   async function refreshMyCoords(){
     cd.table.innerHTML='';
-    const evNames=await getDocs(collection(db,'eventNames'));
     const rows=[];
-    for(const d of evNames.docs){
-      const sid=d.id;
-      const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
-      cs.forEach(z=>{
-        const r=z.data();
-        if (isSuper() || r.createdBy===profile?.uid) rows.push({id:z.id,sid,ref:z.ref,...r});
-      });
+    // subcollection
+    try{
+      const evNames=await getDocs(collection(db,'eventNames'));
+      for(const d of evNames.docs){
+        const sid=d.id;
+        const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
+        cs.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid,ref:z.ref,...r,status:normStatus(r.status)}); });
+      }
+    }catch(e){ console.warn('sub coords read failed', e); }
+    // legacy: coordinators / coordinator
+    for(const legacy of ['coordinators','coordinator']){
+      try{
+        const lc=await getDocs(collection(db, legacy));
+        lc.forEach(z=>{ const r=z.data(); if (belongsToMe(r)) rows.push({id:z.id,sid:(r.eventNameId||r.eventName||'—'),ref:z.ref,...r,status:normStatus(r.status)}); });
+      }catch(e){}
     }
     rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     rows.forEach(r=>{
       const tr=document.createElement('tr');
       tr.innerHTML=`<td>${r.sid}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${(!isSuper() && r.status!=='live')?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
       cd.table.appendChild(tr);
     });
     cd.search.oninput = ()=> filterRows(cd.table, cd.search.value);
-    cd.dl.onclick = ()=> csvDownload('coordinators'+(isSuper()?'_ALL':'')+'.csv',
-      [['event','name','mobile','status','mandal'], ...rows.map(r=>[r.sid,r.name,r.mobile,r.status,r.mandal||''])]);
-
-    if (!isSuper()) {
-      cd.table.querySelectorAll('button.edit').forEach(b=>{
-        const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('coord',obj);
-      });
-    }
+    cd.dl.onclick = ()=> csvDownload('coordinators.csv',
+      [['event','name','mobile','status','mandal'],
+       ...rows.map(r=>[r.sid,r.name||'',r.mobile||'',r.status||'',r.mandal||''])]);
+    cd.table.querySelectorAll('button.edit').forEach(b=>{
+      const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); if(obj) b.onclick=()=> openEdit('coord',obj);
+    });
   }
 
-  // STATS
+  // STATS (मेरे LIVE)
   async function refreshMyStats(){
     let eventsCnt=0,reportsCnt=0,coordsCnt=0; const liveRows=[];
-    const es=await getDocs(collection(db,'events'));
-    es.forEach(d=>{
-      const x=d.data();
-      if (x.status==='live' && (isSuper() || x.mandal===profile?.mandal)) {
-        eventsCnt++; liveRows.push(['कार्यक्रम',x.eventNameId,`${x.date||'-'} ${x.time||''}`, (isSuper()? (x.mandal||'-') : (x.location||'-')) ]);
-      }
-    });
-    const evNames=await getDocs(collection(db,'eventNames'));
-    for(const d of evNames.docs){
-      const sid=d.id;
-      const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
-      rs.forEach(z=>{
-        const r=z.data();
-        if (r.status==='live' && (isSuper() || r.mandal===profile?.mandal)) {
-          reportsCnt++; liveRows.push(['रिपोर्ट',sid,r.date||'-', isSuper()? (r.mandal||'-') : (r.details||'-') ]);
-        }
-      });
-      const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
-      cs.forEach(z=>{
-        const r=z.data();
-        if (r.status==='live' && (isSuper() || r.mandal===profile?.mandal)) {
-          coordsCnt++; liveRows.push(['संयोजक',sid,r.name||'-', isSuper()? (r.mandal||'-') : (r.mobile||'-') ]);
-        }
-      });
+    // events (new + legacy)
+    for (const coll of ['events','event']) {
+      try{
+        const es=await getDocs(collection(db, coll));
+        es.forEach(d=>{
+          const x=d.data();
+          if (normStatus(x.status)==='live' && belongsToMe(x)) {
+            eventsCnt++; liveRows.push(['कार्यक्रम', x.eventNameId||x.eventName||'-', `${x.date||'-'} ${x.time||''}`, x.location||x.mandal||'-' ]);
+          }
+        });
+      }catch(e){}
     }
+    // reports (sub + legacy)
+    try{
+      const evNames=await getDocs(collection(db,'eventNames'));
+      for(const d of evNames.docs){
+        const sid=d.id;
+        const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
+        rs.forEach(z=>{
+          const r=z.data();
+          if (normStatus(r.status)==='live' && belongsToMe(r)) {
+            reportsCnt++; liveRows.push(['ரिपोर्ट', sid, r.date||'-', r.details||r.mandal||'-' ]);
+          }
+        });
+      }
+      const lr=await getDocs(collection(db,'reports'));
+      lr.forEach(z=>{
+        const r=z.data();
+        if (normStatus(r.status)==='live' && belongsToMe(r)) {
+          reportsCnt++; liveRows.push(['रिपोर्ट', r.eventNameId||r.eventName||'-', r.date||'-', r.details||r.mandal||'-' ]);
+        }
+      });
+    }catch(e){}
+    // coordinators (sub + legacy)
+    try{
+      const evNames=await getDocs(collection(db,'eventNames'));
+      for(const d of evNames.docs){
+        const sid=d.id;
+        const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
+        cs.forEach(z=>{
+          const r=z.data();
+          if (normStatus(r.status)==='live' && belongsToMe(r)) {
+            coordsCnt++; liveRows.push(['संयोजक', sid, r.name||'-', r.mobile||r.mandal||'-' ]);
+          }
+        });
+      }
+      const lc=await getDocs(collection(db,'coordinators'));
+      lc.forEach(z=>{
+        const r=z.data();
+        if (normStatus(r.status)==='live' && belongsToMe(r)) {
+          coordsCnt++; liveRows.push(['संयोजक', r.eventNameId||r.eventName||'-', r.name||'-', r.mobile||r.mandal||'-' ]);
+        }
+      });
+    }catch(e){}
+
     my_stats.innerHTML = `<div>Live कार्यक्रम: <b>${eventsCnt}</b></div><div>Live रिपोर्ट: <b>${reportsCnt}</b></div><div>Live संयोजक: <b>${coordsCnt}</b></div>`;
     const tbody=my_live.querySelector('tbody'); tbody.innerHTML='';
     liveRows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>`; tbody.appendChild(tr); });
-    exportAll.onclick = ()=> csvDownload('live_all'+(isSuper()?'_ALL':'')+'.csv',[['type','program','col3','col4'],...liveRows]);
+    exportAll.onclick = ()=> csvDownload('live_all.csv',[['type','program','col3','col4'],...liveRows]);
     live_search.oninput = (e)=> filterRows(tbody, e.target.value);
   }
 
@@ -629,7 +660,7 @@
                           <label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}">
                           <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`;
     }
-    em.wrap.style.display = 'flex'; // force show
+    em.wrap.style.display = 'flex'; // show
     const first=em.body.querySelector('input,textarea'); if(first) first.focus();
   }
 
@@ -651,7 +682,7 @@
       alert('सेव में दिक्कत: ' + (err?.message||err));
       console.error(err);
     }finally{
-      closeEditModal(); // हर हाल में बंद
+      closeEditModal(); // हमेशा बंद
     }
   };
 </script>
