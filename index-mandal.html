@@ -36,22 +36,29 @@
   <!-- LOGIN -->
   <div id="loginGate" class="card">
     <h2>मंडल अध्यक्ष लॉगिन</h2>
+
     <label>मंडल चुनें</label>
     <select id="selMandal"><option value="">-- मंडल चुनें --</option></select>
 
     <div id="mandalCard" style="display:none;margin:.6rem 0;padding:.6rem;border:1px dashed #ffcc80;border-radius:8px;background:#fff">
       <div><b>नाम:</b> <span id="md_name"></span></div>
-      <div><b>मोबाइल:</b> <span id="md_mobile"></span></div>
-      <div style="margin-top:.3rem;color:#8d4700;">आपका स्वागत है! आगे बढ़ने के लिए OTP डालें/भेजें।</div>
+      <div><b>मोबाइल(एक चुनें):</b> <span id="md_mobile"></span></div>
     </div>
 
+    <label id="lblPhone" style="display:none">मोबाइल चुनें</label>
+    <select id="selPhone" style="display:none"><option value="">-- मोबाइल चुनें --</option></select>
+
     <div id="recaptcha-container" style="height:1px;overflow:hidden"></div>
+
     <div class="row" style="align-items:center">
-      <input id="otpInput" placeholder="OTP (e.g. 123456)" style="flex:1 1 220px">
+      <input id="otpInput" placeholder="OTP (डिफ़ॉल्ट: 123456)" style="flex:1 1 220px">
       <button id="btnSendOtp">OTP भेजें</button>
       <button id="btnVerify">Verify</button>
     </div>
     <div id="gateMsg" style="margin-top:.4rem;color:#8d4700"></div>
+    <div style="margin-top:.3rem;font-size:.9rem;color:#555">
+      टेस्ट मोड: सभी मंडलों के लिए OTP <b>123456</b>, Super Admin के लिए <b>654321</b> (Firebase → Phone → Test numbers में जोड़ें)
+    </div>
   </div>
 
   <!-- APP -->
@@ -173,10 +180,10 @@
       </div>
     </div>
 
-    <!-- Edit Modal (HARDCLOSE) -->
-    <div id="editModal" class="hidden"
+    <!-- Edit Modal (force close) -->
+    <div id="editModal"
          onclick="if(event.target.id==='editModal') closeEditModal()"
-         style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;">
+         style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999;">
       <div id="editModalCard"
            style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px;position:relative">
         <button id="em_close" type="button" onclick="closeEditModal()"
@@ -199,7 +206,8 @@
   import { getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
   import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // Firebase Config (mandaleventall)
+  // ==== CONFIG ====
+  // Firebase project
   const firebaseConfig = {
     apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
     authDomain: "mandaleventall.firebaseapp.com",
@@ -209,14 +217,12 @@
     appId: "1:900190130114:web:bc7d9e2283b3ac57bc505b",
     measurementId: "G-2BBZZNRS88"
   };
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  // Default OTP (सब मंडलों के लिए टेस्टिंग)
+  const DEFAULT_OTP = '123456';
+  // Super Admin (ALL डेटा)
+  const SUPER_ADMIN = { name: "Ankit Soni", phone: "+919893074891", OTP: "654321" };
 
-  // Master Tester — सभी मंडल ओपन टेस्टिंग
-  const MASTER_TESTER = { name:"Ankit Soni", phone:"+919893074891" };
-
-  // मंडल डायरेक्टरी (PDF से)
+  // मंडल डायरेक्टरी (नंबर डालें)
   const DIRECTORY = {
     "भानपुरा":      { name:"श्री आदित्य मंगरोतिया", phones:["+919179885982"] },
     "भेंसोदा":      { name:"श्री उमेश पारीदार", phones:["+918349035165"] },
@@ -241,7 +247,12 @@
     "मंदसौर दक्षिण": { name:"श्री दिनोद डगवार", phones:["+919406869388"] }
   };
 
-  // UI refs
+  // ==== INIT ====
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ==== UI REFS ====
   const loginGate = document.getElementById('loginGate');
   const appRoot   = document.getElementById('app');
   const gateMsg   = document.getElementById('gateMsg');
@@ -249,6 +260,8 @@
   const md_name = document.getElementById('md_name');
   const md_mobile = document.getElementById('md_mobile');
   const mandalCard = document.getElementById('mandalCard');
+  const selPhone = document.getElementById('selPhone');
+  const lblPhone = document.getElementById('lblPhone');
   const who = document.getElementById('who');
   const otpInput = document.getElementById('otpInput');
   const btnSendOtp = document.getElementById('btnSendOtp');
@@ -265,7 +278,7 @@
     document.getElementById(b.dataset.tab).classList.add('active');
   });
 
-  // CSV helper
+  // CSV helpers
   function csvDownload(filename, rows){
     const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`;
     const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
@@ -291,24 +304,44 @@
   });
   selMandal.onchange = ()=>{
     const d = DIRECTORY[selMandal.value];
-    if(!d){ mandalCard.style.display='none'; md_name.textContent=""; md_mobile.textContent=""; return; }
+    if(!d){
+      mandalCard.style.display='none';
+      md_name.textContent=""; md_mobile.textContent="";
+      selPhone.style.display='none'; lblPhone.style.display='none';
+      selPhone.innerHTML = '<option value="">-- मोबाइल चुनें --</option>';
+      return;
+    }
     md_name.textContent = d.name || "—";
     md_mobile.textContent = (d.phones||[]).join(", ");
     mandalCard.style.display = 'block';
+
+    selPhone.innerHTML = '<option value="">-- मोबाइल चुनें --</option>';
+    (d.phones||[]).forEach(p=>{
+      const o=document.createElement('option'); o.value=p; o.textContent=p; selPhone.appendChild(o);
+    });
+    // Super Admin नंबर को भी allow (optional)
+    if (!d.phones?.includes(SUPER_ADMIN.phone)) {
+      const oa=document.createElement('option'); oa.value=SUPER_ADMIN.phone; oa.textContent=SUPER_ADMIN.phone+' (Admin)';
+      selPhone.appendChild(oa);
+    }
+    selPhone.style.display='block'; lblPhone.style.display='block';
+    // convenience: OTP box में default भर दें
+    otpInput.value = DEFAULT_OTP;
   };
 
   let recaptcha = null, confirmationResult = null, profile = null;
 
-  // OTP send (Invisible reCAPTCHA) — हमेशा Master Tester नंबर पर
+  // OTP भेजें → चुने हुए नंबर पर (test numbers में SMS नहीं जाएगा)
   btnSendOtp.onclick = async ()=>{
     gateMsg.textContent = "";
-    const phoneToUse = MASTER_TESTER.phone;
+    const phoneToUse = selPhone.value?.trim();
+    if(!phoneToUse){ gateMsg.textContent = "पहले मोबाइल चुनें"; return; }
     try{
       if(!recaptcha){
-        recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{ size:'invisible', callback:()=>{} });
+        recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{ size:'invisible' });
       }
       confirmationResult = await signInWithPhoneNumber(auth, phoneToUse, recaptcha);
-      gateMsg.textContent = `OTP भेजी गई: ${phoneToUse}`;
+      gateMsg.textContent = `OTP भेजी गई/टेस्ट-OTP: ${phoneToUse}`;
     }catch(err){
       const msg = err?.customData?.serverResponse || err?.message || String(err);
       gateMsg.textContent = "OTP भेजने में दिक्कत: " + msg;
@@ -316,7 +349,7 @@
     }
   };
 
-  // Verify → onAuthStateChanged में आगे हैंडल
+  // Verify (test numbers के लिए DEFAULT_OTP / admin के लिए SUPER_ADMIN.OTP)
   btnVerify.onclick = async ()=>{
     try{
       await confirmationResult.confirm(otpInput.value.trim());
@@ -327,15 +360,20 @@
     }
   };
 
-  // Login होने पर user doc सेट करें + UI अनलॉक (fallback सहित)
+  // user profile save (role तय)
   async function saveUserData(user){
     const selectedMandal = selMandal.value?.trim() || "—";
+    const selectedPhone  = selPhone.value?.trim()  || "";
+    const typedOtp       = otpInput.value?.trim();
+
+    const isSuper = (selectedPhone === SUPER_ADMIN.phone && typedOtp === SUPER_ADMIN.OTP);
+
     const payload = {
       uid: user.uid,
-      role: "admin",              // Master tester = admin
-      name: MASTER_TESTER.name,
-      mobile: MASTER_TESTER.phone,
-      mandal: selectedMandal,
+      role: isSuper ? 'admin' : 'mandal',
+      name: isSuper ? SUPER_ADMIN.name : (DIRECTORY[selectedMandal]?.name || '—'),
+      mobile: selectedPhone,
+      mandal: isSuper ? 'ALL' : selectedMandal,
       verified: true,
       updatedAt: serverTimestamp()
     };
@@ -346,24 +384,15 @@
   onAuthStateChanged(auth, async (user)=>{
     if(user){
       try{
-        const u = await saveUserData(user);
-        profile = { uid: user.uid, ...u };
+        profile = await saveUserData(user);
       }catch(e){
-        console.warn("User save failed, continuing anyway:", e);
-        profile = {
-          uid: user.uid,
-          role: "admin",
-          name: MASTER_TESTER.name,
-          mobile: MASTER_TESTER.phone,
-          mandal: (selMandal.value?.trim() || "—"),
-          verified: true
-        };
+        console.warn("user save failed", e);
+        profile = { uid:user.uid, role:'mandal', name:'—', mobile: selPhone.value||'', mandal: selMandal.value||'—' };
       }
-
       who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
-      adminLink.classList.remove('hidden');
-      loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
+      if (profile.role === 'admin') adminLink.classList.remove('hidden');
 
+      loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
       document.getElementById('ev_mandal').value = profile.mandal;
       document.getElementById('rp_mandal').value = profile.mandal;
       document.getElementById('cd_mandal').value = profile.mandal;
@@ -377,7 +406,7 @@
 
   logoutBtn.onclick = ()=> signOut(auth);
 
-  // Active event names
+  // Active event names (isActive==true)
   async function fillActiveEventNames(){
     const snap = await getDocs(collection(db,"eventNames"));
     const active = snap.docs.map(d=>({id:d.id, ...d.data()})).filter(e=>!!e.isActive)
@@ -387,6 +416,8 @@
       active.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; sel.appendChild(o); });
     });
   }
+
+  const isSuper = ()=> profile?.role === 'admin';
 
   // EVENTS
   const ev = { sel:ev_eventName, date:ev_date, time:ev_time, loc:ev_location, msg:ev_msg, table:ev_table.querySelector('tbody'), search:ev_search, dl:ev_download };
@@ -405,21 +436,29 @@
   async function refreshMyEvents(){
     ev.table.innerHTML='';
     const snap=await getDocs(collection(db,'events'));
-    const mine=[];
-    snap.forEach(d=>{ const x=d.data(); if(x.createdBy===profile?.uid) mine.push({id:d.id,ref:d.ref,...x}); });
-    mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    mine.forEach(r=>{
+    const rows=[];
+    snap.forEach(d=>{
+      const x=d.data();
+      if (isSuper() || x.createdBy===profile?.uid) rows.push({id:d.id,ref:d.ref,...x});
+    });
+    rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    rows.forEach(r=>{
       const tr=document.createElement('tr');
       tr.innerHTML=`<td>${r.eventNameId}</td><td>${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.location||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${r.status!=='live'?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>${(!isSuper() && r.status!=='live')?'<button class="edit" data-type="event" data-id="'+r.id+'">Edit</button>':''}</td>`;
       ev.table.appendChild(tr);
     });
     ev.search.oninput = ()=> filterRows(ev.table, ev.search.value);
-    ev.dl.onclick = ()=> csvDownload('events.csv', [['event','date','time','location','status'], ...mine.map(r=>[r.eventNameId,r.date,r.time,r.location,r.status])]);
-    ev.table.querySelectorAll('button.edit').forEach(b=>{
-      const obj=mine.find(x=>x.id===b.dataset.id); b.onclick=()=> openEdit('event',obj);
-    });
+    ev.dl.onclick = ()=> csvDownload('events'+(isSuper()?'_ALL':'')+'.csv',
+      [['event','date','time','location','status','mandal'],
+       ...rows.map(r=>[r.eventNameId,r.date,r.time,r.location,r.status,r.mandal||''])]);
+
+    if (!isSuper()) {
+      ev.table.querySelectorAll('button.edit').forEach(b=>{
+        const obj=rows.find(x=>x.id===b.dataset.id); b.onclick=()=> openEdit('event',obj);
+      });
+    }
   }
 
   // REPORTS
@@ -441,25 +480,33 @@
   async function refreshMyReports(){
     rp.table.innerHTML='';
     const evNames=await getDocs(collection(db,'eventNames'));
-    const mine=[];
+    const rows=[];
     for(const d of evNames.docs){
       const sid=d.id;
       const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
-      rs.forEach(z=>{ const r=z.data(); if(r.createdBy===profile?.uid) mine.push({id:z.id,sid,ref:z.ref,...r}); });
+      rs.forEach(z=>{
+        const r=z.data();
+        if (isSuper() || r.createdBy===profile?.uid) rows.push({id:z.id,sid,ref:z.ref,...r});
+      });
     }
-    mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    mine.forEach(r=>{
+    rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    rows.forEach(r=>{
       const tr=document.createElement('tr');
       tr.innerHTML=`<td>${r.sid}</td><td>${r.date||'-'}</td><td>${r.attendance||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${r.status!=='live'?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>${(!isSuper() && r.status!=='live')?'<button class="edit" data-type="report" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
       rp.table.appendChild(tr);
     });
     rp.search.oninput = ()=> filterRows(rp.table, rp.search.value);
-    rp.dl.onclick = ()=> csvDownload('reports.csv', [['event','date','attendance','location','status'], ...mine.map(r=>[r.sid,r.date,r.attendance,r.location,r.status])]);
-    rp.table.querySelectorAll('button.edit').forEach(b=>{
-      const obj=mine.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('report',obj);
-    });
+    rp.dl.onclick = ()=> csvDownload('reports'+(isSuper()?'_ALL':'')+'.csv',
+      [['event','date','attendance','location','status','mandal'],
+       ...rows.map(r=>[r.sid,r.date,r.attendance,r.location,r.status,r.mandal||''])]);
+
+    if (!isSuper()) {
+      rp.table.querySelectorAll('button.edit').forEach(b=>{
+        const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('report',obj);
+      });
+    }
   }
 
   // COORDINATORS
@@ -482,54 +529,70 @@
   async function refreshMyCoords(){
     cd.table.innerHTML='';
     const evNames=await getDocs(collection(db,'eventNames'));
-    const mine=[];
+    const rows=[];
     for(const d of evNames.docs){
       const sid=d.id;
       const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
-      cs.forEach(z=>{ const r=z.data(); if(r.createdBy===profile?.uid) mine.push({id:z.id,sid,ref:z.ref,...r}); });
+      cs.forEach(z=>{
+        const r=z.data();
+        if (isSuper() || r.createdBy===profile?.uid) rows.push({id:z.id,sid,ref:z.ref,...r});
+      });
     }
-    mine.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    mine.forEach(r=>{
+    rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    rows.forEach(r=>{
       const tr=document.createElement('tr');
       tr.innerHTML=`<td>${r.sid}</td><td>${r.name||'-'}</td><td>${r.mobile||'-'}</td>
                     <td>${badge(r.status)}</td>
-                    <td>${r.status!=='live'?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
+                    <td>${(!isSuper() && r.status!=='live')?'<button class="edit" data-type="coord" data-sid="'+r.sid+'" data-id="'+r.id+'">Edit</button>':''}</td>`;
       cd.table.appendChild(tr);
     });
     cd.search.oninput = ()=> filterRows(cd.table, cd.search.value);
-    cd.dl.onclick = ()=> csvDownload('coordinators.csv', [['event','name','mobile','status'], ...mine.map(r=>[r.sid,r.name,r.mobile,r.status])]);
-    cd.table.querySelectorAll('button.edit').forEach(b=>{
-      const obj=mine.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('coord',obj);
-    });
+    cd.dl.onclick = ()=> csvDownload('coordinators'+(isSuper()?'_ALL':'')+'.csv',
+      [['event','name','mobile','status','mandal'], ...rows.map(r=>[r.sid,r.name,r.mobile,r.status,r.mandal||''])]);
+
+    if (!isSuper()) {
+      cd.table.querySelectorAll('button.edit').forEach(b=>{
+        const obj=rows.find(x=>x.id===b.dataset.id && x.sid===b.dataset.sid); b.onclick=()=> openEdit('coord',obj);
+      });
+    }
   }
 
-  // MY (live)
+  // STATS
   async function refreshMyStats(){
     let eventsCnt=0,reportsCnt=0,coordsCnt=0; const liveRows=[];
     const es=await getDocs(collection(db,'events'));
-    es.forEach(d=>{ const x=d.data(); if(x.mandal===profile?.mandal && x.status==='live'){
-      eventsCnt++; liveRows.push(['कार्यक्रम',x.eventNameId,`${x.date||'-'} ${x.time||''}`,x.location||'-']);
-    }});
+    es.forEach(d=>{
+      const x=d.data();
+      if (x.status==='live' && (isSuper() || x.mandal===profile?.mandal)) {
+        eventsCnt++; liveRows.push(['कार्यक्रम',x.eventNameId,`${x.date||'-'} ${x.time||''}`, (isSuper()? (x.mandal||'-') : (x.location||'-')) ]);
+      }
+    });
     const evNames=await getDocs(collection(db,'eventNames'));
     for(const d of evNames.docs){
       const sid=d.id;
       const rs=await getDocs(collection(db,`eventNames/${sid}/reports`));
-      rs.forEach(z=>{ const r=z.data(); if(r.mandal===profile?.mandal && r.status==='live'){
-        reportsCnt++; liveRows.push(['रिपोर्ट',sid,r.date||'-',r.details||'-']);
-      }});
+      rs.forEach(z=>{
+        const r=z.data();
+        if (r.status==='live' && (isSuper() || r.mandal===profile?.mandal)) {
+          reportsCnt++; liveRows.push(['रिपोर्ट',sid,r.date||'-', isSuper()? (r.mandal||'-') : (r.details||'-') ]);
+        }
+      });
       const cs=await getDocs(collection(db,`eventNames/${sid}/coordinators`));
-      cs.forEach(z=>{ const r=z.data(); if(r.mandal===profile?.mandal && r.status==='live'){
-        coordsCnt++; liveRows.push(['संयोजक',sid,r.name||'-',r.mobile||'-']);
-      }});
+      cs.forEach(z=>{
+        const r=z.data();
+        if (r.status==='live' && (isSuper() || r.mandal===profile?.mandal)) {
+          coordsCnt++; liveRows.push(['संयोजक',sid,r.name||'-', isSuper()? (r.mandal||'-') : (r.mobile||'-') ]);
+        }
+      });
     }
     my_stats.innerHTML = `<div>Live कार्यक्रम: <b>${eventsCnt}</b></div><div>Live रिपोर्ट: <b>${reportsCnt}</b></div><div>Live संयोजक: <b>${coordsCnt}</b></div>`;
     const tbody=my_live.querySelector('tbody'); tbody.innerHTML='';
     liveRows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>`; tbody.appendChild(tr); });
-    exportAll.onclick = ()=> csvDownload('live_all.csv',[['type','program','date/name','details'],...liveRows]);
+    exportAll.onclick = ()=> csvDownload('live_all'+(isSuper()?'_ALL':'')+'.csv',[['type','program','col3','col4'],...liveRows]);
     live_search.oninput = (e)=> filterRows(tbody, e.target.value);
   }
 
-  // ============ EDIT MODAL (हार्ड-क्लोज़) ============
+  // ===== Modal helpers (force close) =====
   const em = {
     wrap: document.getElementById('editModal'),
     title: document.getElementById('em_title'),
@@ -538,16 +601,13 @@
     ctx: null
   };
 
-window.closeEditModal = function () {
-  const m = document.getElementById('editModal');
-  const body = document.getElementById('em_body');
-  if (body) body.innerHTML = '';
-  if (m) {
-    m.style.display = 'none';       // force hide  ✅
-  }
-  em.ctx = null;
-};
-
+  window.closeEditModal = function () {
+    const m = document.getElementById('editModal');
+    const body = document.getElementById('em_body');
+    if (body) body.innerHTML = '';
+    if (m) m.style.display = 'none';
+    em.ctx = null;
+  };
   window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeEditModal(); });
 
   function openEdit(type,obj){
@@ -569,7 +629,7 @@ window.closeEditModal = function () {
                           <label>सह-संयोजक 2</label><input id="em_c2" value="${obj.coCoordName2||''}">
                           <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`;
     }
-   em.wrap.style.display = 'flex';  
+    em.wrap.style.display = 'flex'; // force show
     const first=em.body.querySelector('input,textarea'); if(first) first.focus();
   }
 
@@ -597,4 +657,3 @@ window.closeEditModal = function () {
 </script>
 </body>
 </html>
-
