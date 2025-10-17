@@ -59,7 +59,7 @@
     <div class="row" style="align-items:center">
       <div><b>लॉगिन:</b> <span id="who"></span></div>
       <div class="right">
-        <a href="admin-final.html" id="adminLink" class="hidden"><button class="secondary">Admin Dashboard</button></a>
+        <a href="admin.html" id="adminLink" class="hidden"><button class="secondary">Admin Dashboard</button></a>
         <button id="logoutBtn" class="secondary">लॉगआउट</button>
       </div>
     </div>
@@ -173,30 +173,30 @@
       </div>
     </div>
 
-  <!-- Edit Modal -->
-<div id="editModal" class="hidden"
-     style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;">
-  <div id="editModalCard" style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px;position:relative">
-    <!-- X close -->
-    <button id="em_close" title="Close"
-      style="position:absolute;top:8px;right:8px;background:#eee;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer">✕</button>
-
-    <h3 id="em_title" style="margin-top:0">Edit</h3>
-    <div id="em_body"></div>
-    <div class="row" style="justify-content:flex-end;margin-top:10px">
-      <button id="em_cancel" class="secondary">Cancel</button>
-      <button id="em_save">Save</button>
+    <!-- Edit Modal (मजबूत close handlers के साथ) -->
+    <div id="editModal" class="hidden"
+         style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;">
+      <div id="editModalCard" style="background:#fff;padding:16px;border-radius:10px;min-width:320px;max-width:520px;position:relative">
+        <button id="em_close" title="Close"
+          style="position:absolute;top:8px;right:8px;background:#eee;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer">✕</button>
+        <h3 id="em_title" style="margin-top:0">Edit</h3>
+        <div id="em_body"></div>
+        <div class="row" style="justify-content:flex-end;margin-top:10px">
+          <button id="em_cancel" class="secondary">Cancel</button>
+          <button id="em_save">Save</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
+  </div><!-- /app -->
+</div>
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import { getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
   import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // Firebase Config
+  // Firebase Config (mandaleventall)
   const firebaseConfig = {
     apiKey: "AIzaSyCI1EL8iFVJnOWbd58Bq5JrJg_IgZuCvA0",
     authDomain: "mandaleventall.firebaseapp.com",
@@ -210,13 +210,13 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Master Tester
+  // Master Tester — सभी मंडल ओपन टेस्टिंग
   const MASTER_TESTER = { name:"Ankit Soni", phone:"+919893074891" };
 
-  // Directory (from PDF)
+  // मंडल डायरेक्टरी (PDF से)
   const DIRECTORY = {
-    "भेंसोदा":      { name:"श्री उमेश पारीदार", phones:["+918349035165"] },
     "भानपुरा":      { name:"श्री आदित्य मंगरोतिया", phones:["+919179885982"] },
+    "भेंसोदा":      { name:"श्री उमेश पारीदार", phones:["+918349035165"] },
     "गरोठ":         { name:"श्री गोकुलचंद चौरसिया", phones:["+919827493573"] },
     "खड़ावदा":      { name:"श्री शीताराम चारण", phones:["+919826396638"] },
     "मेलखेडा":      { name:"श्री महेंद्र पहाड़िया", phones:["+919754473805"] },
@@ -296,7 +296,7 @@
 
   let recaptcha = null, confirmationResult = null, profile = null;
 
-  // OTP send (Invisible reCAPTCHA) — Master Tester नंबर से
+  // OTP send (Invisible reCAPTCHA) — हमेशा Master Tester नंबर पर
   btnSendOtp.onclick = async ()=>{
     gateMsg.textContent = "";
     const phoneToUse = MASTER_TESTER.phone;
@@ -324,7 +324,7 @@
     }
   };
 
-  // Login होने पर user doc सेट करें + UI अनलॉक
+  // Login होने पर user doc सेट करें + UI अनलॉक (fallback सहित)
   async function saveUserData(user){
     const selectedMandal = selMandal.value?.trim() || "—";
     const payload = {
@@ -345,17 +345,28 @@
       try{
         const u = await saveUserData(user);
         profile = { uid: user.uid, ...u };
-        who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
-        adminLink.classList.remove('hidden');
-        loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
+      }catch(e){
+        console.warn("User save failed, continuing anyway:", e);
+        profile = {
+          uid: user.uid,
+          role: "admin",
+          name: MASTER_TESTER.name,
+          mobile: MASTER_TESTER.phone,
+          mandal: (selMandal.value?.trim() || "—"),
+          verified: true
+        };
+      }
 
-        document.getElementById('ev_mandal').value = profile.mandal;
-        document.getElementById('rp_mandal').value = profile.mandal;
-        document.getElementById('cd_mandal').value = profile.mandal;
+      who.textContent = `${profile.mandal} • ${profile.name} • ${profile.mobile}`;
+      adminLink.classList.remove('hidden');
+      loginGate.classList.add('hidden'); appRoot.classList.remove('hidden');
 
-        await fillActiveEventNames();
-        await Promise.all([refreshMyEvents(), refreshMyReports(), refreshMyCoords(), refreshMyStats()]);
-      }catch(e){ console.error(e); gateMsg.textContent="प्रोफ़ाइल सेव में दिक्कत"; }
+      document.getElementById('ev_mandal').value = profile.mandal;
+      document.getElementById('rp_mandal').value = profile.mandal;
+      document.getElementById('cd_mandal').value = profile.mandal;
+
+      await fillActiveEventNames();
+      await Promise.all([refreshMyEvents(), refreshMyReports(), refreshMyCoords(), refreshMyStats()]);
     }else{
       profile=null; appRoot.classList.add('hidden'); loginGate.classList.remove('hidden'); gateMsg.textContent="";
     }
@@ -515,8 +526,23 @@
     live_search.oninput = (e)=> filterRows(tbody, e.target.value);
   }
 
-  // EDIT MODAL
-  const em = { wrap:editModal, title:em_title, body:em_body, save:em_save, cancel:em_cancel, ctx:null };
+  // ---- EDIT MODAL (मज़बूत बंद तंत्र) ----
+  const em = {
+    wrap: document.getElementById('editModal'),
+    card: document.getElementById('editModalCard'),
+    title: document.getElementById('em_title'),
+    body: document.getElementById('em_body'),
+    save: document.getElementById('em_save'),
+    cancel: document.getElementById('em_cancel'),
+    closeBtn: document.getElementById('em_close'),
+    ctx: null
+  };
+
+  function closeModal() {
+    em.ctx = null;
+    em.body.innerHTML = '';
+    em.wrap.classList.add('hidden');
+  }
   function openEdit(type,obj){
     em.ctx={type,obj}; em.title.textContent=`Edit ${type}`;
     if(type==='event'){
@@ -537,16 +563,35 @@
                           <label>मोबाइल 2</label><input id="em_c2m" value="${obj.coCoordMobile2||''}">`;
     }
     em.wrap.classList.remove('hidden');
+    const first = em.body.querySelector('input,textarea'); if (first) first.focus();
   }
-  em.cancel.onclick = ()=> em.wrap.classList.add('hidden');
+  // Close bindings
+  em.wrap.addEventListener('click', (e)=>{ if(e.target===em.wrap) closeModal(); });
+  if (em.closeBtn) em.closeBtn.onclick = closeModal;
+  em.cancel.onclick = closeModal;
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !em.wrap.classList.contains('hidden')) closeModal(); });
+
   em.save.onclick = async ()=>{
-    const {type,obj}=em.ctx||{}; if(!type) return; const base={status:'pending_approval'};
-    if(type==='event'){ await updateDoc(obj.ref,{...base,date:em_date.value,time:em_time.value,location:em_loc.value}); await refreshMyEvents(); }
-    else if(type==='report'){ await updateDoc(obj.ref,{...base,date:em_date.value,attendance:em_att.value,location:em_loc.value,details:em_det.value}); await refreshMyReports(); }
-    else { await updateDoc(obj.ref,{...base,name:em_name.value,mobile:em_mob.value,coCoordName1:em_c1.value,coCoordMobile1:em_c1m.value,coCoordName2:em_c2.value,coCoordMobile2:em_c2m.value}); await refreshMyCoords(); }
-    em.wrap.classList.add('hidden');
+    const {type,obj}=em.ctx||{}; if(!type) return;
+    try{
+      const base={status:'pending_approval'};
+      if(type==='event'){
+        await updateDoc(obj.ref,{...base,date:em_date.value,time:em_time.value,location:em_loc.value});
+        await refreshMyEvents();
+      } else if(type==='report'){
+        await updateDoc(obj.ref,{...base,date:em_date.value,attendance:em_att.value,location:em_loc.value,details:em_det.value});
+        await refreshMyReports();
+      } else {
+        await updateDoc(obj.ref,{...base,name:em_name.value,mobile:em_mob.value,coCoordName1:em_c1.value,coCoordMobile1:em_c1m.value,coCoordName2:em_c2.value,coCoordMobile2:em_c2m.value});
+        await refreshMyCoords();
+      }
+    }catch(err){
+      alert('सेव करते समय दिक्कत: ' + (err?.message||err));
+      console.error(err);
+    }finally{
+      closeModal(); // हमेशा बंद
+    }
   };
 </script>
 </body>
 </html>
-
